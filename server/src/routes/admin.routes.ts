@@ -6,6 +6,7 @@ import { triggerImmediateExtraction } from '../jobs/extraction.job.js';
 import { triggerImmediateFiltering } from '../jobs/filtering.job.js';
 import { triggerImmediateAIStageA } from '../jobs/ai-stage-a.job.js';
 import { triggerImmediateAIStageB } from '../jobs/ai-stage-b.job.js';
+import { triggerImmediateDigest } from '../jobs/digest.job.js';
 
 const router = Router();
 
@@ -119,6 +120,31 @@ router.post(
         res.json({
             message: `AI Stage B processing triggered for up to ${limit} items`,
             note: 'AI processing running in background. Check server logs for progress.',
+        });
+    })
+);
+
+/**
+ * POST /admin/digest/trigger
+ * Manually trigger digest generation for a specific date
+ * Body: { date?: 'YYYY-MM-DD' } - defaults to tomorrow if not provided
+ */
+router.post(
+    '/digest/trigger',
+    requireAuth,
+    asyncHandler(async (req, res) => {
+        console.log('[Admin] Manual digest generation triggered by:', req.user?.email);
+        const dateStr = req.body?.date;
+
+        // Trigger digest generation asynchronously
+        triggerImmediateDigest(dateStr).catch(error => {
+            console.error('[Admin] Digest trigger error:', error);
+        });
+
+        const targetDate = dateStr || 'tomorrow';
+        res.json({
+            message: `Digest generation triggered for ${targetDate}`,
+            note: 'Digest generation running in background. Check server logs for progress.',
         });
     })
 );

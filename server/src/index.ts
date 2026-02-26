@@ -8,6 +8,7 @@ import { startExtractionJob, stopExtractionJob } from './jobs/extraction.job';
 import { startFilteringJob, stopFilteringJob } from './jobs/filtering.job';
 import { startAIStageAJob, stopAIStageAJob } from './jobs/ai-stage-a.job';
 import { startAIStageBJob, stopAIStageBJob } from './jobs/ai-stage-b.job';
+import { startDigestJob, stopDigestJob } from './jobs/digest.job';
 
 const app = express();
 
@@ -55,6 +56,9 @@ app.listen(PORT, () => {
         console.warn('⚠️  AI jobs not started (OpenAI not configured)');
         console.warn('   Set OPENAI_API_KEY in .env to enable AI processing');
     }
+
+    // Start digest job
+    startDigestJob();
 });
 
 // Graceful shutdown
@@ -65,6 +69,7 @@ process.on('SIGTERM', () => {
     stopFilteringJob();
     stopAIStageAJob();
     stopAIStageBJob();
+    stopDigestJob();
     process.exit(0);
 });
 
@@ -75,5 +80,6 @@ process.on('SIGINT', () => {
     stopFilteringJob();
     stopAIStageAJob();
     stopAIStageBJob();
+    stopDigestJob();
     process.exit(0);
 });
