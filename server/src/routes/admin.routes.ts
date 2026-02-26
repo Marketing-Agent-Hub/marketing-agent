@@ -4,6 +4,8 @@ import { asyncHandler } from '../lib/async-handler.js';
 import { triggerImmediateIngest } from '../jobs/ingest.job.js';
 import { triggerImmediateExtraction } from '../jobs/extraction.job.js';
 import { triggerImmediateFiltering } from '../jobs/filtering.job.js';
+import { triggerImmediateAIStageA } from '../jobs/ai-stage-a.job.js';
+import { triggerImmediateAIStageB } from '../jobs/ai-stage-b.job.js';
 
 const router = Router();
 
@@ -71,6 +73,52 @@ router.post(
         res.json({
             message: `Content filtering triggered for up to ${limit} items`,
             note: 'Filtering running in background. Check server logs for progress.',
+        });
+    })
+);
+
+/**
+ * POST /admin/ai/stage-a/trigger
+ * Manually trigger AI Stage A processing for READY_FOR_AI items
+ */
+router.post(
+    '/ai/stage-a/trigger',
+    requireAuth,
+    asyncHandler(async (req, res) => {
+        console.log('[Admin] Manual AI Stage A triggered by:', req.user?.email);
+        const limit = Number(req.body?.limit) || 5;
+
+        // Trigger AI Stage A asynchronously
+        triggerImmediateAIStageA(limit).catch(error => {
+            console.error('[Admin] AI Stage A trigger error:', error);
+        });
+
+        res.json({
+            message: `AI Stage A processing triggered for up to ${limit} items`,
+            note: 'AI processing running in background. Check server logs for progress.',
+        });
+    })
+);
+
+/**
+ * POST /admin/ai/stage-b/trigger
+ * Manually trigger AI Stage B processing for AI_STAGE_A_DONE items
+ */
+router.post(
+    '/ai/stage-b/trigger',
+    requireAuth,
+    asyncHandler(async (req, res) => {
+        console.log('[Admin] Manual AI Stage B triggered by:', req.user?.email);
+        const limit = Number(req.body?.limit) || 3;
+
+        // Trigger AI Stage B asynchronously
+        triggerImmediateAIStageB(limit).catch(error => {
+            console.error('[Admin] AI Stage B trigger error:', error);
+        });
+
+        res.json({
+            message: `AI Stage B processing triggered for up to ${limit} items`,
+            note: 'AI processing running in background. Check server logs for progress.',
         });
     })
 );
