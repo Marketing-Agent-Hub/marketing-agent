@@ -17,6 +17,8 @@
 - AI processing (Stage A & B)
 - Digest generation
 
+📝 **Chi tiết Phase 2**: Xem [`todo-ai.md`](todo-ai.md) - Todolist chi tiết cho AI Content Generation Pipeline
+
 ### ✅ Phase 3: Source Management Frontend (COMPLETED)
 - **Web Dashboard**: 100% complete (Vite + React + TypeScript)
 - **Authentication UI**: 100% complete (Login, Protected Routes, Logout)
@@ -229,11 +231,11 @@
 - [ ] Ghi notes (ví dụ: “official blog”, “hay market → lọc mạnh”)
 
 ## I.7. Tiêu chí nghiệm thu riêng cho bước I
-- [ ] UI cho phép nhập topicTags dạng multi (chips) + auto lowercase + dedup
-- [ ] UI cho phép nhập denyKeywords dạng multi + auto lowercase + dedup
-- [ ] trustScore input:
-  - [ ] slider hoặc number input
-  - [ ] chặn ngoài khoảng 0–100
+- [x] UI cho phép nhập topicTags dạng multi (chips) + auto lowercase + dedup
+- [x] UI cho phép nhập denyKeywords dạng multi + auto lowercase + dedup
+- [x] trustScore input:
+  - [x] slider hoặc number input
+  - [x] chặn ngoài khoảng 0–100
 - [ ] Có preset gợi ý trustScore (dropdown)
 - [ ] Hiển thị badge Tier (A/B/C/D/E)
 - [ ] Có notes field để ghi quy ước nguồn

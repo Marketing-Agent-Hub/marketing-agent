@@ -90,7 +90,8 @@ Chi tiết: [`web/README.md`](web/README.md)
 
 - [`srs.md`](srs.md) - Software Requirements Specification
 - [`ARCHITECHTURE.md`](ARCHITECHTURE.md) - System Architecture
-- [`todolist.md`](todolist.md) - Development Checklist
+- [`todolist.md`](todolist.md) - Development Checklist (Phase 1 & 3)
+- [`todo-ai.md`](todo-ai.md) - AI Content Generation Pipeline (Phase 2)
 - [`server/API.md`](server/API.md) - API Documentation
 - [`server/DATABASE.md`](server/DATABASE.md) - Database Setup
 - [`server/BUILD_STATUS.md`](server/BUILD_STATUS.md) - Build Status
