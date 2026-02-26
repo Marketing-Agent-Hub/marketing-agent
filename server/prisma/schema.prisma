@@ -21,6 +21,32 @@ enum ValidationStatus {
   FAILED
 }
 
+enum ItemStatus {
+  NEW
+  EXTRACTED
+  FILTERED_OUT
+  READY_FOR_AI
+  AI_STAGE_A_DONE
+  AI_STAGE_B_DONE
+  USED_IN_POST
+  REJECTED
+}
+
+enum TimeSlot {
+  MORNING_1   // 08:00
+  MORNING_2   // 08:00
+  NOON        // 12:00
+  EVENING_1   // 18:30
+  EVENING_2   // 18:30
+}
+
+enum PostStatus {
+  DRAFT
+  APPROVED
+  REJECTED
+  POSTED
+}
+
 model Source {
   id                     Int               @id @default(autoincrement())
   name                   String
@@ -35,10 +61,140 @@ model Source {
   notes                  String?
   lastValidatedAt        DateTime?
   lastValidationStatus   ValidationStatus?
+  lastFetchedAt          DateTime?
+  lastFetchStatus        String?
+  itemsCount             Int               @default(0)
   createdAt              DateTime          @default(now())
   updatedAt              DateTime          @updatedAt
+
+  items                  Item[]
 
   @@index([enabled])
   @@index([trustScore])
   @@map("sources")
+}
+
+model Item {
+  id                     Int               @id @default(autoincrement())
+  sourceId               Int
+  source                 Source            @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  
+  guid                   String?
+  title                  String
+  link                   String
+  snippet                String?
+  contentHash            String            @unique
+  publishedAt            DateTime?
+  
+  status                 ItemStatus        @default(NEW)
+  filterReason           String?
+  
+  createdAt              DateTime          @default(now())
+  updatedAt              DateTime          @updatedAt
+
+  article                Article?
+  aiResults              AiResult[]
+  postItems              PostItem[]
+
+  @@unique([sourceId, link])
+  @@index([status])
+  @@index([sourceId])
+  @@index([publishedAt])
+  @@index([contentHash])
+  @@map("items")
+}
+
+model Article {
+  id                     Int               @id @default(autoincrement())
+  itemId                 Int               @unique
+  item                   Item              @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  
+  fullHtml               String?
+  extractedContent       String
+  truncatedContent       String?
+  mainImageUrl           String?
+  
+  createdAt              DateTime          @default(now())
+  updatedAt              DateTime          @updatedAt
+
+  @@map("articles")
+}
+
+model AiResult {
+  id                     Int               @id @default(autoincrement())
+  itemId                 Int
+  item                   Item              @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  
+  stage                  String            // "A" or "B"
+  
+  // Stage A output
+  isAllowed              Boolean?
+  topicTags              String[]          @default([])
+  importanceScore        Int?
+  oneLineSummary         String?
+  
+  // Stage B output
+  summary                String?
+  bullets                String[]          @default([])
+  whyItMatters           String?
+  riskFlags              String[]          @default([])
+  suggestedHashtags      String[]          @default([])
+  
+  // Metadata
+  model                  String?
+  promptTokens           Int?
+  completionTokens       Int?
+  totalTokens            Int?
+  rawResponse            String?
+  
+  createdAt              DateTime          @default(now())
+
+  @@index([itemId])
+  @@index([stage])
+  @@map("ai_results")
+}
+
+model DailyPost {
+  id                     Int               @id @default(autoincrement())
+  targetDate             DateTime
+  timeSlot               TimeSlot
+  
+  content                String
+  hookText               String?
+  bulletsText            String?
+  ocvnTakeText           String?
+  ctaText                String?
+  hashtags               String[]          @default([])
+  
+  status                 PostStatus        @default(DRAFT)
+  
+  editedContent          String?
+  rejectionReason        String?
+  
+  fbPostId               String?
+  fbPostUrl              String?
+  postedAt               DateTime?
+  
+  createdAt              DateTime          @default(now())
+  updatedAt              DateTime          @updatedAt
+
+  postItems              PostItem[]
+
+  @@unique([targetDate, timeSlot])
+  @@index([status])
+  @@index([targetDate])
+  @@map("daily_posts")
+}
+
+model PostItem {
+  id                     Int               @id @default(autoincrement())
+  postId                 Int
+  post                   DailyPost         @relation(fields: [postId], references: [id], onDelete: Cascade)
+  itemId                 Int
+  item                   Item              @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  
+  createdAt              DateTime          @default(now())
+
+  @@unique([postId, itemId])
+  @@map("post_items")
 }
