@@ -1,5 +1,7 @@
 # API Documentation
 
+> For complete setup and testing instructions, see [DEV_GUIDE.md](../DEV_GUIDE.md)
+
 Base URL: `http://localhost:3001/api`
 
 ## Authentication
@@ -200,11 +202,118 @@ Validate an RSS feed URL.
 }
 ```
 
-**Response (200 OK) - Invalid Feed:**
+---
+
+## Admin Pipeline Triggers
+
+All admin endpoints require authentication (`Authorization: Bearer <token>`).
+
+### POST /admin/ingest/trigger
+
+Manually trigger RSS ingestion for all enabled sources.
+
+**Request:** Empty body or `{}`
+
+**Response (200 OK):**
 ```json
 {
-  "ok": false,
-  "error": "Could not detect RSS or Atom format"
+  "message": "RSS ingestion triggered successfully",
+  "note": "Ingestion running in background. Check server logs for progress."
+}
+```
+
+### POST /admin/extraction/trigger
+
+Manually trigger content extraction for NEW items.
+
+**Request:**
+```json
+{
+  "limit": 10  // Optional, default: 10
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "message": "Content extraction triggered for up to 10 items",
+  "note": "Extraction running in background. Check server logs for progress."
+}
+```
+
+### POST /admin/filtering/trigger
+
+Manually trigger content filtering for EXTRACTED items.
+
+**Request:**
+```json
+{
+  "limit": 20  // Optional, default: 20
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "message": "Content filtering triggered for up to 20 items",
+  "note": "Filtering running in background. Check server logs for progress."
+}
+```
+
+### POST /admin/ai/stage-a/trigger
+
+Manually trigger AI Stage A processing for READY_FOR_AI items.
+
+**Request:**
+```json
+{
+  "limit": 5  // Optional, default: 5
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "message": "AI Stage A processing triggered for up to 5 items",
+  "note": "AI processing running in background. Check server logs for progress."
+}
+```
+
+### POST /admin/ai/stage-b/trigger
+
+Manually trigger AI Stage B processing for AI_STAGE_A_DONE items.
+
+**Request:**
+```json
+{
+  "limit": 3  // Optional, default: 3
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "message": "AI Stage B processing triggered for up to 3 items",
+  "note": "AI processing running in background. Check server logs for progress."
+}
+```
+
+### POST /admin/digest/trigger
+
+Manually trigger digest generation for a specific date.
+
+**Request:**
+```json
+{
+  "date": "2026-02-28"  // Optional, defaults to tomorrow
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "message": "Digest generation triggered for 2026-02-28",
+  "note": "Digest generation running in background. Check server logs for progress."
 }
 ```
 
