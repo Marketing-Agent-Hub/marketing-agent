@@ -168,3 +168,58 @@ export interface GetDraftsQuery {
     targetDate?: string;
     timeSlot?: TimeSlot;
 }
+
+// Stats Types
+export interface PipelineStats {
+    items: {
+        total: number;
+        byStatus: {
+            NEW: number;
+            EXTRACTED: number;
+            FILTERED_OUT: number;
+            READY_FOR_AI: number;
+            AI_STAGE_A_DONE: number;
+            AI_STAGE_B_DONE: number;
+            USED_IN_POST: number;
+            REJECTED: number;
+        };
+        recent24h: number;
+    };
+    posts: {
+        total: number;
+        byStatus: {
+            DRAFT: number;
+            APPROVED: number;
+            REJECTED: number;
+            POSTED: number;
+        };
+        recent7days: number;
+        today: number;
+    };
+    sources: {
+        total: number;
+        enabled: number;
+        disabled: number;
+    };
+}
+
+export interface RecentActivity {
+    items: {
+        id: number;
+        title: string;
+        source: string;
+        status: ItemStatus;
+        createdAt: string;
+    }[];
+    posts: {
+        id: number;
+        targetDate: string;
+        timeSlot: TimeSlot;
+        status: PostStatus;
+        createdAt: string;
+    }[];
+}
+
+export interface Bottlenecks {
+    bottlenecks: string[];
+}

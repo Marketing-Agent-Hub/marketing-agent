@@ -11,6 +11,9 @@ import type {
     UpdateDraftInput,
     RejectDraftInput,
     GetDraftsQuery,
+    PipelineStats,
+    RecentActivity,
+    Bottlenecks,
 } from '../types/api';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api';
@@ -145,6 +148,63 @@ class ApiClient {
         return this.request<DailyPost>(`/drafts/${id}/reject`, {
             method: 'POST',
             body: JSON.stringify(input),
+        });
+    }
+
+    // Stats endpoints
+    async getPipelineStats(): Promise<PipelineStats> {
+        return this.request<PipelineStats>('/stats/pipeline');
+    }
+
+    async getRecentActivity(limit?: number): Promise<RecentActivity> {
+        const params = limit ? `?limit=${limit}` : '';
+        return this.request<RecentActivity>(`/stats/activity${params}`);
+    }
+
+    async getBottlenecks(): Promise<Bottlenecks> {
+        return this.request<Bottlenecks>('/stats/bottlenecks');
+    }
+
+    // Admin trigger endpoints
+    async triggerIngest(): Promise<void> {
+        await this.request<void>('/admin/ingest/trigger', {
+            method: 'POST',
+            body: JSON.stringify({}),
+        });
+    }
+
+    async triggerExtraction(limit?: number): Promise<void> {
+        await this.request<void>('/admin/extraction/trigger', {
+            method: 'POST',
+            body: JSON.stringify({ limit }),
+        });
+    }
+
+    async triggerFiltering(limit?: number): Promise<void> {
+        await this.request<void>('/admin/filtering/trigger', {
+            method: 'POST',
+            body: JSON.stringify({ limit }),
+        });
+    }
+
+    async triggerAIStageA(limit?: number): Promise<void> {
+        await this.request<void>('/admin/ai/stage-a/trigger', {
+            method: 'POST',
+            body: JSON.stringify({ limit }),
+        });
+    }
+
+    async triggerAIStageB(limit?: number): Promise<void> {
+        await this.request<void>('/admin/ai/stage-b/trigger', {
+            method: 'POST',
+            body: JSON.stringify({ limit }),
+        });
+    }
+
+    async triggerDigest(date?: string): Promise<void> {
+        await this.request<void>('/admin/digest/trigger', {
+            method: 'POST',
+            body: JSON.stringify({ date }),
         });
     }
 }

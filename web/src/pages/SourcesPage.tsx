@@ -3,6 +3,7 @@ import { useState, useMemo } from 'react';
 import { apiClient } from '../lib/api-client';
 import { useAuth } from '../contexts/AuthContext';
 import { SourceFormModal } from '../components/SourceFormModal';
+import { ImportSourcesModal } from '../components/ImportSourcesModal';
 import type { Source } from '../types/api';
 
 export function SourcesPage() {
@@ -10,6 +11,7 @@ export function SourcesPage() {
     const queryClient = useQueryClient();
     const [selectedSource, setSelectedSource] = useState<Source | null>(null);
     const [showModal, setShowModal] = useState(false);
+    const [showImportModal, setShowImportModal] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
 
     const { data: sources, isLoading, error } = useQuery({
@@ -98,6 +100,12 @@ export function SourcesPage() {
                             </h1>
                             <nav className="flex gap-4">
                                 <a
+                                    href="/dashboard"
+                                    className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+                                >
+                                    Dashboard
+                                </a>
+                                <a
                                     href="/sources"
                                     className="bg-blue-100 text-blue-700 px-3 py-2 rounded-md text-sm font-medium"
                                 >
@@ -136,12 +144,20 @@ export function SourcesPage() {
                             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                         />
                     </div>
-                    <button
-                        onClick={handleAdd}
-                        className="ml-4 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                    >
-                        Add Source
-                    </button>
+                    <div className="ml-4 flex gap-3">
+                        <button
+                            onClick={() => setShowImportModal(true)}
+                            className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                        >
+                            📥 Import
+                        </button>
+                        <button
+                            onClick={handleAdd}
+                            className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                        >
+                            ➕ Add Source
+                        </button>
+                    </div>
                 </div>
 
                 <div className="mb-4 text-sm text-gray-600">
@@ -240,6 +256,13 @@ export function SourcesPage() {
                     <SourceFormModal
                         source={selectedSource}
                         onClose={handleCloseModal}
+                    />
+                )}
+
+                {/* Import Modal */}
+                {showImportModal && (
+                    <ImportSourcesModal
+                        onClose={() => setShowImportModal(false)}
                     />
                 )}
             </main>

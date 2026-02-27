@@ -3,6 +3,7 @@ import authRoutes from './auth.routes';
 import sourceRoutes from './source.routes';
 import adminRoutes from './admin.routes';
 import draftRoutes from './draft.routes';
+import statsRoutes from './stats.routes';
 
 const router = Router();
 
@@ -16,5 +17,6 @@ router.use('/auth', authRoutes);
 router.use('/sources', sourceRoutes);
 router.use('/admin', adminRoutes);
 router.use('/drafts', draftRoutes);
+router.use('/stats', statsRoutes);
 
 export default router;
