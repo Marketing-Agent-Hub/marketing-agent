@@ -90,16 +90,36 @@ export function SourcesPage() {
         <div className="min-h-screen bg-gray-50">
             {/* Header */}
             <header className="bg-white shadow">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-                    <h1 className="text-2xl font-bold text-gray-900">RSS Sources</h1>
-                    <div className="flex items-center gap-4">
-                        <span className="text-sm text-gray-600">{user?.email}</span>
-                        <button
-                            onClick={logout}
-                            className="text-sm text-gray-600 hover:text-gray-900"
-                        >
-                            Logout
-                        </button>
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex items-center justify-between h-16">
+                        <div className="flex items-center gap-8">
+                            <h1 className="text-2xl font-bold text-gray-900">
+                                Quản lý nguồn RSS
+                            </h1>
+                            <nav className="flex gap-4">
+                                <a
+                                    href="/sources"
+                                    className="bg-blue-100 text-blue-700 px-3 py-2 rounded-md text-sm font-medium"
+                                >
+                                    Nguồn RSS
+                                </a>
+                                <a
+                                    href="/drafts"
+                                    className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+                                >
+                                    Bài viết
+                                </a>
+                            </nav>
+                        </div>
+                        <div className="flex items-center gap-4">
+                            <span className="text-sm text-gray-600">{user?.email}</span>
+                            <button
+                                onClick={logout}
+                                className="text-sm text-gray-600 hover:text-gray-900"
+                            >
+                                Đăng xuất
+                            </button>
+                        </div>
                     </div>
                 </div>
             </header>

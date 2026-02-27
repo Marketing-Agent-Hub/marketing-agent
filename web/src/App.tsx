@@ -4,6 +4,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { LoginPage } from './pages/LoginPage';
 import { SourcesPage } from './pages/SourcesPage';
+import { DraftsPage } from './pages/DraftsPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -29,7 +30,15 @@ function App() {
                 </ProtectedRoute>
               }
             />
-            <Route path="/" element={<Navigate to="/sources" replace />} />
+            <Route
+              path="/drafts"
+              element={
+                <ProtectedRoute>
+                  <DraftsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="/" element={<Navigate to="/drafts" replace />} />
           </Routes>
         </BrowserRouter>
       </AuthProvider>

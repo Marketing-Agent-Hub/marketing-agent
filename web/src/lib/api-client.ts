@@ -7,6 +7,10 @@ import type {
     UserResponse,
     RSSValidationResult,
     ApiErrorResponse,
+    DailyPost,
+    UpdateDraftInput,
+    RejectDraftInput,
+    GetDraftsQuery,
 } from '../types/api';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api';
@@ -103,6 +107,44 @@ class ApiClient {
         return this.request<RSSValidationResult>('/sources/validate', {
             method: 'POST',
             body: JSON.stringify({ url }),
+        });
+    }
+
+    // Draft endpoints
+    async getDrafts(query?: GetDraftsQuery): Promise<DailyPost[]> {
+        const params = new URLSearchParams();
+        if (query?.status) params.append('status', query.status);
+        if (query?.targetDate) params.append('targetDate', query.targetDate);
+        if (query?.timeSlot) params.append('timeSlot', query.timeSlot);
+
+        const queryString = params.toString();
+        const endpoint = queryString ? `/drafts?${queryString}` : '/drafts';
+
+        return this.request<DailyPost[]>(endpoint);
+    }
+
+    async getDraftById(id: number): Promise<DailyPost> {
+        return this.request<DailyPost>(`/drafts/${id}`);
+    }
+
+    async updateDraft(id: number, input: UpdateDraftInput): Promise<DailyPost> {
+        return this.request<DailyPost>(`/drafts/${id}`, {
+            method: 'PATCH',
+            body: JSON.stringify(input),
+        });
+    }
+
+    async approveDraft(id: number): Promise<DailyPost> {
+        return this.request<DailyPost>(`/drafts/${id}/approve`, {
+            method: 'POST',
+            body: JSON.stringify({}),
+        });
+    }
+
+    async rejectDraft(id: number, input: RejectDraftInput): Promise<DailyPost> {
+        return this.request<DailyPost>(`/drafts/${id}/reject`, {
+            method: 'POST',
+            body: JSON.stringify(input),
         });
     }
 }
