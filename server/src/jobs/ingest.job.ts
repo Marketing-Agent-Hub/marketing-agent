@@ -1,5 +1,7 @@
 import cron, { ScheduledTask } from 'node-cron';
 import { ingestAllSources } from '../services/ingest.service.js';
+import { withJobMonitoring } from '../lib/job-monitoring';
+import { logger } from '../lib/logger';
 
 let ingestJobTask: ScheduledTask | null = null;
 
@@ -9,7 +11,7 @@ let ingestJobTask: ScheduledTask | null = null;
  */
 export function startIngestJob() {
     if (ingestJobTask) {
-        console.log('[IngestJob] Job already running');
+        logger.info('[IngestJob] Job already running');
         return;
     }
 
@@ -17,16 +19,16 @@ export function startIngestJob() {
     // Cron pattern: minute hour day month weekday
     // */15 * * * * = every 15 minutes
     ingestJobTask = cron.schedule('*/15 * * * *', async () => {
-        console.log('[IngestJob] Starting scheduled RSS ingestion...');
         try {
-            await ingestAllSources();
-            console.log('[IngestJob] Scheduled ingestion completed successfully');
+            await withJobMonitoring('IngestJob', async () => {
+                await ingestAllSources();
+            });
         } catch (error) {
-            console.error('[IngestJob] Error during scheduled ingestion:', error);
+            // Error already logged by withJobMonitoring
         }
     });
 
-    console.log('[IngestJob] Started - running every 15 minutes');
+    logger.info('[IngestJob] Started - running every 15 minutes');
 }
 
 /**

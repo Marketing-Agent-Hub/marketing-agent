@@ -26,6 +26,9 @@ import type {
     PerformanceTrace,
     TraceStats,
     GetTracesQuery,
+    Item,
+    ItemsStats,
+    GetItemsQuery,
 } from '../types/api';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api';
@@ -304,6 +307,27 @@ class ApiClient {
 
     async getTraceById(traceId: string): Promise<PerformanceTrace[]> {
         return this.request<PerformanceTrace[]>(`/monitor/traces/${traceId}`);
+    }
+
+    // Items API
+    async getItems(query?: GetItemsQuery): Promise<{ items: Item[]; total: number; limit: number; offset: number }> {
+        const params = new URLSearchParams();
+        if (query?.status) params.append('status', query.status);
+        if (query?.sourceId) params.append('sourceId', query.sourceId.toString());
+        if (query?.limit) params.append('limit', query.limit.toString());
+        if (query?.offset) params.append('offset', query.offset.toString());
+        if (query?.search) params.append('search', query.search);
+
+        const queryString = params.toString();
+        return this.request<{ items: Item[]; total: number; limit: number; offset: number }>(`/items${queryString ? `?${queryString}` : ''}`);
+    }
+
+    async getItemById(id: number): Promise<Item> {
+        return this.request<Item>(`/items/${id}`);
+    }
+
+    async getItemsStats(): Promise<ItemsStats> {
+        return this.request<ItemsStats>('/items/stats');
     }
 }
 

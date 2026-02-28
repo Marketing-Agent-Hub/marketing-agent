@@ -347,3 +347,79 @@ export interface GetTracesQuery {
     limit?: number;
     offset?: number;
 }
+
+// Item Types
+export type ItemStatus = 'NEW' | 'EXTRACTED' | 'FILTERED_OUT' | 'READY_FOR_AI' | 'AI_STAGE_A_DONE' | 'AI_STAGE_B_DONE' | 'USED_IN_POST' | 'REJECTED';
+
+export interface Article {
+    id: number;
+    itemId: number;
+    fullHtml?: string;
+    extractedContent: string;
+    truncatedContent?: string;
+    mainImageUrl?: string;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface AiResult {
+    id: number;
+    itemId: number;
+    stage: string; // "A" or "B"
+    // Stage A
+    isAllowed?: boolean;
+    topicTags: string[];
+    importanceScore?: number;
+    oneLineSummary?: string;
+    // Stage B
+    summary?: string;
+    bullets: string[];
+    whyItMatters?: string;
+    riskFlags: string[];
+    suggestedHashtags: string[];
+    // Metadata
+    model?: string;
+    promptTokens?: number;
+    completionTokens?: number;
+    totalTokens?: number;
+    rawResponse?: string;
+    createdAt: string;
+}
+
+export interface Item {
+    id: number;
+    sourceId: number;
+    guid?: string;
+    title: string;
+    link: string;
+    snippet?: string;
+    contentHash: string;
+    publishedAt?: string;
+    status: ItemStatus;
+    filterReason?: string;
+    createdAt: string;
+    updatedAt: string;
+    source?: {
+        id: number;
+        name: string;
+    };
+    article?: Article;
+    aiResults?: AiResult[];
+    postItems?: any[];
+}
+
+export interface ItemsStats {
+    byStatus: Record<string, number>;
+    recentCount: number;
+    filteredCount: number;
+    rejectedCount: number;
+    total: number;
+}
+
+export interface GetItemsQuery {
+    status?: ItemStatus;
+    sourceId?: number;
+    limit?: number;
+    offset?: number;
+    search?: string;
+}

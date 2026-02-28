@@ -223,10 +223,21 @@ export class HealthService {
                 ? 'UNHEALTHY'
                 : 'DEGRADED';
 
+        // Map status to frontend format
+        const mapStatus = (status: HealthStatus): 'UP' | 'DOWN' | 'DEGRADED' => {
+            if (status === 'HEALTHY') return 'UP';
+            if (status === 'UNHEALTHY') return 'DOWN';
+            return 'DEGRADED';
+        };
+
         return {
-            status: overallStatus,
-            timestamp: new Date(),
-            checks,
+            overall: mapStatus(overallStatus),
+            services: checks.map((check) => ({
+                service: check.service,
+                status: mapStatus(check.status),
+                lastCheck: new Date().toISOString(),
+                responseTime: check.responseTime,
+            })),
         };
     }
 

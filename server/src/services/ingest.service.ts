@@ -2,6 +2,7 @@ import { XMLParser } from 'fast-xml-parser';
 import crypto from 'crypto';
 import { prisma } from '../db/index.js';
 import { ItemStatus } from '@prisma/client';
+import { logProcessingError } from '../lib/job-monitoring';
 
 interface RssItem {
     sourceId: number;
@@ -158,7 +159,12 @@ export async function saveItems(items: RssItem[]): Promise<{ created: number; ex
             if (error.code === 'P2002') {
                 existing++;
             } else {
-                console.error(`Error saving item: ${item.title}`, error);
+                await logProcessingError(
+                    'Ingest',
+                    `Error saving item: ${item.title}`,
+                    error,
+                    { sourceId: item.sourceId, link: item.link }
+                );
             }
         }
     }

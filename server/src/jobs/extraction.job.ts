@@ -1,5 +1,7 @@
 import cron, { ScheduledTask } from 'node-cron';
 import { processNewItems } from '../services/extraction.service.js';
+import { withJobMonitoring } from '../lib/job-monitoring';
+import { logger } from '../lib/logger';
 
 let extractionJobTask: ScheduledTask | null = null;
 
@@ -9,7 +11,7 @@ let extractionJobTask: ScheduledTask | null = null;
  */
 export function startExtractionJob() {
     if (extractionJobTask) {
-        console.log('[ExtractionJob] Job already running');
+        logger.info('[ExtractionJob] Job already running');
         return;
     }
 
@@ -17,16 +19,16 @@ export function startExtractionJob() {
     // Cron pattern: minute hour day month weekday
     // */5 * * * * = every 5 minutes
     extractionJobTask = cron.schedule('*/5 * * * *', async () => {
-        console.log('[ExtractionJob] Starting scheduled content extraction...');
         try {
-            await processNewItems(10); // Process 10 items per batch
-            console.log('[ExtractionJob] Scheduled extraction completed successfully');
+            await withJobMonitoring('ExtractionJob', async () => {
+                await processNewItems(10); // Process 10 items per batch
+            });
         } catch (error) {
-            console.error('[ExtractionJob] Error during scheduled extraction:', error);
+            // Error already logged by withJobMonitoring
         }
     });
 
-    console.log('[ExtractionJob] Started - running every 5 minutes');
+    logger.info('[ExtractionJob] Started - running every 5 minutes');
 }
 
 /**
@@ -36,7 +38,7 @@ export function stopExtractionJob() {
     if (extractionJobTask) {
         extractionJobTask.stop();
         extractionJobTask = null;
-        console.log('[ExtractionJob] Stopped');
+        logger.info('[ExtractionJob] Stopped');
     }
 }
 
@@ -44,13 +46,7 @@ export function stopExtractionJob() {
  * Trigger immediate extraction (manual trigger)
  */
 export async function triggerImmediateExtraction(limit = 10) {
-    console.log('[ExtractionJob] Manual trigger - starting immediate extraction...');
-    try {
-        const result = await processNewItems(limit);
-        console.log('[ExtractionJob] Manual extraction completed successfully');
-        return result;
-    } catch (error) {
-        console.error('[ExtractionJob] Error during manual extraction:', error);
-        throw error;
-    }
+    return await withJobMonitoring('ExtractionJob-Manual', async () => {
+        return await processNewItems(limit);
+    });
 }

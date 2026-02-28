@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { asyncHandler } from '../lib/async-handler';
+import { db } from '../db';
 import { logService } from '../services/log.service';
 import { metricService } from '../services/metric.service';
 import { healthService } from '../services/health.service';
@@ -202,22 +203,72 @@ export const getTraceStats = asyncHandler(async (req: Request, res: Response) =>
 export const getMonitoringOverview = asyncHandler(async (_req: Request, res: Response) => {
     const now = new Date();
     const last24Hours = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    const lastHour = new Date(now.getTime() - 60 * 60 * 1000);
 
-    const [health, logStats, systemMetrics, traceStats] = await Promise.all([
+    const [health, logStats, traceStats] = await Promise.all([
         healthService.getHealthStatus(),
         logService.getLogStats({ startDate: last24Hours, endDate: now }),
-        metricService.getSystemMetrics(),
         traceService.getTraceStats({ startDate: last24Hours, endDate: now }),
     ]);
+
+    // Calculate logs summary
+    const totalLogs = logStats.byLevel.reduce((sum, stat) => sum + stat.count, 0);
+    const recentErrors = logStats.byLevel
+        .filter(stat => stat.level === 'error' || stat.level === 'fatal')
+        .reduce((sum, stat) => sum + stat.count, 0);
+
+    // Get metrics counts
+    const [totalMetrics, recentMetrics] = await Promise.all([
+        db.systemMetric.count({
+            where: {
+                createdAt: {
+                    gte: last24Hours,
+                    lte: now,
+                },
+            },
+        }),
+        db.systemMetric.count({
+            where: {
+                createdAt: {
+                    gte: lastHour,
+                    lte: now,
+                },
+            },
+        }),
+    ]);
+
+    // Get slow traces count (> 5000ms)
+    const slowTracesCount = await db.performanceTrace.count({
+        where: {
+            startTime: {
+                gte: last24Hours,
+                lte: now,
+            },
+            duration: {
+                gt: 5000,
+            },
+        },
+    });
 
     res.json({
         success: true,
         data: {
             health,
-            logStats,
-            systemMetrics,
-            traceStats,
-            timestamp: now,
+            logs: {
+                total: totalLogs,
+                byLevel: logStats.byLevel,
+                recentErrors,
+            },
+            metrics: {
+                total: totalMetrics,
+                recentCount: recentMetrics,
+            },
+            traces: {
+                total: traceStats?.count || 0,
+                avgDuration: traceStats?.avg || 0,
+                slowCount: slowTracesCount,
+            },
+            timestamp: now.toISOString(),
         },
     });
 });

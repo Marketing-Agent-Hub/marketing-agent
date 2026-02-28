@@ -5,6 +5,7 @@ import adminRoutes from './admin.routes';
 import draftRoutes from './draft.routes';
 import statsRoutes from './stats.routes';
 import monitorRoutes from './monitor.routes';
+import itemRoutes from './item.routes';
 
 const router = Router();
 
@@ -20,5 +21,6 @@ router.use('/admin', adminRoutes);
 router.use('/drafts', draftRoutes);
 router.use('/stats', statsRoutes);
 router.use('/monitor', monitorRoutes);
+router.use('/items', itemRoutes);
 
 export default router;

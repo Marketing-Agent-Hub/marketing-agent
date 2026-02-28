@@ -1,5 +1,7 @@
 import cron, { ScheduledTask } from 'node-cron';
 import { filterExtractedItems } from '../services/filtering.service.js';
+import { withJobMonitoring } from '../lib/job-monitoring';
+import { logger } from '../lib/logger';
 
 let filteringJobTask: ScheduledTask | null = null;
 
@@ -9,7 +11,7 @@ let filteringJobTask: ScheduledTask | null = null;
  */
 export function startFilteringJob() {
     if (filteringJobTask) {
-        console.log('[FilteringJob] Job already running');
+        logger.info('[FilteringJob] Job already running');
         return;
     }
 
@@ -17,16 +19,16 @@ export function startFilteringJob() {
     // Cron pattern: minute hour day month weekday
     // */3 * * * * = every 3 minutes
     filteringJobTask = cron.schedule('*/3 * * * *', async () => {
-        console.log('[FilteringJob] Starting scheduled content filtering...');
         try {
-            await filterExtractedItems(20); // Process 20 items per batch
-            console.log('[FilteringJob] Scheduled filtering completed successfully');
+            await withJobMonitoring('FilteringJob', async () => {
+                await filterExtractedItems(20); // Process 20 items per batch
+            });
         } catch (error) {
-            console.error('[FilteringJob] Error during scheduled filtering:', error);
+            // Error already logged
         }
     });
 
-    console.log('[FilteringJob] Started - running every 3 minutes');
+    logger.info('[FilteringJob] Started - running every 3 minutes');
 }
 
 /**
@@ -36,7 +38,7 @@ export function stopFilteringJob() {
     if (filteringJobTask) {
         filteringJobTask.stop();
         filteringJobTask = null;
-        console.log('[FilteringJob] Stopped');
+        logger.info('[FilteringJob] Stopped');
     }
 }
 
@@ -44,13 +46,7 @@ export function stopFilteringJob() {
  * Trigger immediate filtering (manual trigger)
  */
 export async function triggerImmediateFiltering(limit = 20) {
-    console.log('[FilteringJob] Manual trigger - starting immediate filtering...');
-    try {
-        const result = await filterExtractedItems(limit);
-        console.log('[FilteringJob] Manual filtering completed successfully');
-        return result;
-    } catch (error) {
-        console.error('[FilteringJob] Error during manual filtering:', error);
-        throw error;
-    }
+    return await withJobMonitoring('FilteringJob-Manual', async () => {
+        return await filterExtractedItems(limit);
+    });
 }
