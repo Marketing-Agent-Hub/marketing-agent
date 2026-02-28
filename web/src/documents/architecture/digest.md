@@ -1,8 +1,16 @@
+---
+title: "Digest Generation"
+description: "Daily post generation and selection algorithm"
+order: 3
+---
+
 # Digest Generation Service
 
 ## Overview
 
 The Digest Generation Service is the final component of the Phase 2 AI Content Pipeline. It selects top items that have completed AI processing and formats them into daily Facebook posts with Vietnamese content.
+
+---
 
 ## Flow
 
@@ -13,6 +21,8 @@ AI_STAGE_B_DONE items
   → [Human Review] → Approve/Reject
   → [Facebook Publishing] → Post to page
 ```
+
+---
 
 ## Architecture
 
@@ -98,6 +108,8 @@ When items are used in posts:
 - Item status: `AI_STAGE_B_DONE` → `USED_IN_POST`
 - This prevents reusing the same items in future digests
 
+---
+
 ## Cron Schedule
 
 **Daily at 00:30** (0 30 0 * * *)
@@ -106,6 +118,8 @@ Generates posts for **tomorrow** automatically. This gives time for:
 1. Morning review and edits before first post (08:00)
 2. Last-minute changes or rejection
 3. Manual regeneration if needed
+
+---
 
 ## Manual Trigger
 
@@ -135,6 +149,8 @@ curl -X POST http://localhost:3000/api/admin/digest/trigger \
   -H "Content-Type: application/json" \
   -d '{"date": "2026-03-01"}'
 ```
+
+---
 
 ## Testing
 
@@ -237,6 +253,8 @@ WHERE target_date = '2026-02-28'
 ORDER BY time_slot;
 ```
 
+---
+
 ## Expected Output Example
 
 ```
@@ -258,6 +276,8 @@ ORDER BY time_slot;
 
 #ocvn #opencampus #educampus #blockchain #edtech #web3 #ai #defi
 ```
+
+---
 
 ## Troubleshooting
 
@@ -327,6 +347,8 @@ LIMIT 5;
 2. Verify status updates are working
 3. Check for concurrent cron runs (race condition)
 
+---
+
 ## Monitoring Queries
 
 ### Daily Posts Status
@@ -381,6 +403,8 @@ GROUP BY topic
 ORDER BY usage_count DESC;
 ```
 
+---
+
 ## Next Steps
 
 After digest generation is working:
@@ -404,6 +428,8 @@ After digest generation is working:
    - Automatic posting at scheduled times
    - Track posted URLs and IDs
    - Retry logic for failures
+
+---
 
 ## Cost Considerations
 

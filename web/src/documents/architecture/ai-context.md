@@ -1,18 +1,30 @@
+---
+title: "AI Agent Context"
+description: "Token-efficient reference for AI agents and developers"
+order: 4
+---
+
 # AI Context - ocNewsBot
 
 Token-efficient reference for AI agents working on Open Campus Vietnam RSS Bot.
+
+---
 
 ## Project Summary
 
 Auto-curate RSS content → AI analysis → Vietnamese digests → Facebook posts
 Phase 1 (Backend) + Phase 3 (Frontend) complete. Phase 2 (AI Pipeline) complete.
 
+---
+
 ## Tech Stack
 
-**Backend:** Express + TypeScript strict + PostgreSQL + Prisma + JWT + node-cron
-**Frontend:** Vite + React 18 + TypeScript strict + TanStack Query v5 + TailwindCSS v4
-**AI:** OpenAI (gpt-4o-mini for Stage A, gpt-4o for Stage B)
+**Backend:** Express + TypeScript strict + PostgreSQL + Prisma + JWT + node-cron  
+**Frontend:** Vite + React 18 + TypeScript strict + TanStack Query v5 + TailwindCSS v4  
+**AI:** OpenAI (gpt-4o-mini for Stage A, gpt-4o for Stage B)  
 **RSS:** fast-xml-parser + @mozilla/readability
+
+---
 
 ## Database Schema
 
@@ -59,6 +71,8 @@ DailyPost {
 PostItem { id, postId → DailyPost, itemId → Item }
 ```
 
+---
+
 ## Pipeline Flow
 
 ```
@@ -73,21 +87,26 @@ RSS Sources (enabled=true)
   → [scheduled] Facebook publish
 ```
 
+---
+
 ## Critical Business Rules
 
-**Content Safety (HARD REQUIREMENTS):**
+### Content Safety (HARD REQUIREMENTS)
+
 - Absolute ban: trading signals, price predictions, buy/sell calls, technical analysis, futures/leverage
 - Deny keywords (38 total): 21 EN (price, trading, pump, dump, moon, lambo, etc.) + 17 VI (giá, giao dịch, tăng giá, đầu tư, etc.)
 - Every post bullet MUST include source link
 - NO financial advice, NO investment recommendations
 
-**Content Requirements:**
+### Content Requirements
+
 - Output: 100% Vietnamese (except technical terms in English)
 - Tone: Builder vibe, educational, professional, NO hype/sensationalism
 - Topics: Education/EdTech, blockchain tech, Web3 education, Open Campus ecosystem
 - No auto-post without human approval (DRAFT → APPROVED → POSTED)
 
-**Digest Generation:**
+### Digest Generation
+
 - Select 6-10 items with highest scores
 - Score = importanceScore × trustMultiplier × diversityPenalty
 - Diversity penalty: -10% per repeated topic, -15% per repeated source
@@ -95,11 +114,14 @@ RSS Sources (enabled=true)
 - Format: Hook + Bullets (6-10 items with links) + OCVN Take + CTA + Hashtags
 - Always include: #ocvn #opencampus #educampus
 
-**Cost Optimization:**
+### Cost Optimization
+
 - Two-stage AI: Cheap filter (Stage A $0.15/1M) rejects 70%+ before expensive Stage B ($2.50/1M)
 - Content hash caching: Stage B reuses summaries for identical content
 - Token truncation: Articles capped at 10k chars (~2.5k tokens)
 - Rate limiting: 500ms Stage A, 1000ms Stage B
+
+---
 
 ## File Structure
 
@@ -123,20 +145,25 @@ web/src/
   types/          # api.ts (TypeScript defs)
 ```
 
+---
+
 ## API Contract
 
-**Auth:**
+### Auth
+
 - `POST /api/auth/login` → `{token, email}`
 - `GET /api/auth/me` (JWT) → `{email}`
 
-**Sources (all require JWT):**
+### Sources (all require JWT)
+
 - `GET /api/sources` → `Source[]`
 - `POST /api/sources` → `Source`
 - `PATCH /api/sources/:id` → `Source`
 - `DELETE /api/sources/:id` → 204
 - `POST /api/sources/validate` → `{ok, format?, title?, itemsCount?, error?}`
 
-**Admin Triggers (all require JWT):**
+### Admin Triggers (all require JWT)
+
 - `POST /api/admin/ingest/trigger`
 - `POST /api/admin/extraction/trigger` (body: `{limit?: number}`)
 - `POST /api/admin/filtering/trigger` (body: `{limit?: number}`)
@@ -144,23 +171,39 @@ web/src/
 - `POST /api/admin/ai/stage-b/trigger` (body: `{limit?: number}`)
 - `POST /api/admin/digest/trigger` (body: `{date?: string}`)
 
-**Error Response:** `{error: {code: string, message: string, details?: any}}`
+### Error Response
+
+```json
+{
+  "error": {
+    "code": "string",
+    "message": "string",
+    "details": "any"
+  }
+}
+```
+
+---
 
 ## AI Stage Prompts
 
-**Stage A (GPT-4o-mini, temp=0.3, max_tokens=500):**
+### Stage A (GPT-4o-mini, temp=0.3, max_tokens=500)
+
 - Input: title, snippet, source name, publish date
 - Reject: trading/price/market content per deny keywords
 - Accept: education, blockchain-tech, Web3 education, policy (educational)
 - Output JSON: `{isAllowed, topicTags, importanceScore, oneLineSummary, reason}`
 - Topics: education, edtech, blockchain-tech, web3, open-campus, research, policy, events
 
-**Stage B (GPT-4o, temp=0.7, max_tokens=1500):**
+### Stage B (GPT-4o, temp=0.7, max_tokens=1500)
+
 - Input: full article content, Stage A results
 - Only runs if Stage A isAllowed=true
 - Output JSON: `{summary, bullets[], whyItMatters, riskFlags[], suggestedHashtags[]}`
 - All text in Vietnamese except technical terms
 - Builder vibe: enthusiastic but professional, educational, NO hype
+
+---
 
 ## Data Normalization
 
@@ -168,6 +211,8 @@ web/src/
 - URLs: trim, remove trailing slash
 - Content hash: SHA256 of `title|link|snippet`
 - Vietnamese date format: `toLocaleDateString('vi-VN', {weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'})`
+
+---
 
 ## Environment Variables
 
@@ -184,6 +229,8 @@ NODE_ENV="development"
 CORS_ORIGIN="http://localhost:5173"
 ```
 
+---
+
 ## Cron Schedules
 
 - Ingest: `*/15 * * * *` (every 15 min)
@@ -192,6 +239,8 @@ CORS_ORIGIN="http://localhost:5173"
 - AI Stage A: `*/10 * * * *` (every 10 min, batch 5)
 - AI Stage B: `*/15 * * * *` (every 15 min, batch 3)
 - Digest: `0 30 0 * * *` (daily at 00:30)
+
+---
 
 ## Key Constraints
 
@@ -208,9 +257,12 @@ CORS_ORIGIN="http://localhost:5173"
 - AI Stage B batch: 3 items/run, 1000ms delay between
 - Digest requires minimum 6 items with AI_STAGE_B_DONE status
 
+---
+
 ## Common Patterns
 
-**Service Layer:**
+### Service Layer
+
 ```typescript
 // services/example.service.ts
 export async function processItems(limit: number): Promise<void> {
@@ -226,7 +278,8 @@ export async function processItems(limit: number): Promise<void> {
 }
 ```
 
-**Job Layer:**
+### Job Layer
+
 ```typescript
 // jobs/example.job.ts
 import cron, { ScheduledTask } from 'node-cron';
@@ -248,7 +301,8 @@ export async function triggerImmediate(limit?: number): Promise<void> {
 }
 ```
 
-**Controller Layer:**
+### Controller Layer
+
 ```typescript
 // controllers/example.controller.ts
 export const triggerExample = asyncHandler(async (req, res) => {
@@ -258,14 +312,18 @@ export const triggerExample = asyncHandler(async (req, res) => {
 });
 ```
 
+---
+
 ## Testing Patterns
 
-**Status Check Query:**
+### Status Check Query
+
 ```sql
 SELECT status, COUNT(*) FROM items GROUP BY status;
 ```
 
-**Verify AI Results:**
+### Verify AI Results
+
 ```sql
 SELECT i.id, i.title, ar.stage, ar.is_allowed, ar.summary
 FROM items i
@@ -274,12 +332,15 @@ WHERE i.status = 'AI_STAGE_B_DONE'
 LIMIT 5;
 ```
 
-**Check Posts:**
+### Check Posts
+
 ```sql
 SELECT target_date, time_slot, status, array_length(hashtags, 1) as tag_count
 FROM daily_posts
 ORDER BY target_date DESC, time_slot;
 ```
+
+---
 
 ## Architecture Principles
 

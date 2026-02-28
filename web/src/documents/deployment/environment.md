@@ -1,48 +1,60 @@
+---
+title: Environment Variables
+description: Complete reference for all environment variables
+order: 4
+---
+
 # Environment Variables Reference
 
-Complete guide for all environment variables used in ocNewsBot.
+Complete guide for configuring Open Campus Vietnam RSS Bot.
 
 ## Overview
 
 The project uses different environment files:
-- **`.env`** (local dev) - Backend & frontend development
-- **`.env.docker`** (production) - Docker deployment
-- **`docker-compose.yml`** - Auto-set some variables
+
+| File | Purpose | Location |
+|------|---------|----------|
+| `.env` | Local development | server/.env & web/.env |
+| `.env.docker` | Docker deployment | Root directory |
+| `docker-compose.yml` | Auto-set Docker vars | Root directory |
 
 ## Backend Variables
 
 ### Required (No Defaults)
 
-#### `DATABASE_URL`
+#### DATABASE_URL
 - **Type**: PostgreSQL connection string
 - **Format**: `postgresql://username:password@host:port/database?schema=public`
 - **Local Dev**: `postgresql://postgres:password@localhost:5432/ocvn_rss_bot?schema=public`
-- **Docker**: Auto-set in `docker-compose.yml`
+- **Docker**: Auto-set in docker-compose.yml
 - **Used in**: Prisma database connection
 
-#### `JWT_SECRET`
-- **Type**: String (min 16 chars, recommend 32+)
-- **Generate**: `openssl rand -base64 32`
+#### JWT_SECRET
+- **Type**: String (min 16 chars, recommended 32+)
+- **Generate**:
+  ```bash
+  openssl rand -base64 32
+  ```
 - **Example**: `XyZ9kL2mN4pQ7rS1tU8vW0aB3cD5eF6g`
 - **Used in**: JWT token signing/verification
-- **Security**: Change in production! Never commit to git.
+- **Security**: ⚠️ Change in production! Never commit to git
 
-#### `OPENAI_API_KEY`
+#### OPENAI_API_KEY
 - **Type**: OpenAI API key
 - **Format**: `sk-...` (starts with sk-)
 - **Get from**: https://platform.openai.com/api-keys
 - **Used in**: AI Stage A & B processing
 - **Cost**: Charges apply per API usage
 
-#### `ADMIN_EMAIL`
+#### ADMIN_EMAIL
 - **Type**: Email address
 - **Example**: `admin@opencampus.vn`
 - **Used in**: Admin authentication (first user)
 - **Note**: Only this email can login
 
-#### `ADMIN_PASSWORD_HASH`
+#### ADMIN_PASSWORD_HASH
 - **Type**: Bcrypt hash
-- **Generate**: 
+- **Generate**:
   ```bash
   # Windows
   .\generate-password-hash.ps1 "your-password"
@@ -50,14 +62,14 @@ The project uses different environment files:
   # Linux/Mac
   ./generate-password-hash.sh "your-password"
   
-  # Manual
+  # Manual with Node.js
   node -e "console.log(require('bcrypt').hashSync('your-password', 10))"
   ```
 - **Example**: `$2b$10$rZ8PYLhG5Y8nJ0wQ6qKQme7XL6K1mK5t1K7X5vK9h8L3Rz2Yz3Z4e`
 - **Used in**: Admin password verification
-- **Security**: Never store plain password!
+- **Security**: ⚠️ Never store plain password!
 
-#### `CORS_ORIGIN`
+#### CORS_ORIGIN
 - **Type**: URL
 - **Local Dev**: `http://localhost:5173` (Vite's default port)
 - **Docker**: `http://localhost` or your domain
@@ -67,60 +79,62 @@ The project uses different environment files:
 
 ### Optional (Has Defaults)
 
-#### `AI_STAGE_A_MODEL`
+#### AI_STAGE_A_MODEL
 - **Type**: OpenAI model name
 - **Default**: `gpt-4o-mini`
 - **Options**: `gpt-4o-mini`, `gpt-4o`, `gpt-3.5-turbo`
 - **Used in**: AI Stage A (quick filter, cost-effective)
-- **Cost**: Lower cost with mini model
+- **Cost**: $0.15 per 1M tokens
 
-#### `AI_STAGE_B_MODEL`
+#### AI_STAGE_B_MODEL
 - **Type**: OpenAI model name
 - **Default**: `gpt-4o`
 - **Options**: `gpt-4o`, `gpt-4o-mini`
 - **Used in**: AI Stage B (quality Vietnamese summaries)
-- **Cost**: Higher cost but better quality
+- **Cost**: $2.50 per 1M tokens
 
-#### `PORT`
+#### PORT
 - **Type**: Number
 - **Default**: `3001` (dev), `3000` (docker)
-- **Docker**: Set in `docker-compose.yml`
+- **Docker**: Set in docker-compose.yml
 - **Used in**: Express server port
 - **Note**: Change if port conflicts
 
-#### `NODE_ENV`
+#### NODE_ENV
 - **Type**: Enum
 - **Options**: `development`, `production`, `test`
 - **Default**: `development`
-- **Docker**: Set to `production` in `docker-compose.yml`
+- **Docker**: Set to `production` in docker-compose.yml
 - **Used in**: Enable/disable features, logging verbosity
 
 ## Frontend Variables
 
 ### Optional (Has Defaults)
 
-#### `VITE_API_BASE_URL`
+#### VITE_API_BASE_URL
 - **Type**: URL
-- **Local Dev**: `http://localhost:3000/api` (backend port)
+- **Local Dev**: `http://localhost:3001/api` (matches backend PORT)
 - **Docker**: `/api` (nginx proxy handles routing)
 - **Used in**: API client base URL
 - **Note**: Must match backend URL
 
-## Docker-Specific
+## Docker-Specific Variables
 
 These are set in `docker-compose.yml` and don't need to be in `.env.docker`:
 
 ### Auto-Set by Docker Compose
 
-- **Backend `DATABASE_URL`**: Points to `postgres` service
-- **Backend `PORT`**: Always `3000`
-- **Backend `NODE_ENV`**: Always `production`
-- **Frontend build-time `VITE_API_BASE_URL`**: Set to `/api`
-- **PostgreSQL `POSTGRES_USER`**: `postgres`
-- **PostgreSQL `POSTGRES_PASSWORD`**: `m1505` (CHANGE IN PRODUCTION!)
-- **PostgreSQL `POSTGRES_DB`**: `rss_bot`
+| Variable | Value | Notes |
+|----------|-------|-------|
+| DATABASE_URL | Points to postgres service | Auto-configured |
+| PORT | 3000 | Backend port |
+| NODE_ENV | production | Production mode |
+| VITE_API_BASE_URL | /api | Nginx proxy path |
+| POSTGRES_USER | postgres | Database user |
+| POSTGRES_PASSWORD | m1505 | ⚠️ CHANGE IN PRODUCTION! |
+| POSTGRES_DB | rss_bot | Database name |
 
-## Files Comparison
+## Configuration Examples
 
 ### Local Development
 
@@ -159,7 +173,7 @@ AI_STAGE_A_MODEL=gpt-4o-mini
 AI_STAGE_B_MODEL=gpt-4o
 ```
 
-**docker-compose.yml sets:**
+**docker-compose.yml automatically sets:**
 - DATABASE_URL
 - PORT=3000
 - NODE_ENV=production
@@ -173,25 +187,25 @@ AI_STAGE_B_MODEL=gpt-4o
 - ✅ `.env.example` (templates only)
 - ✅ `.env.docker.example` (templates only)
 
-### Strong Secrets
+### Generate Strong Secrets
 ```bash
-# Generate JWT_SECRET (32 bytes)
+# JWT_SECRET (32 bytes minimum)
 openssl rand -base64 32
 
-# Generate admin password hash
+# Admin password hash
 ./generate-password-hash.sh "YourSecurePassword123!"
 
 # Use password manager for storing secrets
 ```
 
 ### Production Checklist
-- [ ] JWT_SECRET is random & 32+ chars
+- [ ] JWT_SECRET is random & 32+ characters
 - [ ] ADMIN_PASSWORD_HASH is NOT the example/default
 - [ ] OPENAI_API_KEY is valid & has credits
 - [ ] PostgreSQL password changed in docker-compose.yml
 - [ ] CORS_ORIGIN matches your domain
-- [ ] .env and .env.docker are in .gitignore
-- [ ] Backup .env.docker securely (encrypted)
+- [ ] `.env` and `.env.docker` are in `.gitignore`
+- [ ] Backup `.env.docker` securely (encrypted)
 
 ## Troubleshooting
 
@@ -199,43 +213,44 @@ openssl rand -base64 32
 - Check `.env` or `.env.docker` exists
 - Verify variable name spelling
 - Ensure no extra spaces around `=`
-- Check quotes (use `"..."` for values with spaces)
+- Use quotes for values with spaces: `KEY="value with spaces"`
 
 ### "Invalid JWT_SECRET"
 - Must be at least 16 characters
-- Generate new one: `openssl rand -base64 32`
+- Generate new: `openssl rand -base64 32`
 
 ### "Invalid CORS_ORIGIN"
-- Must be a valid URL (include http:// or https://)
+- Must be valid URL (include `http://` or `https://`)
 - Must match frontend URL exactly
 - No trailing slash
 
 ### "OpenAI API key invalid"
 - Verify key starts with `sk-`
 - Check key hasn't been revoked
-- Ensure account has credits
+- Ensure account has credits at https://platform.openai.com/account/billing
 
 ### "Cannot connect to database"
 - Verify DATABASE_URL format
 - Check PostgreSQL is running
-- Ensure network connectivity (Docker: postgres service running)
+- Ensure network connectivity
+- Docker: Verify postgres service is up (`docker-compose ps postgres`)
 - Verify password matches
 
 ## Environment Loading Order
 
-1. **Docker Compose**:
-   ```
-   docker-compose.yml (base config)
-   → .env.docker (override/add secrets)
-   → container environment
-   ```
+### Docker Compose
+```
+docker-compose.yml (base config)
+  → .env.docker (override/add secrets)
+  → container environment
+```
 
-2. **Local Dev**:
-   ```
-   .env file
-   → process.env
-   → config/env.ts validation
-   ```
+### Local Development
+```
+.env file
+  → process.env
+  → config/env.ts validation
+```
 
 ## Adding New Variables
 
@@ -243,9 +258,9 @@ If you add a new environment variable:
 
 1. **Add to schema**: `server/src/config/env.ts` or `server/src/config/ai.config.ts`
 2. **Add to templates**: `.env.example` and `.env.docker.example`
-3. **Document here**: Add to this file
+3. **Document here**: Update this file
 4. **Docker**: Add to `docker-compose.yml` if needed
-5. **Update docs**: Update README.Docker.md and DEPLOY_VPS.md
+5. **Update docs**: Update related deployment guides
 
 Example:
 ```typescript
@@ -255,3 +270,19 @@ export const envSchema = z.object({
   NEW_VARIABLE: z.string().default('default-value'),
 });
 ```
+
+## Quick Reference Table
+
+| Variable | Required | Default | Where Used |
+|----------|----------|---------|------------|
+| DATABASE_URL | ✅ | - | Prisma |
+| JWT_SECRET | ✅ | - | Auth |
+| OPENAI_API_KEY | ✅ | - | AI Pipeline |
+| ADMIN_EMAIL | ✅ | - | Auth |
+| ADMIN_PASSWORD_HASH | ✅ | - | Auth |
+| CORS_ORIGIN | ✅ | - | CORS |
+| AI_STAGE_A_MODEL | ❌ | gpt-4o-mini | AI Filter |
+| AI_STAGE_B_MODEL | ❌ | gpt-4o | AI Summary |
+| PORT | ❌ | 3001/3000 | Express |
+| NODE_ENV | ❌ | development | Express |
+| VITE_API_BASE_URL | ❌ | /api | Frontend |

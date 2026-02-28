@@ -1,3 +1,9 @@
+---
+title: "Pipeline Testing"
+description: "Test the RSS ingestion, extraction, and filtering pipeline"
+order: 5
+---
+
 # Pipeline Testing Guide
 
 ## Prerequisites

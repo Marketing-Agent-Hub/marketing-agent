@@ -1,3 +1,9 @@
+---
+title: "AI Pipeline Setup"
+description: "Configure OpenAI and test the AI content processing pipeline"
+order: 4
+---
+
 # AI Pipeline Setup Guide
 
 ## OpenAI Configuration

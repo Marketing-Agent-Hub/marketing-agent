@@ -1,3 +1,9 @@
+---
+title: "Draft Review Testing"
+description: "Test the draft review UI and approval workflow"
+order: 6
+---
+
 # Draft Review UI - Testing Guide
 
 ## Overview

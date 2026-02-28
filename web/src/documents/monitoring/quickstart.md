@@ -1,3 +1,9 @@
+---
+title: "Quick Start"
+description: "Quick reference for monitoring system setup and usage"
+order: 2
+---
+
 # Monitoring System - Quick Reference
 
 ## 🚀 Quick Start

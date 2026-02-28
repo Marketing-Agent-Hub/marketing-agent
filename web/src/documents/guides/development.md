@@ -1,3 +1,9 @@
+---
+title: "Development Guide"
+description: "Complete guide for setting up and running the development environment"
+order: 3
+---
+
 # Developer Guide - ocNewsBot
 
 Complete guide for setting up and running the Open Campus Vietnam RSS Bot.

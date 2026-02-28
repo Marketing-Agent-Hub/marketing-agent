@@ -1,3 +1,9 @@
+---
+order: 1
+title: "Software Requirements Specification"
+description: "Complete SRS document defining project scope, requirements, and goals"
+---
+
 # Open Campus Vietnam – AI RSS Bot
 ## Software Requirements Specification (SRS)
 Version: 1.0  

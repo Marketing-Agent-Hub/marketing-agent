@@ -1,3 +1,9 @@
+---
+title: "Monitoring System"
+description: "Complete guide to the monitoring system with OpenTelemetry, Pino, and Prometheus"
+order: 1
+---
+
 # Hệ thống Monitoring
 
 ## Tổng quan
