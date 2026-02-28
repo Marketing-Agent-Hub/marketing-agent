@@ -128,6 +128,25 @@ class ApiClient {
         });
     }
 
+    async exportSources(): Promise<Blob> {
+        const token = this.getToken();
+        const headers: Record<string, string> = {};
+
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        const response = await fetch(`${API_BASE_URL}/sources/export`, {
+            headers,
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to export sources');
+        }
+
+        return response.blob();
+    }
+
     // Draft endpoints
     async getDrafts(query?: GetDraftsQuery): Promise<DailyPost[]> {
         const params = new URLSearchParams();

@@ -8,6 +8,12 @@ const router = Router();
 // All source routes require authentication
 router.use(requireAuth);
 
+// Export endpoint (must be before /:id)
+router.get(
+    '/export',
+    asyncHandler((req, res, next) => sourceController.exportSources(req, res, next))
+);
+
 // Validate RSS endpoint (must be before /:id to avoid conflict)
 router.post(
     '/validate',

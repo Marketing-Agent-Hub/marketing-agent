@@ -140,6 +140,35 @@ export class SourceController {
     }
 
     /**
+     * GET /sources/export
+     */
+    async exportSources(_req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const sources = await sourceService.getAllSources();
+
+            // Transform to export format (remove IDs and timestamps)
+            const exportData = sources.map(source => ({
+                name: source.name,
+                rssUrl: source.rssUrl,
+                ...(source.siteUrl && { siteUrl: source.siteUrl }),
+                lang: source.lang,
+                topicTags: source.topicTags,
+                trustScore: source.trustScore,
+                enabled: source.enabled,
+                ...(source.fetchIntervalMinutes !== 60 && { fetchIntervalMinutes: source.fetchIntervalMinutes }),
+                ...(source.denyKeywords.length > 0 && { denyKeywords: source.denyKeywords }),
+                ...(source.notes && { notes: source.notes }),
+            }));
+
+            res.setHeader('Content-Type', 'application/json');
+            res.setHeader('Content-Disposition', `attachment; filename="sources-export-${new Date().toISOString().split('T')[0]}.json"`);
+            res.json(exportData);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    /**
      * POST /sources/validate
      */
     async validateRSS(req: Request, res: Response, next: NextFunction): Promise<void> {

@@ -165,6 +165,23 @@ export function SourcesPage() {
         }
     };
 
+    const handleExport = async () => {
+        try {
+            const blob = await apiClient.exportSources();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `sources-export-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        } catch (error) {
+            console.error('Export failed:', error);
+            alert('❌ Export thất bại. Vui lòng thử lại!');
+        }
+    };
+
     const isAllSelected = filteredSources.length > 0 && selectedIds.size === filteredSources.length;
 
     if (isLoading) {
@@ -257,6 +274,12 @@ export function SourcesPage() {
                             className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                         >
                             📥 Import
+                        </button>
+                        <button
+                            onClick={handleExport}
+                            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                        >
+                            📤 Export
                         </button>
                         <button
                             onClick={handleAdd}
