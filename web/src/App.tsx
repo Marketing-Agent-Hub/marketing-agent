@@ -9,6 +9,8 @@ import { DraftsPage } from './pages/DraftsPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { MonitoringPage } from './pages/MonitoringPage';
 import { ItemsPage } from './pages/ItemsPage';
+import { DocsLayout } from './components/docs/DocsLayout';
+import { DocsPage } from './components/docs/DocsPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -67,6 +69,10 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+              <Route path="/docs" element={<DocsLayout />}>
+                <Route index element={<Navigate to="/docs/overview" replace />} />
+                <Route path="*" element={<DocsPage />} />
+              </Route>
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
             </Routes>
           </BrowserRouter>

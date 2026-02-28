@@ -71,17 +71,9 @@ export function DraftsPage() {
         );
     }
 
-    const navItems = [
-        { label: 'Dashboard', href: '/dashboard', active: false },
-        { label: 'Nguồn RSS', href: '/sources', active: false },
-        { label: 'Bài viết', href: '/drafts', active: true },
-        { label: 'Monitoring', href: '/monitoring', active: false },
-        { label: 'Items', href: '/items', active: false },
-    ];
-
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-            <SharedNav title="Quản lý bài viết" items={navItems} />
+            <SharedNav />
 
             {/* Filters */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">

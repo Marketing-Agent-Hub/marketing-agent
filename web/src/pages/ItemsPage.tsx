@@ -78,16 +78,7 @@ export function ItemsPage() {
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
             {/* Header */}
-            <SharedNav
-                title="Quản lý Items"
-                items={[
-                    { label: 'Dashboard', href: '/' },
-                    { label: 'Nguồn RSS', href: '/sources' },
-                    { label: 'Bài viết', href: '/drafts' },
-                    { label: 'Monitoring', href: '/monitoring' },
-                    { label: 'Items', href: '/items', active: true },
-                ]}
-            />
+            <SharedNav />
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 {/* Statistics Cards */}

@@ -112,17 +112,9 @@ export function MonitoringPage() {
         enabled: activeTab === 'traces',
     });
 
-    const navItems = [
-        { label: 'Dashboard', href: '/dashboard', active: false },
-        { label: 'Nguồn RSS', href: '/sources', active: false },
-        { label: 'Bài viết', href: '/drafts', active: false },
-        { label: 'Monitoring', href: '/monitoring', active: true },
-        { label: 'Items', href: '/items', active: false },
-    ];
-
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-            <SharedNav title="📊 Monitoring" items={navItems} />
+            <SharedNav />
 
             {/* Tabs */}
             <div className="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
