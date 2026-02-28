@@ -198,3 +198,110 @@ model PostItem {
   @@unique([postId, itemId])
   @@map("post_items")
 }
+
+// ============ MONITORING MODELS ============
+
+enum LogLevel {
+  TRACE
+  DEBUG
+  INFO
+  WARN
+  ERROR
+  FATAL
+}
+
+enum MetricType {
+  COUNTER
+  GAUGE
+  HISTOGRAM
+  SUMMARY
+}
+
+enum HealthStatus {
+  HEALTHY
+  DEGRADED
+  UNHEALTHY
+}
+
+model SystemLog {
+  id                     Int               @id @default(autoincrement())
+  level                  LogLevel
+  message                String
+  context                String?
+  service                String?
+  method                 String?
+  path                   String?
+  statusCode             Int?
+  duration               Float?
+  traceId                String?
+  spanId                 String?
+  userId                 Int?
+  error                  String?
+  stack                  String?
+  metadata               Json?
+  
+  createdAt              DateTime          @default(now())
+
+  @@index([level])
+  @@index([service])
+  @@index([traceId])
+  @@index([createdAt])
+  @@map("system_logs")
+}
+
+model SystemMetric {
+  id                     Int               @id @default(autoincrement())
+  name                   String
+  type                   MetricType
+  value                  Float
+  unit                   String?
+  labels                 Json?
+  description            String?
+  
+  createdAt              DateTime          @default(now())
+
+  @@index([name])
+  @@index([type])
+  @@index([createdAt])
+  @@map("system_metrics")
+}
+
+model HealthCheck {
+  id                     Int               @id @default(autoincrement())
+  service                String
+  status                 HealthStatus
+  responseTime           Float?
+  message                String?
+  details                Json?
+  
+  checkedAt              DateTime          @default(now())
+
+  @@index([service])
+  @@index([status])
+  @@index([checkedAt])
+  @@map("health_checks")
+}
+
+model PerformanceTrace {
+  id                     Int               @id @default(autoincrement())
+  traceId                String            @unique
+  spanId                 String?
+  parentSpanId           String?
+  name                   String
+  kind                   String?
+  startTime              DateTime
+  endTime                DateTime?
+  duration               Float?
+  statusCode             Int?
+  method                 String?
+  path                   String?
+  attributes             Json?
+  events                 Json?
+  
+  createdAt              DateTime          @default(now())
+
+  @@index([traceId])
+  @@index([name])
+  @@index([startTime])
+  @@map("performance_traces")
+}

@@ -11,6 +11,9 @@ export const prisma =
         log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
     });
 
+// Export as 'db' for consistency with monitoring services
+export const db = prisma;
+
 if (process.env.NODE_ENV !== 'production') {
     globalForPrisma.prisma = prisma;
 }
