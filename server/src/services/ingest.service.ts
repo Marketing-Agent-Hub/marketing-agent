@@ -75,20 +75,36 @@ export async function parseRssItems(xml: string, sourceId: number): Promise<RssI
 
         for (const item of rssItems) {
             const title = item.title || 'Untitled';
-            const link = item.link || item.guid;
+
+            // Normalize link - handle both string and object formats
+            let link = item.link || item.guid;
+            if (typeof link === 'object' && link !== null) {
+                link = link['#text'] || link.text || link._href || '';
+            }
             if (!link) continue;
 
+            // Ensure link is string
+            const linkStr = typeof link === 'string' ? link : String(link);
+
             const snippet = item.description || item['content:encoded'] || '';
-            const guid = item.guid || link;
+
+            // Normalize guid - handle both string and object formats
+            let guid = item.guid;
+            if (typeof guid === 'object' && guid !== null) {
+                // Handle { #text: "...", _isPermaLink: "..." } format
+                guid = guid['#text'] || guid.text || linkStr;
+            }
+            guid = guid || linkStr;
+
             const pubDate = item.pubDate ? new Date(item.pubDate) : undefined;
 
             items.push({
                 sourceId,
-                guid,
+                guid: typeof guid === 'string' ? guid : String(guid),
                 title,
-                link,
+                link: linkStr,
                 snippet: snippet.substring(0, 1000), // Truncate snippets
-                contentHash: generateContentHash({ title, link, snippet }),
+                contentHash: generateContentHash({ title, link: linkStr, snippet }),
                 publishedAt: pubDate,
             });
         }
@@ -102,20 +118,35 @@ export async function parseRssItems(xml: string, sourceId: number): Promise<RssI
 
         for (const entry of atomEntries) {
             const title = entry.title || 'Untitled';
-            const link = entry.link?._href || entry.id;
+
+            // Normalize link - handle both string and object formats
+            let link = entry.link?._href || entry.id;
+            if (typeof link === 'object' && link !== null) {
+                link = link['#text'] || link.text || link._href || '';
+            }
             if (!link) continue;
 
+            // Ensure link is string
+            const linkStr = typeof link === 'string' ? link : String(link);
+
             const snippet = entry.summary || entry.content || '';
-            const guid = entry.id || link;
+
+            // Normalize guid - handle both string and object formats
+            let guid = entry.id;
+            if (typeof guid === 'object' && guid !== null) {
+                guid = guid['#text'] || guid.text || linkStr;
+            }
+            guid = guid || linkStr;
+
             const pubDate = entry.updated || entry.published;
 
             items.push({
                 sourceId,
-                guid,
+                guid: typeof guid === 'string' ? guid : String(guid),
                 title,
-                link,
+                link: linkStr,
                 snippet: typeof snippet === 'string' ? snippet.substring(0, 1000) : '',
-                contentHash: generateContentHash({ title, link, snippet: typeof snippet === 'string' ? snippet : '' }),
+                contentHash: generateContentHash({ title, link: linkStr, snippet: typeof snippet === 'string' ? snippet : '' }),
                 publishedAt: pubDate ? new Date(pubDate) : undefined,
             });
         }
