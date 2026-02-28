@@ -1,28 +1,27 @@
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { apiClient } from '../lib/api-client';
-import { useAuth } from '../contexts/AuthContext';
+import { SharedNav } from '../components/SharedNav';
 import type { LogLevel, GetLogsQuery, GetMetricsQuery, GetTracesQuery } from '../types/api';
 
 type Tab = 'overview' | 'logs' | 'metrics' | 'health' | 'traces';
 
 const LOG_LEVEL_COLORS: Record<LogLevel, string> = {
-    trace: 'bg-gray-100 text-gray-800',
-    debug: 'bg-blue-100 text-blue-800',
-    info: 'bg-green-100 text-green-800',
-    warn: 'bg-yellow-100 text-yellow-800',
-    error: 'bg-red-100 text-red-800',
-    fatal: 'bg-purple-100 text-purple-800',
+    trace: 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200',
+    debug: 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200',
+    info: 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200',
+    warn: 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200',
+    error: 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200',
+    fatal: 'bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200',
 };
 
 const HEALTH_STATUS_COLORS = {
-    UP: 'bg-green-100 text-green-800',
-    DOWN: 'bg-red-100 text-red-800',
-    DEGRADED: 'bg-yellow-100 text-yellow-800',
+    UP: 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200',
+    DOWN: 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200',
+    DEGRADED: 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200',
 };
 
 export function MonitoringPage() {
-    const { user, logout } = useAuth();
     const [activeTab, setActiveTab] = useState<Tab>('overview');
     const [logLevel, setLogLevel] = useState<LogLevel | 'ALL'>('ALL');
     const [metricName, setMetricName] = useState('');
@@ -113,64 +112,20 @@ export function MonitoringPage() {
         enabled: activeTab === 'traces',
     });
 
+    const navItems = [
+        { label: 'Dashboard', href: '/dashboard', active: false },
+        { label: 'Nguồn RSS', href: '/sources', active: false },
+        { label: 'Bài viết', href: '/drafts', active: false },
+        { label: 'Monitoring', href: '/monitoring', active: true },
+        { label: 'Items', href: '/items', active: false },
+    ];
+
     return (
-        <div className="min-h-screen bg-gray-50">
-            {/* Header */}
-            <div className="bg-white shadow">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex items-center justify-between h-16">
-                        <div className="flex items-center gap-8">
-                            <h1 className="text-2xl font-bold text-gray-900">
-                                📊 Monitoring
-                            </h1>
-                            <nav className="flex gap-4">
-                                <a
-                                    href="/dashboard"
-                                    className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
-                                >
-                                    Dashboard
-                                </a>
-                                <a
-                                    href="/sources"
-                                    className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
-                                >
-                                    Nguồn RSS
-                                </a>
-                                <a
-                                    href="/drafts"
-                                    className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
-                                >
-                                    Bài viết
-                                </a>
-                                <a
-                                    href="/monitoring"
-                                    className="bg-blue-100 text-blue-700 px-3 py-2 rounded-md text-sm font-medium"
-                                >
-                                    Monitoring
-                                </a>
-                                <a
-                                    href="/items"
-                                    className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
-                                >
-                                    Items
-                                </a>
-                            </nav>
-                        </div>
-                        <div className="flex items-center gap-4">
-                            <span className="text-sm text-gray-600">{user?.email}</span>
-                            <button
-                                onClick={logout}
-                                className="text-sm text-gray-600 hover:text-gray-900"
-                            >
-                                Đăng xuất
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+            <SharedNav title="📊 Monitoring" items={navItems} />
 
             {/* Tabs */}
-            <div className="border-b border-gray-200 bg-white">
+            <div className="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <nav className="flex gap-6">
                         {[
@@ -184,8 +139,8 @@ export function MonitoringPage() {
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id as Tab)}
                                 className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === tab.id
-                                    ? 'border-blue-500 text-blue-600'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
                                     }`}
                             >
                                 {tab.label}
@@ -200,12 +155,12 @@ export function MonitoringPage() {
                 {activeTab === 'overview' && (
                     <div className="space-y-6">
                         {overviewLoading ? (
-                            <div className="text-center py-12">Đang tải...</div>
+                            <div className="text-center py-12 text-gray-600 dark:text-gray-300">Đang tải...</div>
                         ) : overview && overview.health ? (
                             <>
                                 {/* Health Status */}
-                                <div className="bg-white rounded-lg shadow p-6">
-                                    <h2 className="text-lg font-semibold mb-4">System Health</h2>
+                                <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                                    <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">System Health</h2>
                                     <div className="flex items-center gap-3 mb-4">
                                         <span
                                             className={`px-3 py-1 rounded-full text-sm font-semibold ${HEALTH_STATUS_COLORS[overview.health.overall]
@@ -213,7 +168,7 @@ export function MonitoringPage() {
                                         >
                                             {overview.health.overall}
                                         </span>
-                                        <span className="text-sm text-gray-600">
+                                        <span className="text-sm text-gray-600 dark:text-gray-300">
                                             {overview.timestamp}
                                         </span>
                                     </div>
@@ -221,9 +176,9 @@ export function MonitoringPage() {
                                         {(overview.health.services || []).map((service) => (
                                             <div
                                                 key={service.service}
-                                                className="border rounded-lg p-4"
+                                                className="border border-gray-200 dark:border-gray-700 rounded-lg p-4"
                                             >
-                                                <div className="font-medium text-gray-900 mb-2">
+                                                <div className="font-medium text-gray-900 dark:text-white mb-2">
                                                     {service.service}
                                                 </div>
                                                 <div className="flex items-center gap-2">
@@ -234,7 +189,7 @@ export function MonitoringPage() {
                                                         {service.status}
                                                     </span>
                                                     {service.responseTime && (
-                                                        <span className="text-xs text-gray-500">
+                                                        <span className="text-xs text-gray-500 dark:text-gray-400">
                                                             {service.responseTime}ms
                                                         </span>
                                                     )}
@@ -247,11 +202,11 @@ export function MonitoringPage() {
                                 {/* Stats Cards */}
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                     {/* Logs */}
-                                    <div className="bg-white rounded-lg shadow p-6">
-                                        <h3 className="text-sm font-medium text-gray-500 mb-2">
+                                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                                        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
                                             Logs (24h)
                                         </h3>
-                                        <div className="text-3xl font-bold text-gray-900 mb-4">
+                                        <div className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
                                             {(overview.logs?.total || 0).toLocaleString()}
                                         </div>
                                         <div className="space-y-1">
@@ -266,7 +221,7 @@ export function MonitoringPage() {
                                                     >
                                                         {stat.level}
                                                     </span>
-                                                    <span className="text-gray-700">
+                                                    <span className="text-gray-700 dark:text-gray-300">
                                                         {stat.count}
                                                     </span>
                                                 </div>
@@ -280,27 +235,27 @@ export function MonitoringPage() {
                                     </div>
 
                                     {/* Metrics */}
-                                    <div className="bg-white rounded-lg shadow p-6">
-                                        <h3 className="text-sm font-medium text-gray-500 mb-2">
+                                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                                        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
                                             Metrics (24h)
                                         </h3>
-                                        <div className="text-3xl font-bold text-gray-900 mb-4">
+                                        <div className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
                                             {(overview.metrics?.total || 0).toLocaleString()}
                                         </div>
-                                        <div className="text-sm text-gray-600">
+                                        <div className="text-sm text-gray-600 dark:text-gray-300">
                                             Recent: {overview.metrics?.recentCount || 0} metrics
                                         </div>
                                     </div>
 
                                     {/* Traces */}
-                                    <div className="bg-white rounded-lg shadow p-6">
-                                        <h3 className="text-sm font-medium text-gray-500 mb-2">
+                                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                                        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
                                             Performance (24h)
                                         </h3>
-                                        <div className="text-3xl font-bold text-gray-900 mb-4">
+                                        <div className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
                                             {(overview.traces?.avgDuration || 0).toFixed(0)}ms
                                         </div>
-                                        <div className="text-sm text-gray-600">
+                                        <div className="text-sm text-gray-600 dark:text-gray-300">
                                             {overview.traces?.total || 0} traces
                                         </div>
                                         {(overview.traces?.slowCount || 0) > 0 && (
@@ -312,7 +267,7 @@ export function MonitoringPage() {
                                 </div>
                             </>
                         ) : (
-                            <div className="text-center py-12 text-gray-500">
+                            <div className="text-center py-12 text-gray-500 dark:text-gray-400">
                                 No overview data available
                             </div>
                         )}
@@ -323,9 +278,9 @@ export function MonitoringPage() {
                 {activeTab === 'logs' && (
                     <div className="space-y-6">
                         {/* Filters */}
-                        <div className="bg-white rounded-lg shadow p-4">
+                        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
                             <div className="flex items-center gap-4">
-                                <label className="text-sm font-medium text-gray-700">
+                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                                     Level:
                                 </label>
                                 <select
@@ -333,7 +288,7 @@ export function MonitoringPage() {
                                     onChange={(e) =>
                                         setLogLevel(e.target.value as LogLevel | 'ALL')
                                     }
-                                    className="px-3 py-1.5 border border-gray-300 rounded-md text-sm"
+                                    className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                                 >
                                     <option value="ALL">All</option>
                                     <option value="trace">Trace</option>
@@ -357,7 +312,7 @@ export function MonitoringPage() {
                                                 >
                                                     {stat.level}
                                                 </span>
-                                                <span className="text-sm text-gray-600">
+                                                <span className="text-sm text-gray-600 dark:text-gray-300">
                                                     {stat.count}
                                                 </span>
                                             </div>
@@ -368,30 +323,30 @@ export function MonitoringPage() {
                         </div>
 
                         {/* Logs Table */}
-                        <div className="bg-white rounded-lg shadow overflow-hidden">
+                        <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
                             <div className="overflow-x-auto">
-                                <table className="min-w-full divide-y divide-gray-200">
-                                    <thead className="bg-gray-50">
+                                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                    <thead className="bg-gray-50 dark:bg-gray-700">
                                         <tr>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                                                 Time
                                             </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                                                 Level
                                             </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                                                 Message
                                             </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                                                 Trace ID
                                             </th>
                                         </tr>
                                     </thead>
-                                    <tbody className="bg-white divide-y divide-gray-200">
+                                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                                         {logs && logs.length > 0 ? (
                                             logs.map((log) => (
-                                                <tr key={log.id} className="hover:bg-gray-50">
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                                <tr key={log.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
                                                         {new Date(
                                                             log.timestamp
                                                         ).toLocaleString()}
@@ -404,14 +359,14 @@ export function MonitoringPage() {
                                                             {log.level}
                                                         </span>
                                                     </td>
-                                                    <td className="px-6 py-4 text-sm text-gray-900 max-w-lg">
+                                                    <td className="px-6 py-4 text-sm text-gray-900 dark:text-white max-w-lg">
                                                         {log.message}
                                                         {log.meta && (
                                                             <details className="mt-1">
-                                                                <summary className="text-xs text-gray-500 cursor-pointer">
+                                                                <summary className="text-xs text-gray-500 dark:text-gray-400 cursor-pointer">
                                                                     Metadata
                                                                 </summary>
-                                                                <pre className="mt-1 text-xs bg-gray-50 p-2 rounded overflow-x-auto">
+                                                                <pre className="mt-1 text-xs bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white p-2 rounded overflow-x-auto">
                                                                     {JSON.stringify(
                                                                         log.meta,
                                                                         null,
@@ -421,7 +376,7 @@ export function MonitoringPage() {
                                                             </details>
                                                         )}
                                                     </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-500">
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-500 dark:text-gray-400">
                                                         {log.traceId || '-'}
                                                     </td>
                                                 </tr>
@@ -430,7 +385,7 @@ export function MonitoringPage() {
                                             <tr>
                                                 <td
                                                     colSpan={4}
-                                                    className="px-6 py-12 text-center text-gray-500"
+                                                    className="px-6 py-12 text-center text-gray-500 dark:text-gray-400"
                                                 >
                                                     No logs found
                                                 </td>
@@ -450,11 +405,11 @@ export function MonitoringPage() {
                         {systemMetrics && (
                             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                                 {Object.entries(systemMetrics).map(([key, value]) => (
-                                    <div key={key} className="bg-white rounded-lg shadow p-6">
-                                        <div className="text-sm font-medium text-gray-500 mb-2">
+                                    <div key={key} className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                                        <div className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
                                             {key.replace(/_/g, ' ').toUpperCase()}
                                         </div>
-                                        <div className="text-2xl font-bold text-gray-900">
+                                        <div className="text-2xl font-bold text-gray-900 dark:text-white">
                                             {typeof value === 'number'
                                                 ? value.toFixed(2)
                                                 : String(value)}
@@ -465,9 +420,9 @@ export function MonitoringPage() {
                         )}
 
                         {/* Filters */}
-                        <div className="bg-white rounded-lg shadow p-4">
+                        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
                             <div className="flex items-center gap-4">
-                                <label className="text-sm font-medium text-gray-700">
+                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                                     Metric Name:
                                 </label>
                                 <input
@@ -475,53 +430,53 @@ export function MonitoringPage() {
                                     value={metricName}
                                     onChange={(e) => setMetricName(e.target.value)}
                                     placeholder="Filter by metric name..."
-                                    className="flex-1 px-3 py-1.5 border border-gray-300 rounded-md text-sm"
+                                    className="flex-1 px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                                 />
                             </div>
                         </div>
 
                         {/* Metrics Table */}
-                        <div className="bg-white rounded-lg shadow overflow-hidden">
+                        <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
                             <div className="overflow-x-auto">
-                                <table className="min-w-full divide-y divide-gray-200">
-                                    <thead className="bg-gray-50">
+                                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                    <thead className="bg-gray-50 dark:bg-gray-700">
                                         <tr>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                                                 Time
                                             </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                                                 Name
                                             </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                                                 Value
                                             </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                                                 Unit
                                             </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                                                 Tags
                                             </th>
                                         </tr>
                                     </thead>
-                                    <tbody className="bg-white divide-y divide-gray-200">
+                                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                                         {metrics && metrics.length > 0 ? (
                                             metrics.map((metric) => (
-                                                <tr key={metric.id} className="hover:bg-gray-50">
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                                <tr key={metric.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
                                                         {new Date(
                                                             metric.timestamp
                                                         ).toLocaleTimeString()}
                                                     </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                                                         {metric.name}
                                                     </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                                                         {metric.value.toFixed(2)}
                                                     </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
                                                         {metric.unit || '-'}
                                                     </td>
-                                                    <td className="px-6 py-4 text-sm text-gray-600">
+                                                    <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">
                                                         {metric.tags &&
                                                             Object.entries(metric.tags)
                                                                 .map(
@@ -536,7 +491,7 @@ export function MonitoringPage() {
                                             <tr>
                                                 <td
                                                     colSpan={5}
-                                                    className="px-6 py-12 text-center text-gray-500"
+                                                    className="px-6 py-12 text-center text-gray-500 dark:text-gray-400"
                                                 >
                                                     No metrics found
                                                 </td>
@@ -554,8 +509,8 @@ export function MonitoringPage() {
                     <div className="space-y-6">
                         {/* Current Status */}
                         {healthStatus && (
-                            <div className="bg-white rounded-lg shadow p-6">
-                                <h2 className="text-lg font-semibold mb-4">
+                            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                                <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
                                     Current Health Status
                                 </h2>
                                 <div className="flex items-center gap-3 mb-6">
@@ -570,9 +525,9 @@ export function MonitoringPage() {
                                     {(healthStatus.services || []).map((service) => (
                                         <div
                                             key={service.service}
-                                            className="border rounded-lg p-4"
+                                            className="border border-gray-200 dark:border-gray-700 rounded-lg p-4"
                                         >
-                                            <div className="font-medium text-gray-900 mb-3">
+                                            <div className="font-medium text-gray-900 dark:text-white mb-3">
                                                 {service.service}
                                             </div>
                                             <div className="space-y-2">
@@ -585,11 +540,11 @@ export function MonitoringPage() {
                                                     </span>
                                                 </div>
                                                 {service.responseTime && (
-                                                    <div className="text-sm text-gray-600">
+                                                    <div className="text-sm text-gray-600 dark:text-gray-300">
                                                         Response: {service.responseTime}ms
                                                     </div>
                                                 )}
-                                                <div className="text-xs text-gray-500">
+                                                <div className="text-xs text-gray-500 dark:text-gray-400">
                                                     Last check:{' '}
                                                     {new Date(
                                                         service.lastCheck
@@ -603,41 +558,41 @@ export function MonitoringPage() {
                         )}
 
                         {/* Health History */}
-                        <div className="bg-white rounded-lg shadow overflow-hidden">
-                            <div className="px-6 py-4 border-b border-gray-200">
-                                <h2 className="text-lg font-semibold">Health Check History</h2>
+                        <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+                            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Health Check History</h2>
                             </div>
                             <div className="overflow-x-auto">
-                                <table className="min-w-full divide-y divide-gray-200">
-                                    <thead className="bg-gray-50">
+                                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                    <thead className="bg-gray-50 dark:bg-gray-700">
                                         <tr>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                                                 Time
                                             </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                                                 Service
                                             </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                                                 Status
                                             </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                                                 Response Time
                                             </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                                                 Message
                                             </th>
                                         </tr>
                                     </thead>
-                                    <tbody className="bg-white divide-y divide-gray-200">
+                                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                                         {healthHistory && healthHistory.length > 0 ? (
                                             healthHistory.map((check) => (
-                                                <tr key={check.id} className="hover:bg-gray-50">
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                                <tr key={check.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
                                                         {new Date(
                                                             check.timestamp
                                                         ).toLocaleString()}
                                                     </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                                                         {check.service}
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap">
@@ -648,12 +603,12 @@ export function MonitoringPage() {
                                                             {check.status}
                                                         </span>
                                                     </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
                                                         {check.responseTime
                                                             ? `${check.responseTime}ms`
                                                             : '-'}
                                                     </td>
-                                                    <td className="px-6 py-4 text-sm text-gray-600">
+                                                    <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">
                                                         {check.message || '-'}
                                                     </td>
                                                 </tr>
@@ -662,7 +617,7 @@ export function MonitoringPage() {
                                             <tr>
                                                 <td
                                                     colSpan={5}
-                                                    className="px-6 py-12 text-center text-gray-500"
+                                                    className="px-6 py-12 text-center text-gray-500 dark:text-gray-400"
                                                 >
                                                     No health check history
                                                 </td>
@@ -679,10 +634,10 @@ export function MonitoringPage() {
                 {activeTab === 'traces' && (
                     <div className="space-y-6">
                         {/* Filters */}
-                        <div className="bg-white rounded-lg shadow p-4">
+                        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
                             <div className="flex items-center gap-4">
                                 <div className="flex items-center gap-2">
-                                    <label className="text-sm font-medium text-gray-700">
+                                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                                         Name:
                                     </label>
                                     <input
@@ -690,11 +645,11 @@ export function MonitoringPage() {
                                         value={traceName}
                                         onChange={(e) => setTraceName(e.target.value)}
                                         placeholder="Filter by trace name..."
-                                        className="px-3 py-1.5 border border-gray-300 rounded-md text-sm"
+                                        className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                                     />
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <label className="text-sm font-medium text-gray-700">
+                                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                                         Min Duration (ms):
                                     </label>
                                     <input
@@ -703,7 +658,7 @@ export function MonitoringPage() {
                                         onChange={(e) =>
                                             setMinDuration(Number(e.target.value))
                                         }
-                                        className="w-24 px-3 py-1.5 border border-gray-300 rounded-md text-sm"
+                                        className="w-24 px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                                     />
                                 </div>
                             </div>
@@ -711,15 +666,15 @@ export function MonitoringPage() {
 
                         {/* Slow Traces Alert */}
                         {slowTraces && slowTraces.length > 0 && (
-                            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                                <h3 className="font-semibold text-yellow-900 mb-2">
+                            <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg p-4">
+                                <h3 className="font-semibold text-yellow-900 dark:text-yellow-300 mb-2">
                                     ⚠️ Slow Requests ({slowTraces.length})
                                 </h3>
                                 <div className="space-y-2">
                                     {slowTraces.slice(0, 5).map((trace) => (
                                         <div
                                             key={trace.id}
-                                            className="text-sm text-yellow-800"
+                                            className="text-sm text-yellow-800 dark:text-yellow-200"
                                         >
                                             <span className="font-mono">{trace.name}</span> -{' '}
                                             {trace.duration}ms
@@ -730,54 +685,54 @@ export function MonitoringPage() {
                         )}
 
                         {/* Traces Table */}
-                        <div className="bg-white rounded-lg shadow overflow-hidden">
+                        <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
                             <div className="overflow-x-auto">
-                                <table className="min-w-full divide-y divide-gray-200">
-                                    <thead className="bg-gray-50">
+                                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                    <thead className="bg-gray-50 dark:bg-gray-700">
                                         <tr>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                                                 Time
                                             </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                                                 Name
                                             </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                                                 Duration
                                             </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                                                 Status
                                             </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                                                 Trace ID
                                             </th>
                                         </tr>
                                     </thead>
-                                    <tbody className="bg-white divide-y divide-gray-200">
+                                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                                         {traces && traces.length > 0 ? (
                                             traces.map((trace) => (
                                                 <tr
                                                     key={trace.id}
-                                                    className={`hover:bg-gray-50 ${trace.duration > 5000
-                                                        ? 'bg-yellow-50'
+                                                    className={`hover:bg-gray-50 dark:hover:bg-gray-700 ${trace.duration > 5000
+                                                        ? 'bg-yellow-50 dark:bg-yellow-900/10'
                                                         : ''
                                                         }`}
                                                 >
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
                                                         {new Date(
                                                             trace.timestamp
                                                         ).toLocaleString()}
                                                     </td>
-                                                    <td className="px-6 py-4 text-sm font-medium text-gray-900">
+                                                    <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">
                                                         {trace.name}
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                                                         <span
                                                             className={
                                                                 trace.duration > 5000
-                                                                    ? 'text-red-600 font-semibold'
+                                                                    ? 'text-red-600 dark:text-red-400 font-semibold'
                                                                     : trace.duration > 1000
-                                                                        ? 'text-yellow-600'
-                                                                        : 'text-gray-900'
+                                                                        ? 'text-yellow-600 dark:text-yellow-400'
+                                                                        : 'text-gray-900 dark:text-white'
                                                             }
                                                         >
                                                             {trace.duration}ms
@@ -786,14 +741,14 @@ export function MonitoringPage() {
                                                     <td className="px-6 py-4 whitespace-nowrap">
                                                         <span
                                                             className={`px-2 py-1 rounded text-xs font-semibold ${trace.status === 'success'
-                                                                ? 'bg-green-100 text-green-800'
-                                                                : 'bg-red-100 text-red-800'
+                                                                ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200'
+                                                                : 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200'
                                                                 }`}
                                                         >
                                                             {trace.status}
                                                         </span>
                                                     </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-500">
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-500 dark:text-gray-400">
                                                         {trace.traceId.substring(0, 16)}...
                                                     </td>
                                                 </tr>
@@ -802,7 +757,7 @@ export function MonitoringPage() {
                                             <tr>
                                                 <td
                                                     colSpan={5}
-                                                    className="px-6 py-12 text-center text-gray-500"
+                                                    className="px-6 py-12 text-center text-gray-500 dark:text-gray-400"
                                                 >
                                                     No traces found
                                                 </td>

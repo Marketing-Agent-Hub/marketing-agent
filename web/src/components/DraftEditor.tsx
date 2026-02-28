@@ -113,28 +113,28 @@ export function DraftEditor({ draft, onClose }: DraftEditorProps) {
     });
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg shadow-xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+        <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex items-center justify-center z-50 p-4">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col">
                 {/* Header */}
-                <div className="p-6 border-b flex items-center justify-between">
+                <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
                     <div>
-                        <h2 className="text-2xl font-bold text-gray-900">
+                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
                             Chỉnh sửa bài viết
                         </h2>
-                        <p className="text-sm text-gray-600 mt-1">
+                        <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
                             {targetDateFormatted} - {TIME_SLOT_LABELS[draft.timeSlot]}
                         </p>
                     </div>
                     <button
                         onClick={onClose}
-                        className="text-gray-400 hover:text-gray-600 text-2xl"
+                        className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 text-2xl"
                     >
                         ×
                     </button>
                 </div>
 
                 {/* Tabs */}
-                <div className="border-b">
+                <div className="border-b border-gray-200 dark:border-gray-700">
                     <div className="flex overflow-x-auto px-6">
                         {[
                             { id: 'preview', label: '👁️ Xem trước' },
@@ -148,8 +148,8 @@ export function DraftEditor({ draft, onClose }: DraftEditorProps) {
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id as any)}
                                 className={`px-4 py-3 text-sm font-medium border-b-2 whitespace-nowrap ${activeTab === tab.id
-                                    ? 'border-blue-500 text-blue-600'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
                                     }`}
                             >
                                 {tab.label}
@@ -162,13 +162,13 @@ export function DraftEditor({ draft, onClose }: DraftEditorProps) {
                 <div className="flex-1 overflow-y-auto p-6">
                     {activeTab === 'preview' && (
                         <div className="space-y-4">
-                            <div className="bg-gray-50 p-4 rounded-lg">
-                                <h3 className="font-semibold text-gray-700 mb-2">Nội dung đầy đủ:</h3>
-                                <pre className="whitespace-pre-wrap text-sm text-gray-800 font-sans">
+                            <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                                <h3 className="font-semibold text-gray-700 dark:text-gray-300 mb-2">Nội dung đầy đủ:</h3>
+                                <pre className="whitespace-pre-wrap text-sm text-gray-800 dark:text-gray-200 font-sans">
                                     {previewContent || finalContent}
                                 </pre>
                             </div>
-                            <div className="text-sm text-gray-600">
+                            <div className="text-sm text-gray-600 dark:text-gray-300">
                                 <p className="mb-2"><strong>Nguồn tin:</strong></p>
                                 <ul className="list-disc list-inside space-y-1">
                                     {draft.postItems.map((pi) => (
@@ -177,7 +177,7 @@ export function DraftEditor({ draft, onClose }: DraftEditorProps) {
                                                 href={pi.item.link}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="text-blue-600 hover:underline"
+                                                className="text-blue-600 dark:text-blue-400 hover:underline"
                                             >
                                                 {pi.item.source?.name || 'Unknown'}: {pi.item.title}
                                             </a>
@@ -190,17 +190,17 @@ export function DraftEditor({ draft, onClose }: DraftEditorProps) {
 
                     {activeTab === 'hook' && (
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                 Hook (Mở đầu thu hút)
                             </label>
                             <textarea
                                 value={hookText}
                                 onChange={(e) => setHookText(e.target.value)}
                                 rows={4}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                                 placeholder="📚 Tin tức nóng hổi từ thế giới Blockchain & EdTech..."
                             />
-                            <p className="text-sm text-gray-500 mt-1">
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                                 {hookText.length} ký tự
                             </p>
                         </div>
@@ -208,17 +208,17 @@ export function DraftEditor({ draft, onClose }: DraftEditorProps) {
 
                     {activeTab === 'bullets' && (
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                 Bullets (6-10 điểm tin)
                             </label>
                             <textarea
                                 value={bulletsText}
                                 onChange={(e) => setBulletsText(e.target.value)}
                                 rows={16}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
+                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                                 placeholder="🎯 **Nguồn**: Tóm tắt ngắn gọn nội dung...&#10;👉 Đọc thêm: https://..."
                             />
-                            <p className="text-sm text-gray-500 mt-1">
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                                 {bulletsText.length} ký tự
                             </p>
                         </div>
@@ -226,17 +226,17 @@ export function DraftEditor({ draft, onClose }: DraftEditorProps) {
 
                     {activeTab === 'ocvn' && (
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                 OCVN Take (Góc nhìn cộng đồng)
                             </label>
                             <textarea
                                 value={ocvnTakeText}
                                 onChange={(e) => setOcvnTakeText(e.target.value)}
                                 rows={4}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                                 placeholder="💼 **OCVN Take**: Builder vibe comment..."
                             />
-                            <p className="text-sm text-gray-500 mt-1">
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                                 {ocvnTakeText.length} ký tự
                             </p>
                         </div>
@@ -244,17 +244,17 @@ export function DraftEditor({ draft, onClose }: DraftEditorProps) {
 
                     {activeTab === 'cta' && (
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                 CTA (Call to Action)
                             </label>
                             <textarea
                                 value={ctaText}
                                 onChange={(e) => setCtaText(e.target.value)}
                                 rows={3}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                                 placeholder="💬 Bạn nghĩ gì về những tin tức này?..."
                             />
-                            <p className="text-sm text-gray-500 mt-1">
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                                 {ctaText.length} ký tự
                             </p>
                         </div>
@@ -262,17 +262,17 @@ export function DraftEditor({ draft, onClose }: DraftEditorProps) {
 
                     {activeTab === 'hashtags' && (
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                 Hashtags (cách nhau bằng dấu cách)
                             </label>
                             <textarea
                                 value={hashtags}
                                 onChange={(e) => setHashtags(e.target.value)}
                                 rows={3}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                                 placeholder="#ocvn #opencampus #educampus #blockchain #edtech"
                             />
-                            <p className="text-sm text-gray-500 mt-1">
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                                 {hashtags.split(/\s+/).filter(t => t.startsWith('#')).length} hashtags
                             </p>
                         </div>
@@ -280,12 +280,12 @@ export function DraftEditor({ draft, onClose }: DraftEditorProps) {
                 </div>
 
                 {/* Footer Actions */}
-                <div className="p-6 border-t bg-gray-50 flex items-center justify-between">
+                <div className="p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700 flex items-center justify-between">
                     <div className="flex gap-2">
                         <button
                             onClick={handleSave}
                             disabled={updateMutation.isPending}
-                            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {updateMutation.isPending ? 'Đang lưu...' : '💾 Lưu thay đổi'}
                         </button>
@@ -297,14 +297,14 @@ export function DraftEditor({ draft, onClose }: DraftEditorProps) {
                                 <button
                                     onClick={() => setShowRejectDialog(true)}
                                     disabled={rejectMutation.isPending}
-                                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50"
+                                    className="px-4 py-2 bg-red-600 dark:bg-red-500 text-white rounded-lg hover:bg-red-700 dark:hover:bg-red-600 disabled:opacity-50"
                                 >
                                     ❌ Từ chối
                                 </button>
                                 <button
                                     onClick={handleApprove}
                                     disabled={approveMutation.isPending}
-                                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+                                    className="px-4 py-2 bg-green-600 dark:bg-green-500 text-white rounded-lg hover:bg-green-700 dark:hover:bg-green-600 disabled:opacity-50"
                                 >
                                     {approveMutation.isPending ? 'Đang duyệt...' : '✅ Duyệt bài'}
                                 </button>
@@ -312,7 +312,7 @@ export function DraftEditor({ draft, onClose }: DraftEditorProps) {
                         )}
                         <button
                             onClick={onClose}
-                            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+                            className="px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500"
                         >
                             Đóng
                         </button>
@@ -322,26 +322,26 @@ export function DraftEditor({ draft, onClose }: DraftEditorProps) {
 
             {/* Reject Dialog */}
             {showRejectDialog && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-                        <h3 className="text-lg font-semibold mb-4">Lý do từ chối</h3>
+                <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex items-center justify-center z-50">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Lý do từ chối</h3>
                         <textarea
                             value={rejectionReason}
                             onChange={(e) => setRejectionReason(e.target.value)}
                             rows={4}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                             placeholder="Nhập lý do từ chối bài viết này..."
                         />
                         <div className="flex gap-2 mt-4">
                             <button
                                 onClick={handleReject}
-                                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                                className="flex-1 px-4 py-2 bg-red-600 dark:bg-red-500 text-white rounded-lg hover:bg-red-700 dark:hover:bg-red-600"
                             >
                                 Xác nhận từ chối
                             </button>
                             <button
                                 onClick={() => setShowRejectDialog(false)}
-                                className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+                                className="flex-1 px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500"
                             >
                                 Hủy
                             </button>

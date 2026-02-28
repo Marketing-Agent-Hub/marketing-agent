@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../lib/api-client';
 import { useAuth } from '../contexts/AuthContext';
+import { ThemeToggle } from '../components/ThemeToggle';
 
 const STATUS_LABELS: Record<string, string> = {
     NEW: '📥 Mới',
@@ -118,53 +119,54 @@ export function DashboardPage() {
     ];
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
             {/* Header */}
-            <div className="bg-white shadow">
+            <div className="bg-white dark:bg-gray-800 shadow">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16">
                         <div className="flex items-center gap-8">
-                            <h1 className="text-2xl font-bold text-gray-900">
+                            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
                                 📊 Dashboard
                             </h1>
                             <nav className="flex gap-4">
                                 <a
                                     href="/dashboard"
-                                    className="bg-blue-100 text-blue-700 px-3 py-2 rounded-md text-sm font-medium"
+                                    className="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 px-3 py-2 rounded-md text-sm font-medium"
                                 >
                                     Dashboard
                                 </a>
                                 <a
                                     href="/sources"
-                                    className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+                                    className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium"
                                 >
                                     Nguồn RSS
                                 </a>
                                 <a
                                     href="/drafts"
-                                    className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+                                    className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium"
                                 >
                                     Bài viết
                                 </a>
                                 <a
                                     href="/monitoring"
-                                    className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+                                    className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium"
                                 >
                                     Monitoring
                                 </a>
                                 <a
                                     href="/items"
-                                    className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+                                    className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium"
                                 >
                                     Items
                                 </a>
                             </nav>
                         </div>
                         <div className="flex items-center gap-4">
-                            <span className="text-sm text-gray-600">{user?.email}</span>
+                            <ThemeToggle />
+                            <span className="text-sm text-gray-600 dark:text-gray-300">{user?.email}</span>
                             <button
                                 onClick={logout}
-                                className="text-sm text-gray-600 hover:text-gray-900"
+                                className="text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
                             >
                                 Đăng xuất
                             </button>

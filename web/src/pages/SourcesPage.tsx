@@ -1,13 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState, useMemo, useEffect } from 'react';
 import { apiClient } from '../lib/api-client';
-import { useAuth } from '../contexts/AuthContext';
 import { SourceFormModal } from '../components/SourceFormModal';
 import { ImportSourcesModal } from '../components/ImportSourcesModal';
+import { SharedNav } from '../components/SharedNav';
 import type { Source } from '../types/api';
 
 export function SourcesPage() {
-    const { user, logout } = useAuth();
     const queryClient = useQueryClient();
     const [selectedSource, setSelectedSource] = useState<Source | null>(null);
     const [showModal, setShowModal] = useState(false);
@@ -186,75 +185,31 @@ export function SourcesPage() {
 
     if (isLoading) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="text-gray-600">Loading sources...</div>
+            <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+                <div className="text-gray-600 dark:text-gray-300">Loading sources...</div>
             </div>
         );
     }
 
     if (error) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="text-red-600">Error loading sources: {String(error)}</div>
+            <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+                <div className="text-red-600 dark:text-red-400">Error loading sources: {String(error)}</div>
             </div>
         );
     }
 
+    const navItems = [
+        { label: 'Dashboard', href: '/dashboard', active: false },
+        { label: 'Nguồn RSS', href: '/sources', active: true },
+        { label: 'Bài viết', href: '/drafts', active: false },
+        { label: 'Monitoring', href: '/monitoring', active: false },
+        { label: 'Items', href: '/items', active: false },
+    ];
+
     return (
-        <div className="min-h-screen bg-gray-50">
-            {/* Header */}
-            <header className="bg-white shadow">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex items-center justify-between h-16">
-                        <div className="flex items-center gap-8">
-                            <h1 className="text-2xl font-bold text-gray-900">
-                                Quản lý nguồn RSS
-                            </h1>
-                            <nav className="flex gap-4">
-                                <a
-                                    href="/dashboard"
-                                    className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
-                                >
-                                    Dashboard
-                                </a>
-                                <a
-                                    href="/sources"
-                                    className="bg-blue-100 text-blue-700 px-3 py-2 rounded-md text-sm font-medium"
-                                >
-                                    Nguồn RSS
-                                </a>
-                                <a
-                                    href="/drafts"
-                                    className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
-                                >
-                                    Bài viết
-                                </a>
-                                <a
-                                    href="/monitoring"
-                                    className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
-                                >
-                                    Monitoring
-                                </a>
-                                <a
-                                    href="/items"
-                                    className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
-                                >
-                                    Items
-                                </a>
-                            </nav>
-                        </div>
-                        <div className="flex items-center gap-4">
-                            <span className="text-sm text-gray-600">{user?.email}</span>
-                            <button
-                                onClick={logout}
-                                className="text-sm text-gray-600 hover:text-gray-900"
-                            >
-                                Đăng xuất
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </header>
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+            <SharedNav title="Quản lý nguồn RSS" items={navItems} />
 
             {/* Main Content */}
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -265,25 +220,25 @@ export function SourcesPage() {
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             placeholder="Search sources by name, URL, or tag..."
-                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                         />
                     </div>
                     <div className="ml-4 flex gap-3">
                         <button
                             onClick={() => setShowImportModal(true)}
-                            className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                            className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                         >
                             📥 Import
                         </button>
                         <button
                             onClick={handleExport}
-                            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                         >
                             📤 Export
                         </button>
                         <button
                             onClick={handleAdd}
-                            className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                            className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                         >
                             ➕ Add Source
                         </button>
@@ -292,15 +247,15 @@ export function SourcesPage() {
 
                 {/* Selection Info & Bulk Actions */}
                 {selectedIds.size > 0 ? (
-                    <div className="mb-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <div className="mb-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-4">
-                                <span className="text-sm font-medium text-blue-900">
+                                <span className="text-sm font-medium text-blue-900 dark:text-blue-200">
                                     ✓ Đã chọn {selectedIds.size} nguồn
                                 </span>
                                 <button
                                     onClick={handleClearSelection}
-                                    className="text-sm text-blue-600 hover:text-blue-800 underline"
+                                    className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 underline"
                                 >
                                     Bỏ chọn tất cả
                                 </button>
@@ -309,25 +264,25 @@ export function SourcesPage() {
                                 <button
                                     onClick={handleBulkEdit}
                                     disabled={selectedIds.size !== 1}
-                                    className="px-3 py-1.5 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="px-3 py-1.5 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     ✏️ Sửa
                                 </button>
                                 <button
                                     onClick={handleBulkEnable}
-                                    className="px-3 py-1.5 bg-green-600 text-white text-sm rounded hover:bg-green-700"
+                                    className="px-3 py-1.5 bg-green-600 text-white text-sm rounded hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600"
                                 >
                                     ✅ Kích hoạt
                                 </button>
                                 <button
                                     onClick={handleBulkDisable}
-                                    className="px-3 py-1.5 bg-gray-600 text-white text-sm rounded hover:bg-gray-700"
+                                    className="px-3 py-1.5 bg-gray-600 text-white text-sm rounded hover:bg-gray-700 dark:bg-gray-500 dark:hover:bg-gray-600"
                                 >
                                     🚫 Vô hiệu hóa
                                 </button>
                                 <button
                                     onClick={handleBulkDelete}
-                                    className="px-3 py-1.5 bg-red-600 text-white text-sm rounded hover:bg-red-700"
+                                    className="px-3 py-1.5 bg-red-600 text-white text-sm rounded hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600"
                                 >
                                     🗑️ Xóa
                                 </button>
@@ -335,88 +290,88 @@ export function SourcesPage() {
                         </div>
                     </div>
                 ) : (
-                    <div className="mb-4 text-sm text-gray-600">
+                    <div className="mb-4 text-sm text-gray-600 dark:text-gray-300">
                         Showing {filteredSources.length} of {sources?.length || 0} sources
                     </div>
                 )}
 
                 {/* Sources Table */}
-                <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-                    <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
+                <div className="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-lg">
+                    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                        <thead className="bg-gray-50 dark:bg-gray-700">
                             <tr>
                                 <th className="px-6 py-3 text-left">
                                     <input
                                         type="checkbox"
                                         checked={isAllSelected}
                                         onChange={handleSelectAll}
-                                        className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded cursor-pointer"
+                                        className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 dark:border-gray-600 rounded cursor-pointer"
                                         title={isAllSelected ? "Bỏ chọn tất cả" : "Chọn tất cả"}
                                     />
                                 </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                     Name
                                 </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                     RSS URL
                                 </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                     Language
                                 </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                     Trust Score
                                 </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                     Status
                                 </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                     Actions
                                 </th>
                             </tr>
                         </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
+                        <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                             {filteredSources.map((source) => (
                                 <tr
                                     key={source.id}
-                                    className={selectedIds.has(source.id) ? 'bg-blue-50' : 'hover:bg-gray-50'}
+                                    className={selectedIds.has(source.id) ? 'bg-blue-50 dark:bg-blue-900/20' : 'hover:bg-gray-50 dark:hover:bg-gray-700'}
                                 >
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <input
                                             type="checkbox"
                                             checked={selectedIds.has(source.id)}
                                             onChange={() => handleSelectOne(source.id)}
-                                            className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded cursor-pointer"
+                                            className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 dark:border-gray-600 rounded cursor-pointer"
                                         />
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm font-medium text-gray-900">
+                                        <div className="text-sm font-medium text-gray-900 dark:text-white">
                                             {source.name}
                                         </div>
                                         {source.topicTags.length > 0 && (
-                                            <div className="text-sm text-gray-500">
+                                            <div className="text-sm text-gray-500 dark:text-gray-400">
                                                 {source.topicTags.join(', ')}
                                             </div>
                                         )}
                                     </td>
                                     <td className="px-6 py-4">
-                                        <div className="text-sm text-gray-900 max-w-xs truncate">
+                                        <div className="text-sm text-gray-900 dark:text-white max-w-xs truncate">
                                             {source.rssUrl}
                                         </div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
                                             {source.lang}
                                         </span>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                                         {source.trustScore}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <button
                                             onClick={() => handleToggleEnabled(source.id, source.enabled)}
                                             className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full cursor-pointer hover:opacity-80 ${source.enabled
-                                                ? 'bg-green-100 text-green-800'
-                                                : 'bg-gray-100 text-gray-800'
+                                                ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200'
+                                                : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300'
                                                 }`}
                                         >
                                             {source.enabled ? 'Enabled' : 'Disabled'}
@@ -425,13 +380,13 @@ export function SourcesPage() {
                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                         <button
                                             onClick={() => handleEdit(source)}
-                                            className="text-indigo-600 hover:text-indigo-900 mr-4"
+                                            className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 mr-4"
                                         >
                                             Edit
                                         </button>
                                         <button
                                             onClick={() => handleDelete(source.id)}
-                                            className="text-red-600 hover:text-red-900"
+                                            className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300"
                                         >
                                             Delete
                                         </button>
@@ -441,7 +396,7 @@ export function SourcesPage() {
                         </tbody>
                     </table>
                     {filteredSources.length === 0 && (
-                        <div className="text-center py-12 text-gray-500">
+                        <div className="text-center py-12 text-gray-500 dark:text-gray-400">
                             {searchQuery ? 'No sources found matching your search.' : 'No sources yet. Click "Add Source" to create one.'}
                         </div>
                     )}

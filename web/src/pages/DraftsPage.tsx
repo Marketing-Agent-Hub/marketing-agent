@@ -1,8 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { apiClient } from '../lib/api-client';
-import { useAuth } from '../contexts/AuthContext';
 import { DraftEditor } from '../components/DraftEditor';
+import { SharedNav } from '../components/SharedNav';
 import type { DailyPost, PostStatus } from '../types/api';
 
 const STATUS_LABELS: Record<PostStatus, string> = {
@@ -13,10 +13,10 @@ const STATUS_LABELS: Record<PostStatus, string> = {
 };
 
 const STATUS_COLORS: Record<PostStatus, string> = {
-    DRAFT: 'bg-yellow-100 text-yellow-800',
-    APPROVED: 'bg-green-100 text-green-800',
-    REJECTED: 'bg-red-100 text-red-800',
-    POSTED: 'bg-blue-100 text-blue-800',
+    DRAFT: 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200',
+    APPROVED: 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200',
+    REJECTED: 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200',
+    POSTED: 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200',
 };
 
 const TIME_SLOT_LABELS: Record<string, string> = {
@@ -28,7 +28,6 @@ const TIME_SLOT_LABELS: Record<string, string> = {
 };
 
 export function DraftsPage() {
-    const { user, logout } = useAuth();
     const [selectedDraft, setSelectedDraft] = useState<DailyPost | null>(null);
     const [statusFilter, setStatusFilter] = useState<PostStatus | 'ALL'>('DRAFT');
     const [dateFilter, setDateFilter] = useState('');
@@ -58,88 +57,44 @@ export function DraftsPage() {
 
     if (isLoading) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="text-gray-600">Đang tải bài viết...</div>
+            <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+                <div className="text-gray-600 dark:text-gray-300">Đang tải bài viết...</div>
             </div>
         );
     }
 
     if (error) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="text-red-600">Lỗi: {(error as Error).message}</div>
+            <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+                <div className="text-red-600 dark:text-red-400">Lỗi: {(error as Error).message}</div>
             </div>
         );
     }
 
+    const navItems = [
+        { label: 'Dashboard', href: '/dashboard', active: false },
+        { label: 'Nguồn RSS', href: '/sources', active: false },
+        { label: 'Bài viết', href: '/drafts', active: true },
+        { label: 'Monitoring', href: '/monitoring', active: false },
+        { label: 'Items', href: '/items', active: false },
+    ];
+
     return (
-        <div className="min-h-screen bg-gray-50">
-            {/* Header */}
-            <div className="bg-white shadow">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex items-center justify-between h-16">
-                        <div className="flex items-center gap-8">
-                            <h1 className="text-2xl font-bold text-gray-900">
-                                Quản lý bài viết
-                            </h1>
-                            <nav className="flex gap-4">
-                                <a
-                                    href="/dashboard"
-                                    className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
-                                >
-                                    Dashboard
-                                </a>
-                                <a
-                                    href="/sources"
-                                    className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
-                                >
-                                    Nguồn RSS
-                                </a>
-                                <a
-                                    href="/drafts"
-                                    className="bg-blue-100 text-blue-700 px-3 py-2 rounded-md text-sm font-medium"
-                                >
-                                    Bài viết
-                                </a>
-                                <a
-                                    href="/monitoring"
-                                    className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
-                                >
-                                    Monitoring
-                                </a>
-                                <a
-                                    href="/items"
-                                    className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
-                                >
-                                    Items
-                                </a>
-                            </nav>
-                        </div>
-                        <div className="flex items-center gap-4">
-                            <span className="text-sm text-gray-600">{user?.email}</span>
-                            <button
-                                onClick={logout}
-                                className="text-sm text-gray-600 hover:text-gray-900"
-                            >
-                                Đăng xuất
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+            <SharedNav title="Quản lý bài viết" items={navItems} />
 
             {/* Filters */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-                <div className="bg-white rounded-lg shadow p-4 mb-6">
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-6">
                     <div className="flex flex-wrap gap-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                 Trạng thái:
                             </label>
                             <select
                                 value={statusFilter}
                                 onChange={(e) => setStatusFilter(e.target.value as any)}
-                                className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                             >
                                 <option value="ALL">Tất cả</option>
                                 <option value="DRAFT">📝 Nháp</option>
@@ -149,61 +104,61 @@ export function DraftsPage() {
                             </select>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                 Ngày đăng:
                             </label>
                             <input
                                 type="date"
                                 value={dateFilter}
                                 onChange={(e) => setDateFilter(e.target.value)}
-                                className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
                         </div>
                     </div>
                 </div>
 
                 {/* Drafts List */}
-                <div className="bg-white rounded-lg shadow overflow-hidden">
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
                     {!drafts || drafts.length === 0 ? (
-                        <div className="text-center py-12 text-gray-500">
+                        <div className="text-center py-12 text-gray-500 dark:text-gray-400">
                             Không có bài viết nào
                         </div>
                     ) : (
                         <div className="overflow-x-auto">
-                            <table className="min-w-full divide-y divide-gray-200">
-                                <thead className="bg-gray-50">
+                            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                <thead className="bg-gray-50 dark:bg-gray-700">
                                     <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                             Ngày đăng
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                             Giờ đăng
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                             Trạng thái
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                             Nội dung
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                             Nguồn tin
                                         </th>
-                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                             Thao tác
                                         </th>
                                     </tr>
                                 </thead>
-                                <tbody className="bg-white divide-y divide-gray-200">
+                                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                                     {drafts.map((draft) => {
                                         const targetDate = new Date(draft.targetDate);
                                         const dateStr = targetDate.toLocaleDateString('vi-VN');
 
                                         return (
-                                            <tr key={draft.id} className="hover:bg-gray-50">
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            <tr key={draft.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                                                     {dateStr}
                                                 </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                                                     {TIME_SLOT_LABELS[draft.timeSlot]}
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap">
@@ -214,18 +169,18 @@ export function DraftsPage() {
                                                         {STATUS_LABELS[draft.status]}
                                                     </span>
                                                 </td>
-                                                <td className="px-6 py-4 text-sm text-gray-900 max-w-md">
+                                                <td className="px-6 py-4 text-sm text-gray-900 dark:text-white max-w-md">
                                                     <div className="line-clamp-2">
                                                         {getContentPreview(draft)}
                                                     </div>
                                                 </td>
-                                                <td className="px-6 py-4 text-sm text-gray-500">
+                                                <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
                                                     {draft.postItems.length} tin
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                                     <button
                                                         onClick={() => handleEdit(draft)}
-                                                        className="text-blue-600 hover:text-blue-900"
+                                                        className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300"
                                                     >
                                                         {draft.status === 'DRAFT' ? '✏️ Chỉnh sửa' : '👁️ Xem'}
                                                     </button>
@@ -248,12 +203,12 @@ export function DraftsPage() {
                                 return (
                                     <div
                                         key={status}
-                                        className="bg-white rounded-lg shadow p-4 text-center"
+                                        className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 text-center"
                                     >
-                                        <div className="text-3xl font-bold text-gray-900">
+                                        <div className="text-3xl font-bold text-gray-900 dark:text-white">
                                             {count}
                                         </div>
-                                        <div className="text-sm text-gray-600 mt-1">
+                                        <div className="text-sm text-gray-600 dark:text-gray-300 mt-1">
                                             {STATUS_LABELS[status]}
                                         </div>
                                     </div>
