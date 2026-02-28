@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { apiClient } from '../lib/api-client';
 import { useAuth } from '../contexts/AuthContext';
 import { SourceFormModal } from '../components/SourceFormModal';
@@ -13,6 +13,7 @@ export function SourcesPage() {
     const [showModal, setShowModal] = useState(false);
     const [showImportModal, setShowImportModal] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
+    const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
 
     const { data: sources, isLoading, error } = useQuery({
         queryKey: ['sources'],
@@ -47,6 +48,11 @@ export function SourcesPage() {
         );
     }, [sources, searchQuery]);
 
+    // Clear selection when search changes
+    useEffect(() => {
+        setSelectedIds(new Set());
+    }, [searchQuery]);
+
     const handleDelete = async (id: number) => {
         if (confirm('Are you sure you want to delete this source?')) {
             deleteMutation.mutate(id);
@@ -71,6 +77,95 @@ export function SourcesPage() {
         setShowModal(false);
         setSelectedSource(null);
     };
+
+    // Selection handlers
+    const handleSelectAll = () => {
+        if (selectedIds.size === filteredSources.length) {
+            setSelectedIds(new Set());
+        } else {
+            setSelectedIds(new Set(filteredSources.map(s => s.id)));
+        }
+    };
+
+    const handleSelectOne = (id: number) => {
+        const newSelected = new Set(selectedIds);
+        if (newSelected.has(id)) {
+            newSelected.delete(id);
+        } else {
+            newSelected.add(id);
+        }
+        setSelectedIds(newSelected);
+    };
+
+    const handleClearSelection = () => {
+        setSelectedIds(new Set());
+    };
+
+    // Bulk actions
+    const handleBulkDelete = async () => {
+        if (selectedIds.size === 0) return;
+
+        const confirmed = confirm(`Bạn có chắc muốn xóa ${selectedIds.size} nguồn RSS?`);
+        if (!confirmed) return;
+
+        const promises = Array.from(selectedIds).map(id =>
+            apiClient.deleteSource(id).catch(err => {
+                console.error(`Failed to delete source ${id}:`, err);
+                return null;
+            })
+        );
+
+        await Promise.all(promises);
+        queryClient.invalidateQueries({ queryKey: ['sources'] });
+        setSelectedIds(new Set());
+        alert(`✅ Đã xóa thành công!`);
+    };
+
+    const handleBulkEnable = async () => {
+        if (selectedIds.size === 0) return;
+
+        const promises = Array.from(selectedIds).map(id =>
+            apiClient.updateSource(id, { enabled: true }).catch(err => {
+                console.error(`Failed to enable source ${id}:`, err);
+                return null;
+            })
+        );
+
+        await Promise.all(promises);
+        queryClient.invalidateQueries({ queryKey: ['sources'] });
+        setSelectedIds(new Set());
+        alert(`✅ Đã kích hoạt ${promises.length} nguồn!`);
+    };
+
+    const handleBulkDisable = async () => {
+        if (selectedIds.size === 0) return;
+
+        const promises = Array.from(selectedIds).map(id =>
+            apiClient.updateSource(id, { enabled: false }).catch(err => {
+                console.error(`Failed to disable source ${id}:`, err);
+                return null;
+            })
+        );
+
+        await Promise.all(promises);
+        queryClient.invalidateQueries({ queryKey: ['sources'] });
+        setSelectedIds(new Set());
+        alert(`✅ Đã vô hiệu hóa ${promises.length} nguồn!`);
+    };
+
+    const handleBulkEdit = () => {
+        if (selectedIds.size !== 1) {
+            alert('⚠️ Chỉ có thể chỉnh sửa 1 nguồn tại một thời điểm!');
+            return;
+        }
+        const id = Array.from(selectedIds)[0];
+        const source = sources?.find(s => s.id === id);
+        if (source) {
+            handleEdit(source);
+        }
+    };
+
+    const isAllSelected = filteredSources.length > 0 && selectedIds.size === filteredSources.length;
 
     if (isLoading) {
         return (
@@ -160,15 +255,70 @@ export function SourcesPage() {
                     </div>
                 </div>
 
-                <div className="mb-4 text-sm text-gray-600">
-                    Showing {filteredSources.length} of {sources?.length || 0} sources
-                </div>
+                {/* Selection Info & Bulk Actions */}
+                {selectedIds.size > 0 ? (
+                    <div className="mb-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                                <span className="text-sm font-medium text-blue-900">
+                                    ✓ Đã chọn {selectedIds.size} nguồn
+                                </span>
+                                <button
+                                    onClick={handleClearSelection}
+                                    className="text-sm text-blue-600 hover:text-blue-800 underline"
+                                >
+                                    Bỏ chọn tất cả
+                                </button>
+                            </div>
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={handleBulkEdit}
+                                    disabled={selectedIds.size !== 1}
+                                    className="px-3 py-1.5 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    ✏️ Sửa
+                                </button>
+                                <button
+                                    onClick={handleBulkEnable}
+                                    className="px-3 py-1.5 bg-green-600 text-white text-sm rounded hover:bg-green-700"
+                                >
+                                    ✅ Kích hoạt
+                                </button>
+                                <button
+                                    onClick={handleBulkDisable}
+                                    className="px-3 py-1.5 bg-gray-600 text-white text-sm rounded hover:bg-gray-700"
+                                >
+                                    🚫 Vô hiệu hóa
+                                </button>
+                                <button
+                                    onClick={handleBulkDelete}
+                                    className="px-3 py-1.5 bg-red-600 text-white text-sm rounded hover:bg-red-700"
+                                >
+                                    🗑️ Xóa
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="mb-4 text-sm text-gray-600">
+                        Showing {filteredSources.length} of {sources?.length || 0} sources
+                    </div>
+                )}
 
                 {/* Sources Table */}
                 <div className="bg-white shadow overflow-hidden sm:rounded-lg">
                     <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-gray-50">
                             <tr>
+                                <th className="px-6 py-3 text-left">
+                                    <input
+                                        type="checkbox"
+                                        checked={isAllSelected}
+                                        onChange={handleSelectAll}
+                                        className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded cursor-pointer"
+                                        title={isAllSelected ? "Bỏ chọn tất cả" : "Chọn tất cả"}
+                                    />
+                                </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Name
                                 </th>
@@ -191,7 +341,18 @@ export function SourcesPage() {
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
                             {filteredSources.map((source) => (
-                                <tr key={source.id}>
+                                <tr
+                                    key={source.id}
+                                    className={selectedIds.has(source.id) ? 'bg-blue-50' : 'hover:bg-gray-50'}
+                                >
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedIds.has(source.id)}
+                                            onChange={() => handleSelectOne(source.id)}
+                                            className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded cursor-pointer"
+                                        />
+                                    </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="text-sm font-medium text-gray-900">
                                             {source.name}
