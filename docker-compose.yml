@@ -11,6 +11,53 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - rss_network
+
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: rss_backend
+    restart: always
+    env_file:
+      - .env.docker
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://postgres:m1505@postgres:5432/rss_bot?schema=public
+      PORT: 3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./server/logs:/app/logs
+    networks:
+      - rss_network
+    command: sh -c "npx prisma migrate deploy && node dist/index.js"
+
+  frontend:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    container_name: rss_frontend
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - rss_network
 
 volumes:
   postgres_data:
+
+networks:
+  rss_network:
+    driver: bridge

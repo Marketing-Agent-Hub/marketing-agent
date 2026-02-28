@@ -11,6 +11,7 @@ Automated system for RSS content curation → AI analysis → Vietnamese digests
 
 ## Quick Start
 
+### Local Development
 ```bash
 # Backend
 cd server && npm install && npm run prisma:migrate && npm run dev
@@ -19,9 +20,30 @@ cd server && npm install && npm run prisma:migrate && npm run dev
 cd web && npm install && npm run dev
 ```
 
+### Docker Deployment (Recommended for Production)
+```bash
+# Windows
+.\docker-start.ps1
+
+# Linux/Mac
+./docker-start.sh
+
+# Or manually
+cp .env.docker.example .env.docker
+# Edit .env.docker with your JWT_SECRET and OPENAI_API_KEY
+docker-compose up -d --build
+```
+
+See **[README.Docker.md](README.Docker.md)** for complete Docker guide.
+
 See **[DEV_GUIDE.md](DEV_GUIDE.md)** for complete setup instructions.
 
 ## Documentation
+
+### Quick Start
+- **[DEPLOY_VPS.md](DEPLOY_VPS.md)** - 🚀 Step-by-step VPS deployment guide
+- **[README.Docker.md](README.Docker.md)** - 🐳 Docker deployment guide (production-ready)
+- **[DEV_GUIDE.md](DEV_GUIDE.md)** - Complete local development setup
 
 ### For Developers
 - **[DEV_GUIDE.md](DEV_GUIDE.md)** - Complete setup, testing, API reference, troubleshooting

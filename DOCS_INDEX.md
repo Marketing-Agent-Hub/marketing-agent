@@ -9,6 +9,11 @@ Organized documentation for ocNewsBot project.
 - **[DEV_GUIDE.md](DEV_GUIDE.md)** - Complete developer guide (setup, testing, troubleshooting)
 - **[AI_CONTEXT.md](AI_CONTEXT.md)** - Token-efficient context for AI agents
 
+### Deployment Guides
+- **[DEPLOY_VPS.md](DEPLOY_VPS.md)** - 🚀 Step-by-step VPS deployment (Ubuntu/Debian)
+- **[README.Docker.md](README.Docker.md)** - 🐳 Docker deployment reference
+- **[ENV_REFERENCE.md](ENV_REFERENCE.md)** - Complete environment variables guide
+
 ### Reference Specs
 - **[srs.md](srs.md)** - Software Requirements Specification
 - **[ARCHITECHTURE.md](ARCHITECHTURE.md)** - System architecture details
@@ -30,6 +35,9 @@ Organized documentation for ocNewsBot project.
 
 **If you want to:**
 - Get started quickly → **[README.md](README.md)** + **[DEV_GUIDE.md](DEV_GUIDE.md)**
+- Deploy to VPS → **[DEPLOY_VPS.md](DEPLOY_VPS.md)**
+- Deploy with Docker → **[README.Docker.md](README.Docker.md)**
+- Configure environment → **[ENV_REFERENCE.md](ENV_REFERENCE.md)**
 - Understand requirements → **[srs.md](srs.md)**
 - Understand architecture → **[ARCHITECHTURE.md](ARCHITECHTURE.md)** or **[AI_CONTEXT.md](AI_CONTEXT.md)**
 - Setup AI pipeline → **[AI_SETUP.md](AI_SETUP.md)**
