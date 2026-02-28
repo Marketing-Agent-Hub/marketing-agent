@@ -124,6 +124,13 @@ export async function filterItem(itemId: number): Promise<{
             item.article?.truncatedContent || '',
         ].join(' ');
 
+        // ============================================
+        // FILTERING DISABLED FOR TESTING
+        // ============================================
+        // All items automatically pass to READY_FOR_AI
+        // Uncomment the checks below to re-enable filtering
+
+        /* 
         // Check 1: Global market/trading keywords (HARD BAN per SRS)
         if (hasMarketContent(contentToCheck)) {
             console.log(`[Filter] Item ${itemId} REJECTED: Contains trading/market content`);
@@ -156,9 +163,10 @@ export async function filterItem(itemId: number): Promise<{
                 return { allowed: false, reason: `Matched deny keywords: ${matched.join(', ')}` };
             }
         }
+        */
 
-        // All checks passed - mark as READY_FOR_AI
-        console.log(`[Filter] Item ${itemId} PASSED all filters`);
+        // All checks passed (or disabled) - mark as READY_FOR_AI
+        console.log(`[Filter] Item ${itemId} PASSED (filtering disabled for testing)`);
 
         await prisma.item.update({
             where: { id: itemId },

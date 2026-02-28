@@ -89,45 +89,6 @@ export interface ApiErrorResponse {
 // Draft/Post Types
 export type TimeSlot = 'MORNING_1' | 'MORNING_2' | 'NOON' | 'EVENING_1' | 'EVENING_2';
 export type PostStatus = 'DRAFT' | 'APPROVED' | 'REJECTED' | 'POSTED';
-export type ItemStatus = 'NEW' | 'EXTRACTED' | 'FILTERED_OUT' | 'READY_FOR_AI' | 'AI_STAGE_A_DONE' | 'AI_STAGE_B_DONE' | 'USED_IN_POST' | 'REJECTED';
-
-export interface AiResult {
-    id: number;
-    itemId: number;
-    stage: string;
-    summary: string | null;
-    bullets: string[];
-    whyItMatters: string | null;
-    suggestedHashtags: string[];
-    createdAt: string;
-}
-
-export interface Article {
-    id: number;
-    itemId: number;
-    extractedContent: string;
-    mainImageUrl: string | null;
-}
-
-export interface Item {
-    id: number;
-    sourceId: number;
-    title: string;
-    link: string;
-    snippet: string | null;
-    status: ItemStatus;
-    publishedAt: string | null;
-    source: Source;
-    article: Article | null;
-    aiResults: AiResult[];
-}
-
-export interface PostItem {
-    id: number;
-    postId: number;
-    itemId: number;
-    item: Item;
-}
 
 export interface DailyPost {
     id: number;
@@ -406,6 +367,13 @@ export interface Item {
     article?: Article;
     aiResults?: AiResult[];
     postItems?: any[];
+}
+
+export interface PostItem {
+    id: number;
+    postId: number;
+    itemId: number;
+    item: Item;
 }
 
 export interface ItemsStats {

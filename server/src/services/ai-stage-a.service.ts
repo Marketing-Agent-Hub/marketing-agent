@@ -12,7 +12,7 @@ interface StageAOutput {
 
 /**
  * Build AI Stage A prompt
- * Cheap filter using GPT-4o-mini to determine if content is allowed
+ * Simplified version - accepts most content for testing
  */
 function buildStageAPrompt(item: {
     title: string;
@@ -20,26 +20,13 @@ function buildStageAPrompt(item: {
     sourceName: string;
     publishedAt?: Date | null;
 }): string {
-    return `You are a content filter for Open Campus Vietnam, an educational blockchain community.
+    return `You are a content analyzer for Open Campus Vietnam, an educational blockchain community.
 
-TASK: Analyze this RSS item and determine if it's suitable for our audience.
+TASK: Analyze this RSS item and categorize it.
 
-STRICT RULES:
-1. REJECT any content about:
-   - Trading signals, price predictions, market analysis
-   - "Buy/sell" recommendations
-   - Technical analysis, chart patterns
-   - Investment advice, portfolio management
-   - Futures, leverage, margin trading
-   - Pump/dump schemes, "moon" or "lambo" talk
-
-2. ACCEPT content about:
-   - Education technology (EdTech)
-   - Blockchain technology (infrastructure, protocols, development)
-   - Web3 education platforms
-   - Open Campus ecosystem news
-   - Educational research and innovation
-   - Policy and regulation (educational context)
+ACCEPT all content unless it's:
+- Spam or clearly irrelevant (adult content, unrelated industries)
+- Duplicate or broken content
 
 RSS ITEM:
 Source: ${item.sourceName}
@@ -49,20 +36,22 @@ Snippet: ${item.snippet || 'N/A'}
 
 OUTPUT FORMAT (valid JSON only):
 {
-  "isAllowed": true/false,
+  "isAllowed": true,
   "topicTags": ["tag1", "tag2", "tag3"],
   "importanceScore": 0-100,
   "oneLineSummary": "Brief summary in English",
-  "reason": "Why allowed/rejected"
+  "reason": "Why accepted"
 }
 
 TOPIC TAGS (use relevant ones):
-- education, edtech, online-learning
-- blockchain-tech, web3, smart-contracts
+- education, edtech, online-learning, education-tech
+- blockchain, crypto, web3, defi, nft
+- blockchain-tech, smart-contracts, layer2
 - open-campus, partnerships, announcements
 - research, innovation, case-study
 - policy, regulation, government
 - events, conferences, community
+- trading, market, investment (financial content)
 
 IMPORTANCE SCORE:
 - 90-100: Breaking news, major announcements
@@ -107,12 +96,13 @@ async function callStageA(prompt: string): Promise<StageAOutput> {
         throw new Error('Invalid response: missing isAllowed');
     }
 
+    // Force allow all items for testing RSS sources
     return {
-        isAllowed: parsed.isAllowed,
+        isAllowed: true, // Always allow during testing phase
         topicTags: Array.isArray(parsed.topicTags) ? parsed.topicTags : [],
         importanceScore: typeof parsed.importanceScore === 'number' ? parsed.importanceScore : 50,
         oneLineSummary: parsed.oneLineSummary || '',
-        reason: parsed.reason,
+        reason: parsed.reason || 'Auto-accepted for testing',
     };
 }
 

@@ -148,8 +148,8 @@ export function DraftEditor({ draft, onClose }: DraftEditorProps) {
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id as any)}
                                 className={`px-4 py-3 text-sm font-medium border-b-2 whitespace-nowrap ${activeTab === tab.id
-                                        ? 'border-blue-500 text-blue-600'
-                                        : 'border-transparent text-gray-500 hover:text-gray-700'
+                                    ? 'border-blue-500 text-blue-600'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700'
                                     }`}
                             >
                                 {tab.label}
@@ -179,7 +179,7 @@ export function DraftEditor({ draft, onClose }: DraftEditorProps) {
                                                 rel="noopener noreferrer"
                                                 className="text-blue-600 hover:underline"
                                             >
-                                                {pi.item.source.name}: {pi.item.title}
+                                                {pi.item.source?.name || 'Unknown'}: {pi.item.title}
                                             </a>
                                         </li>
                                     ))}

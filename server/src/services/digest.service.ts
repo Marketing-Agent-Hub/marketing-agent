@@ -55,6 +55,8 @@ async function fetchReadyItems(): Promise<ItemWithScore[]> {
         },
     });
 
+    console.log(`[Digest] Fetched ${items.length} items with status AI_STAGE_B_DONE from database`);
+
     // Transform and filter items
     const itemsWithScores: ItemWithScore[] = [];
 
@@ -64,16 +66,32 @@ async function fetchReadyItems(): Promise<ItemWithScore[]> {
 
         // Skip if missing AI results
         if (!stageA || !stageB || !stageA.importanceScore) {
+            console.log(`[Digest Debug] Item ${item.id} skipped: missing AI results`, {
+                hasStageA: !!stageA,
+                hasStageB: !!stageB,
+                hasImportanceScore: stageA?.importanceScore !== null && stageA?.importanceScore !== undefined,
+                title: item.title.substring(0, 60)
+            });
             continue;
         }
 
         // Skip if not allowed by Stage A
         if (stageA.isAllowed !== true) {
+            console.log(`[Digest Debug] Item ${item.id} skipped: Stage A not allowed`, {
+                isAllowed: stageA.isAllowed,
+                title: item.title.substring(0, 60)
+            });
             continue;
         }
 
         // Skip if Stage B summary/bullets are missing
         if (!stageB.summary || !stageB.bullets || stageB.bullets.length === 0) {
+            console.log(`[Digest Debug] Item ${item.id} skipped: incomplete Stage B`, {
+                hasSummary: !!stageB.summary,
+                summaryLength: stageB.summary?.length || 0,
+                bulletsLength: stageB.bullets?.length || 0,
+                title: item.title.substring(0, 60)
+            });
             continue;
         }
 
@@ -166,22 +184,75 @@ function selectTopItems(items: ItemWithScore[], minItems = 15, maxItems = 20): I
 function generateHookForItem(item: ItemWithScore): string {
     const tags = item.stageAResult.topicTags;
 
-    // Pick emoji based on topic
-    let emoji = '📰';
-    if (tags.includes('education') || tags.includes('edtech')) emoji = '🎓';
-    else if (tags.includes('blockchain-tech')) emoji = '⛓️';
-    else if (tags.includes('web3')) emoji = '🌐';
-    else if (tags.includes('open-campus')) emoji = '🏛️';
-    else if (tags.includes('policy')) emoji = '📜';
-    else if (tags.includes('research')) emoji = '🔬';
+    // Generate Vietnamese hooks based on topic
+    if (tags.includes('education') || tags.includes('edtech')) {
+        const hooks = [
+            '🎓 Tin mới về giáo dục công nghệ',
+            '🎓 Xu hướng mới trong EdTech',
+            '🎓 Cập nhật ngành giáo dục',
+            '🎓 Công nghệ đang thay đổi giáo dục',
+        ];
+        return hooks[Math.floor(Math.random() * hooks.length)];
+    }
 
-    // Generate short hook based on title/summary
-    const hooks = [
-        `${emoji} ${item.title}`,
-        `${emoji} **${item.sourceName}**: ${item.title}`,
+    if (tags.includes('blockchain-tech')) {
+        const hooks = [
+            '⛓️ Công nghệ blockchain mới nhất',
+            '⛓️ Phát triển hạ tầng blockchain',
+            '⛓️ Tin tức công nghệ blockchain',
+            '⛓️ Cập nhật từ thế giới blockchain',
+        ];
+        return hooks[Math.floor(Math.random() * hooks.length)];
+    }
+
+    if (tags.includes('web3')) {
+        const hooks = [
+            '🌐 Thế giới Web3 đang thay đổi',
+            '🌐 Tin mới từ Web3',
+            '🌐 Cập nhật Web3',
+            '🌐 Xu hướng Web3 mới nhất',
+        ];
+        return hooks[Math.floor(Math.random() * hooks.length)];
+    }
+
+    if (tags.includes('open-campus')) {
+        const hooks = [
+            '🏛️ Open Campus Protocol cập nhật',
+            '🏛️ Tin mới từ Open Campus',
+            '🏛️ Open Campus phát triển',
+            '🏛️ Cộng đồng Open Campus',
+        ];
+        return hooks[Math.floor(Math.random() * hooks.length)];
+    }
+
+    if (tags.includes('policy') || tags.includes('regulation')) {
+        const hooks = [
+            '📜 Chính sách mới quan trọng',
+            '📜 Cập nhật chính sách',
+            '📜 Tin pháp lý mới',
+            '📜 Quy định mới cần biết',
+        ];
+        return hooks[Math.floor(Math.random() * hooks.length)];
+    }
+
+    if (tags.includes('research')) {
+        const hooks = [
+            '🔬 Nghiên cứu mới thú vị',
+            '🔬 Kết quả nghiên cứu mới',
+            '🔬 Phát hiện mới từ nghiên cứu',
+            '🔬 Công bố nghiên cứu',
+        ];
+        return hooks[Math.floor(Math.random() * hooks.length)];
+    }
+
+    // Default hooks
+    const defaultHooks = [
+        '📰 Tin mới đáng chú ý',
+        '📰 Cập nhật quan trọng',
+        '📰 Thông tin mới',
+        '📰 Tin tức nổi bật',
     ];
-
-    return hooks[0];
+    return defaultHooks[Math.floor(Math.random() * defaultHooks.length)];
 }
 
 /**
@@ -194,11 +265,11 @@ function generateArticleBody(item: ItemWithScore): string {
     // Main content: summary as paragraph(s)
     let body = `${summary}\n\n`;
 
-    // Add bullets as highlights
+    // Add bullets as highlights (plain text with emoji, no markdown)
     if (bullets && bullets.length > 0) {
-        body += `📌 **Điểm nổi bật:**\n`;
+        body += `📌 Điểm nổi bật:\n`;
         bullets.forEach(bullet => {
-            body += `• ${bullet}\n`;
+            body += `✨ ${bullet}\n`;
         });
         body += '\n';
     }
@@ -212,33 +283,33 @@ function generateArticleBody(item: ItemWithScore): string {
 function generateOcvnTakeForItem(item: ItemWithScore): string {
     // Use AI's whyItMatters if available
     if (item.stageBResult.whyItMatters && item.stageBResult.whyItMatters.trim().length > 0) {
-        return `💡 **OCVN góc nhìn**: ${item.stageBResult.whyItMatters}`;
+        return `💡 OCVN góc nhìn: ${item.stageBResult.whyItMatters}`;
     }
 
     // Fallback based on topic tags
     const tags = item.stageAResult.topicTags;
 
     if (tags.includes('education') || tags.includes('edtech')) {
-        return '💡 **OCVN góc nhìn**: Xu hướng này cho thấy giáo dục đang chuyển đổi mạnh mẽ với công nghệ. Cơ hội lớn cho builder trong cộng đồng!';
+        return '💡 OCVN góc nhìn: Xu hướng này cho thấy giáo dục đang chuyển đổi mạnh mẽ với công nghệ. Cơ hội lớn cho builder trong cộng đồng!';
     }
     if (tags.includes('blockchain-tech')) {
-        return '💡 **OCVN góc nhìn**: Phát triển hạ tầng blockchain mở ra nhiều khả năng mới. Đây là lúc để chúng ta thử nghiệm và đổi mới!';
+        return '💡 OCVN góc nhìn: Phát triển hạ tầng blockchain mở ra nhiều khả năng mới. Đây là lúc để chúng ta thử nghiệm và đổi mới!';
     }
     if (tags.includes('web3')) {
-        return '💡 **OCVN góc nhìn**: Web3 đang định hình lại cách chúng ta tương tác với internet. OCVN đồng hành cùng các builder!';
+        return '💡 OCVN góc nhìn: Web3 đang định hình lại cách chúng ta tương tác với internet. OCVN đồng hành cùng các builder!';
     }
     if (tags.includes('policy')) {
-        return '💡 **OCVN góc nhìn**: Chính sách rõ ràng hơn là tín hiệu tốt cho sự phát triển bền vững. Cộng đồng cần theo sát!';
+        return '💡 OCVN góc nhìn: Chính sách rõ ràng hơn là tín hiệu tốt cho sự phát triển bền vững. Cộng đồng cần theo sát!';
     }
 
-    return '💡 **OCVN góc nhìn**: Thông tin hữu ích cho cộng đồng builder. Cùng học hỏi và phát triển!';
+    return '💡 OCVN góc nhìn: Thông tin hữu ích cho cộng đồng builder. Cùng học hỏi và phát triển!';
 }
 
 /**
  * Generate source attribution (Vietnamese)
  */
 function generateSourceAttribution(item: ItemWithScore): string {
-    return `🔗 **Nguồn**: ${item.sourceName}\n📎 ${item.link}`;
+    return `🔗 Nguồn: ${item.sourceName}\n📎 ${item.link}`;
 }
 
 /**
@@ -296,88 +367,93 @@ ${hashtagsStr}`;
 export async function generateDailyPosts(targetDate: Date): Promise<void> {
     console.log(`[Digest] Generating posts for ${targetDate.toISOString().split('T')[0]}`);
 
-    // Check if posts already exist for this date
-    const existing = await prisma.dailyPost.findMany({
-        where: {
-            targetDate: {
-                gte: new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate()),
-                lt: new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate() + 1),
-            },
-        },
-    });
-
-    if (existing.length > 0) {
-        console.log(`[Digest] Posts already exist for ${targetDate.toISOString().split('T')[0]} (${existing.length} posts)`);
-        return;
-    }
+    // No longer check for existing posts - allow multiple generations
 
     // Fetch ready items
     const readyItems = await fetchReadyItems();
     console.log(`[Digest] Found ${readyItems.length} items ready for digest`);
 
-    if (readyItems.length < 15) {
-        console.warn(`[Digest] Not enough items (need 15, have ${readyItems.length}). Skipping generation.`);
+    if (readyItems.length < 1) {
+        console.warn(`[Digest] No items ready. Skipping generation.`);
         return;
     }
 
-    // Select top items (15-20 items for individual posts)
-    const selectedItems = selectTopItems(readyItems);
+    // Select all items (no limit)
+    const selectedItems = selectTopItems(readyItems, 1, 999);
     console.log(`[Digest] Selected ${selectedItems.length} items for individual posts`);
 
-    // Distribute items across time slots evenly
-    const postsCount = selectedItems.length;
-    const postsPerSlot = Math.ceil(postsCount / TIME_SLOTS_ORDER.length);
-
-    let itemIndex = 0;
+    // Create individual post for EACH item, cycling through time slots
     let totalPostsCreated = 0;
+    let currentDate = new Date(targetDate);
+    let slotIndex = 0;
 
-    // Create individual post for EACH item
-    for (let slotIndex = 0; slotIndex < TIME_SLOTS_ORDER.length; slotIndex++) {
+    for (const item of selectedItems) {
+        const postContent = formatSingleItemPost(item);
         const timeSlot = TIME_SLOTS_ORDER[slotIndex];
-        const itemsForSlot = selectedItems.slice(itemIndex, itemIndex + postsPerSlot);
 
-        if (itemsForSlot.length === 0) {
-            break;
+        let postCreated = false;
+        let attempts = 0;
+        const maxAttempts = TIME_SLOTS_ORDER.length + 5; // Try all slots + move to next day
+
+        // Try to create post, handling unique constraint violations
+        while (!postCreated && attempts < maxAttempts) {
+            try {
+                const post = await prisma.dailyPost.create({
+                    data: {
+                        targetDate: currentDate,
+                        timeSlot: TIME_SLOTS_ORDER[slotIndex % TIME_SLOTS_ORDER.length],
+                        content: postContent.content,
+                        hookText: postContent.hookText,
+                        bulletsText: postContent.bulletsText,
+                        ocvnTakeText: postContent.ocvnTakeText,
+                        ctaText: postContent.ctaText,
+                        hashtags: postContent.hashtags,
+                        status: 'DRAFT',
+                    },
+                });
+
+                // Create post-item relation
+                await prisma.postItem.create({
+                    data: {
+                        postId: post.id,
+                        itemId: item.id,
+                    },
+                });
+
+                // Update item status
+                await prisma.item.update({
+                    where: { id: item.id },
+                    data: { status: 'USED_IN_POST' },
+                });
+
+                totalPostsCreated++;
+                postCreated = true;
+                console.log(`[Digest] Created post ${totalPostsCreated}/${selectedItems.length} (${TIME_SLOTS_ORDER[slotIndex % TIME_SLOTS_ORDER.length]} on ${currentDate.toISOString().split('T')[0]}): ${item.title.substring(0, 60)}...`);
+
+            } catch (error: any) {
+                // If unique constraint violation, try next slot or next day
+                if (error.code === 'P2002') {
+                    slotIndex++;
+                    // If we exhausted all slots, move to next day
+                    if (slotIndex % TIME_SLOTS_ORDER.length === 0 && slotIndex >= TIME_SLOTS_ORDER.length) {
+                        currentDate = new Date(currentDate);
+                        currentDate.setDate(currentDate.getDate() + 1);
+                        console.log(`[Digest] Moving to next day: ${currentDate.toISOString().split('T')[0]}`);
+                    }
+                    attempts++;
+                } else {
+                    console.error(`[Digest] Error creating post for item ${item.id}:`, error.message);
+                    break; // Skip this item on other errors
+                }
+            }
         }
 
-        // Create one post per item in this slot
-        for (const item of itemsForSlot) {
-            const postContent = formatSingleItemPost(item);
-
-            // Create post
-            const post = await prisma.dailyPost.create({
-                data: {
-                    targetDate,
-                    timeSlot,
-                    content: postContent.content,
-                    hookText: postContent.hookText,
-                    bulletsText: postContent.bulletsText,
-                    ocvnTakeText: postContent.ocvnTakeText,
-                    ctaText: postContent.ctaText,
-                    hashtags: postContent.hashtags,
-                    status: 'DRAFT',
-                },
-            });
-
-            // Create post-item relation (1 item per post)
-            await prisma.postItem.create({
-                data: {
-                    postId: post.id,
-                    itemId: item.id,
-                },
-            });
-
-            // Update item status
-            await prisma.item.update({
-                where: { id: item.id },
-                data: { status: 'USED_IN_POST' },
-            });
-
-            totalPostsCreated++;
-            console.log(`[Digest] Created post ${totalPostsCreated}/${postsCount} (${timeSlot}): ${item.title.substring(0, 60)}...`);
+        if (!postCreated) {
+            console.warn(`[Digest] Failed to create post for item ${item.id} after ${attempts} attempts`);
         }
 
-        itemIndex += itemsForSlot.length;
+        // Move to next slot for next item
+        slotIndex++;
     }
 
     console.log(`[Digest] Successfully generated ${totalPostsCreated} individual posts for ${targetDate.toISOString().split('T')[0]}`);
