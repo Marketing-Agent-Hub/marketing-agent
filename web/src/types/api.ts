@@ -223,3 +223,127 @@ export interface RecentActivity {
 export interface Bottlenecks {
     bottlenecks: string[];
 }
+
+// Monitoring Types
+export type LogLevel = 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal';
+
+export interface SystemLog {
+    id: number;
+    level: LogLevel;
+    message: string;
+    meta?: Record<string, any>;
+    traceId?: string;
+    spanId?: string;
+    timestamp: string;
+}
+
+export interface LogStats {
+    level: LogLevel;
+    count: number;
+}
+
+export interface SystemMetric {
+    id: number;
+    name: string;
+    value: number;
+    unit?: string;
+    tags?: Record<string, any>;
+    timestamp: string;
+}
+
+export interface MetricStats {
+    name: string;
+    count: number;
+    avg: number;
+    min: number;
+    max: number;
+    sum: number;
+}
+
+export interface HealthCheck {
+    id: number;
+    service: string;
+    status: 'UP' | 'DOWN' | 'DEGRADED';
+    responseTime?: number;
+    message?: string;
+    metadata?: Record<string, any>;
+    timestamp: string;
+}
+
+export interface HealthStatus {
+    overall: 'UP' | 'DOWN' | 'DEGRADED';
+    services: Array<{
+        service: string;
+        status: 'UP' | 'DOWN' | 'DEGRADED';
+        lastCheck: string;
+        responseTime?: number;
+    }>;
+}
+
+export interface PerformanceTrace {
+    id: number;
+    traceId: string;
+    spanId: string;
+    name: string;
+    duration: number;
+    status: 'success' | 'error';
+    metadata?: Record<string, any>;
+    timestamp: string;
+}
+
+export interface TraceStats {
+    name: string;
+    count: number;
+    avgDuration: number;
+    minDuration: number;
+    maxDuration: number;
+    p50: number;
+    p95: number;
+    p99: number;
+}
+
+export interface MonitoringOverview {
+    health: HealthStatus;
+    logs: {
+        total: number;
+        byLevel: LogStats[];
+        recentErrors: number;
+    };
+    metrics: {
+        total: number;
+        recentCount: number;
+    };
+    traces: {
+        total: number;
+        avgDuration: number;
+        slowCount: number;
+    };
+    timestamp: string;
+}
+
+export interface GetLogsQuery {
+    level?: LogLevel;
+    startDate?: string;
+    endDate?: string;
+    traceId?: string;
+    limit?: number;
+    offset?: number;
+}
+
+export interface GetMetricsQuery {
+    name?: string;
+    startDate?: string;
+    endDate?: string;
+    limit?: number;
+    offset?: number;
+}
+
+export interface GetTracesQuery {
+    name?: string;
+    minDuration?: number;
+    status?: 'success' | 'error';
+    startDate?: string;
+    endDate?: string;
+    limit?: number;
+    offset?: number;
+}

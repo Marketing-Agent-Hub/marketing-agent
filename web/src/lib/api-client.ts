@@ -14,6 +14,18 @@ import type {
     PipelineStats,
     RecentActivity,
     Bottlenecks,
+    MonitoringOverview,
+    SystemLog,
+    LogStats,
+    GetLogsQuery,
+    SystemMetric,
+    MetricStats,
+    GetMetricsQuery,
+    HealthStatus,
+    HealthCheck,
+    PerformanceTrace,
+    TraceStats,
+    GetTracesQuery,
 } from '../types/api';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api';
@@ -206,6 +218,92 @@ class ApiClient {
             method: 'POST',
             body: JSON.stringify({ date }),
         });
+    }
+    // Monitoring endpoints
+    async getMonitoringOverview(): Promise<MonitoringOverview> {
+        return this.request<MonitoringOverview>('/monitor/overview');
+    }
+
+    async getLogs(query?: GetLogsQuery): Promise<SystemLog[]> {
+        const params = new URLSearchParams();
+        if (query?.level) params.append('level', query.level);
+        if (query?.startDate) params.append('startDate', query.startDate);
+        if (query?.endDate) params.append('endDate', query.endDate);
+        if (query?.traceId) params.append('traceId', query.traceId);
+        if (query?.limit) params.append('limit', query.limit.toString());
+        if (query?.offset) params.append('offset', query.offset.toString());
+
+        const queryString = params.toString();
+        return this.request<SystemLog[]>(`/monitor/logs${queryString ? `?${queryString}` : ''}`);
+    }
+
+    async getLogStats(startDate?: string, endDate?: string): Promise<LogStats[]> {
+        const params = new URLSearchParams();
+        if (startDate) params.append('startDate', startDate);
+        if (endDate) params.append('endDate', endDate);
+
+        const queryString = params.toString();
+        return this.request<LogStats[]>(`/monitor/logs/stats${queryString ? `?${queryString}` : ''}`);
+    }
+
+    async getMetrics(query?: GetMetricsQuery): Promise<SystemMetric[]> {
+        const params = new URLSearchParams();
+        if (query?.name) params.append('name', query.name);
+        if (query?.startDate) params.append('startDate', query.startDate);
+        if (query?.endDate) params.append('endDate', query.endDate);
+        if (query?.limit) params.append('limit', query.limit.toString());
+        if (query?.offset) params.append('offset', query.offset.toString());
+
+        const queryString = params.toString();
+        return this.request<SystemMetric[]>(`/monitor/metrics${queryString ? `?${queryString}` : ''}`);
+    }
+
+    async getMetricStats(name: string): Promise<MetricStats> {
+        return this.request<MetricStats>(`/monitor/metrics/stats?name=${encodeURIComponent(name)}`);
+    }
+
+    async getSystemMetrics(): Promise<Record<string, any>> {
+        return this.request<Record<string, any>>('/monitor/metrics/system');
+    }
+
+    async getHealthStatus(): Promise<HealthStatus> {
+        return this.request<HealthStatus>('/monitor/health');
+    }
+
+    async getHealthHistory(service?: string, limit?: number): Promise<HealthCheck[]> {
+        const params = new URLSearchParams();
+        if (service) params.append('service', service);
+        if (limit) params.append('limit', limit.toString());
+
+        const queryString = params.toString();
+        return this.request<HealthCheck[]>(`/monitor/health/history${queryString ? `?${queryString}` : ''}`);
+    }
+
+    async getTraces(query?: GetTracesQuery): Promise<PerformanceTrace[]> {
+        const params = new URLSearchParams();
+        if (query?.name) params.append('name', query.name);
+        if (query?.minDuration) params.append('minDuration', query.minDuration.toString());
+        if (query?.status) params.append('status', query.status);
+        if (query?.startDate) params.append('startDate', query.startDate);
+        if (query?.endDate) params.append('endDate', query.endDate);
+        if (query?.limit) params.append('limit', query.limit.toString());
+        if (query?.offset) params.append('offset', query.offset.toString());
+
+        const queryString = params.toString();
+        return this.request<PerformanceTrace[]>(`/monitor/traces${queryString ? `?${queryString}` : ''}`);
+    }
+
+    async getSlowTraces(threshold?: number): Promise<PerformanceTrace[]> {
+        const params = threshold ? `?threshold=${threshold}` : '';
+        return this.request<PerformanceTrace[]>(`/monitor/traces/slow${params}`);
+    }
+
+    async getTraceStats(name: string): Promise<TraceStats> {
+        return this.request<TraceStats>(`/monitor/traces/stats?name=${encodeURIComponent(name)}`);
+    }
+
+    async getTraceById(traceId: string): Promise<PerformanceTrace[]> {
+        return this.request<PerformanceTrace[]>(`/monitor/traces/${traceId}`);
     }
 }
 

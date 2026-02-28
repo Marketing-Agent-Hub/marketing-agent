@@ -146,6 +146,12 @@ export function DashboardPage() {
                                 >
                                     Bài viết
                                 </a>
+                                <a
+                                    href="/monitoring"
+                                    className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+                                >
+                                    Monitoring
+                                </a>
                             </nav>
                         </div>
                         <div className="flex items-center gap-4">

@@ -6,6 +6,7 @@ import { LoginPage } from './pages/LoginPage';
 import { SourcesPage } from './pages/SourcesPage';
 import { DraftsPage } from './pages/DraftsPage';
 import { DashboardPage } from './pages/DashboardPage';
+import { MonitoringPage } from './pages/MonitoringPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -44,6 +45,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <DraftsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/monitoring"
+              element={
+                <ProtectedRoute>
+                  <MonitoringPage />
                 </ProtectedRoute>
               }
             />
