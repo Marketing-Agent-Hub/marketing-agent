@@ -22,3 +22,4 @@ if (process.env.NODE_ENV !== 'production') {
 process.on('beforeExit', () => {
     void prisma.$disconnect();
 });
+

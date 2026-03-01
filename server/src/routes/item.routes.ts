@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { requireAuth } from '../middleware/auth';
-import * as itemController from '../controllers/item.controller';
+import { requireAuth } from '../middleware/auth.js';
+import * as itemController from '../controllers/item.controller.js';
 
 const router = Router();
 
@@ -17,3 +17,4 @@ router.get('/stats', itemController.getItemsStats);
 router.get('/:id', itemController.getItemById);
 
 export default router;
+

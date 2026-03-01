@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
-import { authService } from '../services/auth.service';
-import { loginSchema } from '../schemas/auth.schema';
-import { ApiErrorResponse } from '../types';
+import { authService } from '../services/auth.service.js';
+import { loginSchema } from '../schemas/auth.schema.js';
+import { ApiErrorResponse } from '../types/index.js';
 
 export class AuthController {
     /**
@@ -49,3 +49,4 @@ export class AuthController {
 }
 
 export const authController = new AuthController();
+

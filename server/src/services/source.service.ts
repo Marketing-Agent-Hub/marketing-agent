@@ -1,8 +1,8 @@
 import { Source, ValidationStatus } from '@prisma/client';
-import { prisma } from '../db';
-import { CreateSourceInput, UpdateSourceInput } from '../schemas/source.schema';
-import { normalizeTags, normalizeKeywords, normalizeUrl } from '../lib/normalizer';
-import { validateRSSFeed, RSSValidationResult } from '../lib/rss-validator';
+import { prisma } from '../db/index.js';
+import { CreateSourceInput, UpdateSourceInput } from '../schemas/source.schema.js';
+import { normalizeTags, normalizeKeywords, normalizeUrl } from '../lib/normalizer.js';
+import { validateRSSFeed, RSSValidationResult } from '../lib/rss-validator.js';
 
 export class SourceService {
     /**
@@ -117,3 +117,4 @@ export class SourceService {
 }
 
 export const sourceService = new SourceService();
+

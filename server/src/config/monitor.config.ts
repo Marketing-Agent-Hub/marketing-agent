@@ -1,4 +1,4 @@
-import { env } from './env';
+import { env } from './env.js';
 import path from 'path';
 
 export const monitorConfig = {
@@ -54,3 +54,4 @@ export const monitorConfig = {
         slowJobThreshold: 30000, // ms
     },
 };
+

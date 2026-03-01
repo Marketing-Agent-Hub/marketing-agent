@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { requireAuth } from '../middleware/auth';
-import * as monitorController from '../controllers/monitor.controller';
+import { requireAuth } from '../middleware/auth.js';
+import * as monitorController from '../controllers/monitor.controller.js';
 
 const router = Router();
 
@@ -30,3 +30,4 @@ router.get('/traces/stats', monitorController.getTraceStats);
 router.get('/traces/:traceId', monitorController.getTraceById);
 
 export default router;
+

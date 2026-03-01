@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
-import { asyncHandler } from '../lib/async-handler';
-import { db } from '../db';
-import { getItemsSchema, getItemByIdSchema } from '../schemas/item.schema';
+import { asyncHandler } from '../lib/async-handler.js';
+import { db } from '../db/index.js';
+import { getItemsSchema, getItemByIdSchema } from '../schemas/item.schema.js';
 
 /**
  * Get items with filtering and pagination
@@ -165,3 +165,4 @@ export const getItemsStats = asyncHandler(async (_req: Request, res: Response) =
         },
     });
 });
+

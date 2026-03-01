@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { env } from '../config/env';
+import { env } from '../config/env.js';
 
 export interface LoginResult {
     token: string;
@@ -45,3 +45,4 @@ export class AuthService {
 }
 
 export const authService = new AuthService();
+

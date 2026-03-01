@@ -1,5 +1,5 @@
-import { db } from '../db';
-import { logger } from '../lib/logger';
+import { db } from '../db/index.js';
+import { logger } from '../lib/logger.js';
 
 export interface TraceEntry {
     traceId: string;
@@ -238,3 +238,4 @@ export class TraceService {
 }
 
 export const traceService = new TraceService();
+

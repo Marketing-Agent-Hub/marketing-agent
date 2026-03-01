@@ -24,3 +24,4 @@ export const validateRSSSchema = z.object({
 export type CreateSourceInput = z.infer<typeof createSourceSchema>;
 export type UpdateSourceInput = z.infer<typeof updateSourceSchema>;
 export type ValidateRSSInput = z.infer<typeof validateRSSSchema>;
+

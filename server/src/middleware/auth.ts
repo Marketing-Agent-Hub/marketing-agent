@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { env } from '../config/env';
-import { JwtPayload, RequestUser, ApiErrorResponse } from '../types';
+import { env } from '../config/env.js';
+import { JwtPayload, RequestUser, ApiErrorResponse } from '../types/index.js';
 
 // Extend Express Request type
 declare module 'express-serve-static-core' {
@@ -43,3 +43,4 @@ export function requireAuth(req: Request, res: Response, next: NextFunction): vo
         res.status(401).json(response);
     }
 }
+

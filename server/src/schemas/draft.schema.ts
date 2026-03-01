@@ -28,3 +28,4 @@ export type UpdateDraftInput = z.infer<typeof updateDraftSchema>;
 export type ApproveDraftInput = z.infer<typeof approveDraftSchema>;
 export type RejectDraftInput = z.infer<typeof rejectDraftSchema>;
 export type GetDraftsQuery = z.infer<typeof getDraftsQuerySchema>;
+

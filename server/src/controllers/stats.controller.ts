@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { statsService } from '../services/stats.service';
+import { statsService } from '../services/stats.service.js';
 
 export class StatsController {
     /**
@@ -41,3 +41,4 @@ export class StatsController {
 }
 
 export const statsController = new StatsController();
+

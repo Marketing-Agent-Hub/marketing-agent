@@ -1,7 +1,7 @@
-import { db } from '../db';
-import { logger } from '../lib/logger';
-import { getCurrentTraceContext } from '../lib/telemetry';
-import type { LogLevel } from '../types/monitoring';
+import { db } from '../db/index.js';
+import { logger } from '../lib/logger.js';
+import { getCurrentTraceContext } from '../lib/telemetry.js';
+import type { LogLevel } from '../types/monitoring.js';
 
 export interface LogEntry {
     level: LogLevel;
@@ -203,3 +203,4 @@ export class LogService {
 }
 
 export const logService = new LogService();
+

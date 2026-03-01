@@ -1,4 +1,4 @@
-import { prisma } from '../db';
+import { prisma } from '../db/index.js';
 
 export class StatsService {
     /**
@@ -177,3 +177,4 @@ export class StatsService {
 }
 
 export const statsService = new StatsService();
+

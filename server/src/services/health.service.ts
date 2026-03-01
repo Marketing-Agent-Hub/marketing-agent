@@ -1,8 +1,8 @@
-import { db } from '../db';
-import { logger } from '../lib/logger';
-import { monitorConfig } from '../config/monitor.config';
-import type { HealthStatus } from '../types/monitoring';
-import { env } from '../config/env';
+import { db } from '../db/index.js';
+import { logger } from '../lib/logger.js';
+import { monitorConfig } from '../config/monitor.config.js';
+import type { HealthStatus } from '../types/monitoring.js';
+import { env } from '../config/env.js';
 import fs from 'fs';
 import path from 'path';
 
@@ -307,3 +307,4 @@ export class HealthService {
 }
 
 export const healthService = new HealthService();
+

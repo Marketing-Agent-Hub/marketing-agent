@@ -1,9 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
-import { logService } from '../services/log.service';
-import { metricService } from '../services/metric.service';
-import { traceService } from '../services/trace.service';
-import { getCurrentTraceContext } from '../lib/telemetry';
-import { logger } from '../lib/logger';
+import { logService } from '../services/log.service.js';
+import { metricService } from '../services/metric.service.js';
+import { traceService } from '../services/trace.service.js';
+import { getCurrentTraceContext } from '../lib/telemetry.js';
+import { logger } from '../lib/logger.js';
 
 /**
  * Request logging and monitoring middleware
@@ -120,3 +120,4 @@ export function errorMonitoring(
 
     next(error);
 }
+

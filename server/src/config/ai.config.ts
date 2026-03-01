@@ -31,3 +31,4 @@ export const openai = new OpenAI({
 console.log('✅ OpenAI configured:');
 console.log(`   Stage A Model: ${AI_CONFIG.STAGE_A_MODEL}`);
 console.log(`   Stage B Model: ${AI_CONFIG.STAGE_B_MODEL}`);
+

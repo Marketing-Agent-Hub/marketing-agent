@@ -1,7 +1,7 @@
 import cron, { ScheduledTask } from 'node-cron';
 import { processNewItems } from '../services/extraction.service.js';
-import { withJobMonitoring } from '../lib/job-monitoring';
-import { logger } from '../lib/logger';
+import { withJobMonitoring } from '../lib/job-monitoring.js';
+import { logger } from '../lib/logger.js';
 
 let extractionJobTask: ScheduledTask | null = null;
 
@@ -50,3 +50,4 @@ export async function triggerImmediateExtraction(limit = 10) {
         return await processNewItems(limit);
     });
 }
+

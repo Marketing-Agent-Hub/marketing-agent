@@ -1,19 +1,19 @@
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
-import { env } from './config/env';
-import { errorHandler } from './middleware/error-handler';
-import { requestMonitoring, errorMonitoring } from './middleware/monitoring';
-import routes from './routes';
-import { startIngestJob, stopIngestJob } from './jobs/ingest.job';
-import { startExtractionJob, stopExtractionJob } from './jobs/extraction.job';
-import { startFilteringJob, stopFilteringJob } from './jobs/filtering.job';
-import { startAIStageAJob, stopAIStageAJob } from './jobs/ai-stage-a.job';
-import { startAIStageBJob, stopAIStageBJob } from './jobs/ai-stage-b.job';
-import { startDigestJob, stopDigestJob } from './jobs/digest.job';
-import { startMonitoringCleanupJob, stopMonitoringCleanupJob } from './jobs/monitoring-cleanup.job';
-import { initTelemetry, shutdownTelemetry } from './lib/telemetry';
-import { logger } from './lib/logger';
-import { healthService } from './services/health.service';
+import { env } from './config/env.js';
+import { errorHandler } from './middleware/error-handler.js';
+import { requestMonitoring, errorMonitoring } from './middleware/monitoring.js';
+import routes from './routes/index.js';
+import { startIngestJob, stopIngestJob } from './jobs/ingest.job.js';
+import { startExtractionJob, stopExtractionJob } from './jobs/extraction.job.js';
+import { startFilteringJob, stopFilteringJob } from './jobs/filtering.job.js';
+import { startAIStageAJob, stopAIStageAJob } from './jobs/ai-stage-a.job.js';
+import { startAIStageBJob, stopAIStageBJob } from './jobs/ai-stage-b.job.js';
+import { startDigestJob, stopDigestJob } from './jobs/digest.job.js';
+import { startMonitoringCleanupJob, stopMonitoringCleanupJob } from './jobs/monitoring-cleanup.job.js';
+import { initTelemetry, shutdownTelemetry } from './lib/telemetry.js';
+import { logger } from './lib/logger.js';
+import { healthService } from './services/health.service.js';
 
 // Initialize OpenTelemetry before creating Express app
 initTelemetry();
@@ -104,4 +104,5 @@ process.on('SIGINT', async () => {
     await shutdownTelemetry();
     process.exit(0);
 });
+
 

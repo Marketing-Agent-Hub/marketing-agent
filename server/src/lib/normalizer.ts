@@ -20,3 +20,4 @@ export function normalizeKeywords(keywords: string[]): string[] {
 export function normalizeUrl(url: string): string {
   return url.trim().replace(/\/$/, '');
 }
+

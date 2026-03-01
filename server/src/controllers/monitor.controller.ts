@@ -1,17 +1,17 @@
 import { Request, Response } from 'express';
-import { asyncHandler } from '../lib/async-handler';
-import { db } from '../db';
-import { logService } from '../services/log.service';
-import { metricService } from '../services/metric.service';
-import { healthService } from '../services/health.service';
-import { traceService } from '../services/trace.service';
+import { asyncHandler } from '../lib/async-handler.js';
+import { db } from '../db/index.js';
+import { logService } from '../services/log.service.js';
+import { metricService } from '../services/metric.service.js';
+import { healthService } from '../services/health.service.js';
+import { traceService } from '../services/trace.service.js';
 import {
     getLogsSchema,
     getMetricsSchema,
     getMetricStatsSchema,
     getTracesSchema,
     getHealthHistorySchema,
-} from '../schemas/monitor.schema';
+} from '../schemas/monitor.schema.js';
 
 /**
  * Get system logs
@@ -272,3 +272,4 @@ export const getMonitoringOverview = asyncHandler(async (_req: Request, res: Res
         },
     });
 });
+

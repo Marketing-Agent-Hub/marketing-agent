@@ -1,10 +1,10 @@
 import { DailyPost, PostStatus } from '@prisma/client';
-import { prisma } from '../db';
+import { prisma } from '../db/index.js';
 import {
     UpdateDraftInput,
     RejectDraftInput,
     GetDraftsQuery,
-} from '../schemas/draft.schema';
+} from '../schemas/draft.schema.js';
 
 export class DraftService {
     /**
@@ -153,3 +153,4 @@ export class DraftService {
 }
 
 export const draftService = new DraftService();
+

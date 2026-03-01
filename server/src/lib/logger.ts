@@ -1,5 +1,5 @@
 import pino from 'pino';
-import { monitorConfig } from '../config/monitor.config';
+import { monitorConfig } from '../config/monitor.config.js';
 import fs from 'fs';
 import path from 'path';
 
@@ -106,3 +106,4 @@ export function logWithTrace(
 }
 
 export default logger;
+

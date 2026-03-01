@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import { draftController } from '../controllers/draft.controller';
-import { requireAuth } from '../middleware/auth';
-import { asyncHandler } from '../lib/async-handler';
+import { draftController } from '../controllers/draft.controller.js';
+import { requireAuth } from '../middleware/auth.js';
+import { asyncHandler } from '../lib/async-handler.js';
 
 const router = Router();
 
@@ -39,3 +39,4 @@ router.post(
 );
 
 export default router;
+

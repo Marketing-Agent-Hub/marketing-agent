@@ -1,7 +1,7 @@
 import cron, { ScheduledTask } from 'node-cron';
 import { ingestAllSources } from '../services/ingest.service.js';
-import { withJobMonitoring } from '../lib/job-monitoring';
-import { logger } from '../lib/logger';
+import { withJobMonitoring } from '../lib/job-monitoring.js';
+import { logger } from '../lib/logger.js';
 
 let ingestJobTask: ScheduledTask | null = null;
 
@@ -55,3 +55,4 @@ export async function triggerImmediateIngest() {
         throw error;
     }
 }
+

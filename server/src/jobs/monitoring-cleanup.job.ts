@@ -1,10 +1,10 @@
 import cron, { ScheduledTask } from 'node-cron';
-import { logger } from '../lib/logger';
-import { logService } from '../services/log.service';
-import { metricService } from '../services/metric.service';
-import { healthService } from '../services/health.service';
-import { traceService } from '../services/trace.service';
-import { monitorConfig } from '../config/monitor.config';
+import { logger } from '../lib/logger.js';
+import { logService } from '../services/log.service.js';
+import { metricService } from '../services/metric.service.js';
+import { healthService } from '../services/health.service.js';
+import { traceService } from '../services/trace.service.js';
+import { monitorConfig } from '../config/monitor.config.js';
 
 let cleanupJob: ScheduledTask | null = null;
 
@@ -68,3 +68,4 @@ export function stopMonitoringCleanupJob() {
         logger.info('Stopped monitoring cleanup job');
     }
 }
+

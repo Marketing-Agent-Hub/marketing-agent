@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { normalizeTags, normalizeKeywords, normalizeUrl } from '../lib/normalizer';
+import { normalizeTags, normalizeKeywords, normalizeUrl } from '../lib/normalizer.js';
 
 describe('Normalizer', () => {
   describe('normalizeTags', () => {
@@ -42,3 +42,4 @@ describe('Normalizer', () => {
     });
   });
 });
+

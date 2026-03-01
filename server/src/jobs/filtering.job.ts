@@ -1,7 +1,7 @@
 import cron, { ScheduledTask } from 'node-cron';
 import { filterExtractedItems } from '../services/filtering.service.js';
-import { withJobMonitoring } from '../lib/job-monitoring';
-import { logger } from '../lib/logger';
+import { withJobMonitoring } from '../lib/job-monitoring.js';
+import { logger } from '../lib/logger.js';
 
 let filteringJobTask: ScheduledTask | null = null;
 
@@ -50,3 +50,4 @@ export async function triggerImmediateFiltering(limit = 20) {
         return await filterExtractedItems(limit);
     });
 }
+

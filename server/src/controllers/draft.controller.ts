@@ -1,12 +1,12 @@
 import { Request, Response, NextFunction } from 'express';
-import { draftService } from '../services/draft.service';
+import { draftService } from '../services/draft.service.js';
 import {
     updateDraftSchema,
     approveDraftSchema,
     rejectDraftSchema,
     getDraftsQuerySchema,
-} from '../schemas/draft.schema';
-import { ApiErrorResponse } from '../types';
+} from '../schemas/draft.schema.js';
+import { ApiErrorResponse } from '../types/index.js';
 
 export class DraftController {
     /**
@@ -170,3 +170,4 @@ export class DraftController {
 }
 
 export const draftController = new DraftController();
+

@@ -1,5 +1,5 @@
 import cron, { ScheduledTask } from 'node-cron';
-import { generateTomorrowPosts } from '../services/digest.service';
+import { generateTomorrowPosts } from '../services/digest.service.js';
 
 let digestJob: ScheduledTask | null = null;
 
@@ -45,7 +45,7 @@ export async function triggerImmediateDigest(dateStr?: string): Promise<void> {
     console.log('[Digest Job] Manual trigger initiated');
 
     if (dateStr) {
-        const { generatePostsForDate } = await import('../services/digest.service');
+        const { generatePostsForDate } = await import('../services/digest.service.js');
         await generatePostsForDate(dateStr);
     } else {
         await generateTomorrowPosts();
@@ -53,3 +53,4 @@ export async function triggerImmediateDigest(dateStr?: string): Promise<void> {
 
     console.log('[Digest Job] Manual trigger completed');
 }
+

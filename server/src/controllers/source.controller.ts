@@ -1,11 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
-import { sourceService } from '../services/source.service';
+import { sourceService } from '../services/source.service.js';
 import {
     createSourceSchema,
     updateSourceSchema,
     validateRSSSchema,
-} from '../schemas/source.schema';
-import { ApiErrorResponse } from '../types';
+} from '../schemas/source.schema.js';
+import { ApiErrorResponse } from '../types/index.js';
 export class SourceController {
     /**
      * GET /sources
@@ -183,3 +183,4 @@ export class SourceController {
 }
 
 export const sourceController = new SourceController();
+

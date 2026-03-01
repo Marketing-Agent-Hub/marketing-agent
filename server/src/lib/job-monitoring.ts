@@ -1,7 +1,7 @@
-import { logger } from '../lib/logger';
-import { logService } from '../services/log.service';
-import { metricService } from '../services/metric.service';
-import { withSpan } from '../lib/telemetry';
+import { logger } from '../lib/logger.js';
+import { logService } from '../services/log.service.js';
+import { metricService } from '../services/metric.service.js';
+import { withSpan } from '../lib/telemetry.js';
 
 /**
  * Wrap a job function with monitoring and error logging
@@ -137,3 +137,4 @@ export async function logWarning(
 
     logger.warn({ context, ...metadata }, `[${context}] ${message}`);
 }
+

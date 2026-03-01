@@ -1,11 +1,11 @@
 import { Router } from 'express';
-import authRoutes from './auth.routes';
-import sourceRoutes from './source.routes';
-import adminRoutes from './admin.routes';
-import draftRoutes from './draft.routes';
-import statsRoutes from './stats.routes';
-import monitorRoutes from './monitor.routes';
-import itemRoutes from './item.routes';
+import authRoutes from './auth.routes.js';
+import sourceRoutes from './source.routes.js';
+import adminRoutes from './admin.routes.js';
+import draftRoutes from './draft.routes.js';
+import statsRoutes from './stats.routes.js';
+import monitorRoutes from './monitor.routes.js';
+import itemRoutes from './item.routes.js';
 
 const router = Router();
 
@@ -24,3 +24,4 @@ router.use('/monitor', monitorRoutes);
 router.use('/items', itemRoutes);
 
 export default router;
+

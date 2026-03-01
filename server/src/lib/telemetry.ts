@@ -4,9 +4,9 @@ import { defaultResource, resourceFromAttributes } from '@opentelemetry/resource
 import { SEMRESATTRS_SERVICE_NAME, SEMRESATTRS_SERVICE_VERSION } from '@opentelemetry/semantic-conventions';
 import { PrometheusExporter } from '@opentelemetry/exporter-prometheus';
 import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
-import { monitorConfig } from '../config/monitor.config';
+import { monitorConfig } from '../config/monitor.config.js';
 import { trace, context, SpanStatusCode, Span } from '@opentelemetry/api';
-import { logger } from './logger';
+import { logger } from './logger.js';
 
 let sdk: NodeSDK | null = null;
 
@@ -161,3 +161,4 @@ export function withSpanSync<T>(
         }
     });
 }
+

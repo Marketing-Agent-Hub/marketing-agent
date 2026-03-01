@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import { sourceController } from '../controllers/source.controller';
-import { requireAuth } from '../middleware/auth';
-import { asyncHandler } from '../lib/async-handler';
+import { sourceController } from '../controllers/source.controller.js';
+import { requireAuth } from '../middleware/auth.js';
+import { asyncHandler } from '../lib/async-handler.js';
 
 const router = Router();
 
@@ -43,3 +43,4 @@ router.delete(
 );
 
 export default router;
+

@@ -2,7 +2,7 @@ import { XMLParser } from 'fast-xml-parser';
 import crypto from 'crypto';
 import { prisma } from '../db/index.js';
 import { ItemStatus } from '@prisma/client';
-import { logProcessingError } from '../lib/job-monitoring';
+import { logProcessingError } from '../lib/job-monitoring.js';
 
 interface RssItem {
     sourceId: number;
@@ -288,3 +288,4 @@ export async function ingestAllSources(): Promise<void> {
 
     console.log(`[Ingest] Completed ingestion for all sources`);
 }
+

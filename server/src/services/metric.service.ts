@@ -1,6 +1,6 @@
-import { db } from '../db';
-import { logger } from '../lib/logger';
-import type { MetricType } from '../types/monitoring';
+import { db } from '../db/index.js';
+import { logger } from '../lib/logger.js';
+import type { MetricType } from '../types/monitoring.js';
 
 export interface MetricEntry {
     name: string;
@@ -230,3 +230,4 @@ export class MetricService {
 }
 
 export const metricService = new MetricService();
+
