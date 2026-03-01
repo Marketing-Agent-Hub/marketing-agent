@@ -15,4 +15,15 @@ export default defineConfig({
   optimizeDeps: {
     include: ['buffer'],
   },
+  server: {
+    host: true,          // tương đương 0.0.0.0, cho truy cập từ ngoài
+    port: 5173,
+    proxy: {
+      '/api': {
+        target: 'http://127.0.0.1:3001',
+        changeOrigin: true,
+        secure: false
+      }
+    }
+  }
 })
