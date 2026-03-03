@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { asyncHandler } from '../lib/async-handler.js';
 import { db } from '../db/index.js';
-import { getItemsSchema, getItemByIdSchema } from '../schemas/item.schema.js';
+import { getItemsSchema, getItemByIdSchema, getReadyItemsSchema } from '../schemas/item.schema.js';
 
 /**
  * Get items with filtering and pagination
@@ -100,6 +100,143 @@ export const getItemById = asyncHandler(async (req: Request, res: Response) => {
     res.json({
         success: true,
         data: item,
+    });
+});
+
+/**
+ * Get ready-to-publish items (AI_STAGE_B_DONE)
+ * Returns items with full AI results including fullArticle
+ */
+export const getReadyItems = asyncHandler(async (req: Request, res: Response) => {
+    const params = getReadyItemsSchema.parse(req.query);
+    const { limit, offset, sortBy, sourceId, topicTag, fromDate, toDate } = params;
+
+    // Build where clause
+    const where: any = {
+        status: 'AI_STAGE_B_DONE',
+        ...(sourceId && { sourceId }),
+    };
+
+    // Date range filter
+    if (fromDate || toDate) {
+        where.publishedAt = {};
+        if (fromDate) where.publishedAt.gte = new Date(fromDate);
+        if (toDate) where.publishedAt.lte = new Date(toDate);
+    }
+
+    // Topic tag filter (filter in memory after fetching)
+    const needsTopicFilter = !!topicTag;
+
+    // Determine sort order
+    let orderBy: any = { createdAt: 'desc' }; // Default
+    if (sortBy === 'date') {
+        orderBy = { publishedAt: 'desc' };
+    }
+    // For 'importance', we'll sort in memory using AI results
+
+    const [allItems, total] = await Promise.all([
+        db.item.findMany({
+            where,
+            include: {
+                source: {
+                    select: {
+                        id: true,
+                        name: true,
+                        trustScore: true,
+                    },
+                },
+                article: {
+                    select: {
+                        id: true,
+                        mainImageUrl: true,
+                    },
+                },
+                aiResults: {
+                    where: {
+                        stage: { in: ['A', 'B'] },
+                    },
+                    select: {
+                        id: true,
+                        stage: true,
+                        // Stage A fields
+                        isAllowed: true,
+                        topicTags: true,
+                        importanceScore: true,
+                        oneLineSummary: true,
+                        // Stage B fields
+                        fullArticle: true,
+                        // Metadata
+                        model: true,
+                        createdAt: true,
+                    },
+                    orderBy: {
+                        createdAt: 'desc',
+                    },
+                },
+            },
+            orderBy: sortBy !== 'importance' ? orderBy : { createdAt: 'desc' },
+            // Fetch more if we need to filter by topic
+            take: needsTopicFilter ? limit * 3 : limit,
+            skip: offset,
+        }),
+        db.item.count({ where }),
+    ]);
+
+    // Filter by topic tag if specified
+    let filteredItems = allItems;
+    if (needsTopicFilter) {
+        filteredItems = allItems.filter(item => {
+            const stageA = item.aiResults.find(r => r.stage === 'A');
+            return stageA?.topicTags.includes(topicTag!);
+        });
+    }
+
+    // Sort by importance score if requested
+    if (sortBy === 'importance') {
+        filteredItems.sort((a, b) => {
+            const scoreA = a.aiResults.find(r => r.stage === 'A')?.importanceScore || 0;
+            const scoreB = b.aiResults.find(r => r.stage === 'A')?.importanceScore || 0;
+            return scoreB - scoreA;
+        });
+    }
+
+    // Paginate after filtering
+    const items = filteredItems.slice(0, limit);
+
+    // Transform to more useful structure
+    const transformedItems = items.map(item => {
+        const stageA = item.aiResults.find(r => r.stage === 'A');
+        const stageB = item.aiResults.find(r => r.stage === 'B');
+
+        return {
+            id: item.id,
+            title: item.title,
+            link: item.link,
+            publishedAt: item.publishedAt,
+            createdAt: item.createdAt,
+            source: item.source,
+            mainImageUrl: item.article?.mainImageUrl,
+            // Stage A data
+            importanceScore: stageA?.importanceScore,
+            topicTags: stageA?.topicTags || [],
+            oneLineSummary: stageA?.oneLineSummary,
+            // Stage B data - Complete Facebook post
+            fullArticle: stageB?.fullArticle,
+            // Metadata
+            aiModel: stageB?.model,
+            aiProcessedAt: stageB?.createdAt,
+        };
+    });
+
+    res.json({
+        success: true,
+        data: {
+            items: transformedItems,
+            total: needsTopicFilter ? filteredItems.length : total,
+            limit,
+            offset,
+            sortBy,
+        },
     });
 });
 

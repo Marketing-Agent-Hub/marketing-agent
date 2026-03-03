@@ -1,4 +1,5 @@
 import { XMLParser } from 'fast-xml-parser';
+import { env } from '../config/env.js';
 
 export interface RSSValidationResult {
     ok: boolean;
@@ -22,7 +23,7 @@ export async function validateRSSFeed(
         const response = await fetch(url, {
             signal: controller.signal,
             headers: {
-                'User-Agent': 'OCVN-RSS-Bot/1.0',
+                'User-Agent': env.USER_AGENT,
             },
         });
 

@@ -1,18 +1,194 @@
 import { openai, AI_CONFIG } from '../config/ai.config.js';
 import { prisma } from '../db/index.js';
 import { ItemStatus } from '@prisma/client';
+import { env } from '../config/env.js';
 
 interface StageBOutput {
-    summary: string;
-    bullets: string[];
-    whyItMatters: string;
-    riskFlags: string[];
-    suggestedHashtags: string[];
+    fullArticle: string; // Complete Facebook post with all content
+}
+
+/**
+ * Get language-specific instructions
+ */
+function getLanguageInstructions(lang: string): {
+    languageName: string;
+    writingStyle: string;
+    articleStructure: string;
+} {
+    const instructions: Record<string, any> = {
+        vi: {
+            languageName: 'Vietnamese',
+            writingStyle: 'Viết như Facebook post tự nhiên, dễ đọc. Giọng văn rõ ràng, có cấu trúc, phân tích ngắn gọn. KHÔNG hype, giật tít, FOMO, quá casual hoặc quá academic. KHÔNG kể chuyện lan man.',
+            articleStructure: `
+📋 CẤU TRÚC BÀI ĐĂNG FACEBOOK (BẮT BUỘC):
+
+1️⃣ TITLE (dòng đầu tiên)
+   **In đậm**
+   Có 1-2 emoji phù hợp
+   Tóm tắt insight chính
+   KHÔNG giật tít
+
+______________
+
+2️⃣ MỞ BÀI (2-4 câu)
+   Giới thiệu vấn đề ngắn gọn
+   Tạo context cho nội dung
+
+______________
+
+3️⃣ NỘI DUNG CHÍNH
+   Emoji + Subheading
+   • Bullet point
+   • Bullet point  
+   • Bullet point
+   
+   Emoji + Subheading
+   Phân tích ngắn (2-4 câu)
+
+______________
+
+4️⃣ INSIGHT CHÍNH
+   Emoji + Insight quan trọng
+   1-2 câu nêu ý nghĩa/tác động
+
+______________
+
+5️⃣ CÂU HỎI MỞ
+   Khuyến khích thảo luận
+   
+6️⃣ HASHTAG (cuối bài)
+
+⚠️ FORMAT RULES:
+✓ Mỗi section chính ngăn cách bằng ______________
+✓ KHÔNG dùng dấu gạch ngang dài (—)
+✓ Paragraph không quá 4 dòng
+✓ Line break rõ ràng
+✓ Mỗi section lớn bắt đầu bằng emoji
+✓ Bullet dùng: • ✔️ 1️⃣ 2️⃣ 3️⃣
+✓ Hashtag CHỈ ở cuối bài
+✓ KHÔNG chèn link giữa đoạn
+✓ KHÔNG viết phong cách báo chí
+
+🎯 TONE: Rõ ràng, có cấu trúc, dễ đọc, phân tích ngắn gọn. Giữ nguyên nội dung cốt lõi, KHÔNG thêm thông tin ngoài input.`,
+        },
+        en: {
+            languageName: 'English',
+            writingStyle: 'Write like natural Facebook post, easy to read. Clear voice, structured, concise analysis. NO hype, clickbait, FOMO, too casual or too academic. NO rambling storytelling.',
+            articleStructure: `
+📋 FACEBOOK POST STRUCTURE (MANDATORY):
+
+1️⃣ TITLE (first line)
+   **Bold text**
+   1-2 relevant emojis
+   Summarize main insight
+   NO clickbait
+
+______________
+
+2️⃣ OPENING (2-4 sentences)
+   Introduce topic briefly
+   Set context
+
+______________
+
+3️⃣ MAIN CONTENT
+   Emoji + Subheading
+   • Bullet point
+   • Bullet point
+   • Bullet point
+   
+   Emoji + Subheading
+   Brief analysis (2-4 sentences)
+
+______________
+
+4️⃣ KEY INSIGHT
+   Emoji + Main takeaway
+   1-2 sentences on impact/meaning
+
+______________
+
+5️⃣ DISCUSSION PROMPT
+   Question to encourage engagement
+   
+6️⃣ HASHTAGS (end of post)
+
+⚠️ FORMAT RULES:
+✓ Separate major sections with ______________
+✓ NO long dashes (—)
+✓ Paragraphs max 4 lines
+✓ Clear line breaks
+✓ Each major section starts with emoji
+✓ Bullets use: • ✔️ 1️⃣ 2️⃣ 3️⃣
+✓ Hashtags ONLY at end
+✓ NO links mid-paragraph
+✓ NO newspaper style
+
+🎯 TONE: Clear, structured, readable, concise analysis. Keep core content integrity, DO NOT add info not in input.`,
+        },
+        es: {
+            languageName: 'Spanish',
+            writingStyle: 'Escribe como publicación natural de Facebook, fácil de leer. Voz clara, estructurada, análisis conciso. SIN exageración, clickbait, FOMO, demasiado casual o académico. SIN narrativa divagante.',
+            articleStructure: `
+📋 ESTRUCTURA POST FACEBOOK (OBLIGATORIO):
+
+1️⃣ TÍTULO (primera línea)
+   **Negrita**
+   1-2 emojis relevantes
+   Resume insight principal
+   SIN clickbait
+
+______________
+
+2️⃣ APERTURA (2-4 oraciones)
+   Introduce tema brevemente
+   Establece contexto
+
+______________
+
+3️⃣ CONTENIDO PRINCIPAL
+   Emoji + Subtítulo
+   • Punto clave
+   • Punto clave
+   • Punto clave
+   
+   Emoji + Subtítulo
+   Análisis breve (2-4 oraciones)
+
+______________
+
+4️⃣ INSIGHT CLAVE
+   Emoji + Conclusión principal
+   1-2 oraciones sobre impacto/significado
+
+______________
+
+5️⃣ PREGUNTA ABIERTA
+   Pregunta para fomentar discusión
+   
+6️⃣ HASHTAGS (final del post)
+
+⚠️ REGLAS DE FORMATO:
+✓ Separar secciones mayores con ______________
+✓ SIN guiones largos (—)
+✓ Párrafos máx 4 líneas
+✓ Saltos de línea claros
+✓ Cada sección mayor inicia con emoji
+✓ Bullets usan: • ✔️ 1️⃣ 2️⃣ 3️⃣
+✓ Hashtags SOLO al final
+✓ SIN enlaces en medio de párrafos
+✓ SIN estilo periodístico
+
+🎯 TONO: Claro, estructurado, legible, análisis conciso. Mantener integridad del contenido, NO agregar información no presente en input.`,
+        },
+    };
+
+    return instructions[lang] || instructions.en;
 }
 
 /**
  * Build AI Stage B prompt
- * Deep analysis using GPT-4o to create Vietnamese content
+ * Configurable deep analysis based on environment settings
  */
 function buildStageBPrompt(item: {
     title: string;
@@ -22,15 +198,30 @@ function buildStageBPrompt(item: {
     importanceScore: number;
     oneLineSummary: string;
 }): string {
-    return `You are a content writer for Open Campus Vietnam, creating educational blockchain content in Vietnamese.
+    const langInstructions = getLanguageInstructions(env.CONTENT_LANGUAGE);
+    const focusTopics = env.FOCUS_TOPICS.split(',').map(t => t.trim().toLowerCase());
+    const hashtagSuggestions = focusTopics.map(t => `#${t}`).join(' ');
 
-CONTEXT:
+    return `You are a Facebook Content Writing Agent for ${env.APP_NAME}, converting news articles into clear, concise, readable Facebook posts for ${env.TARGET_AUDIENCE}.
+
+⚡ YOUR ONLY TASK: Transform input content into complete Facebook post following standard format.
+
+🎯 CORE RULES:
+✓ Keep original content meaning - only restructure for Facebook
+✓ DO NOT add information not in input
+✓ DO NOT infer beyond data
+✓ DO NOT change content meaning
+✓ DO NOT skip required format
+
+${langInstructions.writingStyle}
+
+📊 CONTEXT:
 Source: ${item.sourceName}
 Topic Tags: ${item.topicTags.join(', ')}
 Importance: ${item.importanceScore}/100
 Quick Summary: ${item.oneLineSummary}
 
-ARTICLE:
+📰 SOURCE ARTICLE:
 Title: ${item.title}
 
 Content:
@@ -38,43 +229,57 @@ ${item.content}
 
 ---
 
-YOUR TASK: Create a Vietnamese summary for our Facebook audience (builders, educators, students interested in Web3 education).
+${langInstructions.articleStructure}
 
-TONE & STYLE:
-- Builder vibe (enthusiastic but not hyped)
-- Educational and informative
-- Professional yet accessible
-- NO sensationalism or clickbait
-- NO investment/trading language
+📏 LENGTH REQUIREMENTS:
+Target: 300-450 words
+Minimum: 250 words
+Maximum: 500 words
+
+🚫 HARD CONSTRAINTS (NEVER DO):
+✗ Add information not in input
+✗ Add data or statistics not provided
+✗ Add names/organizations not in input
+✗ Skip discussion prompt (CTA)
+✗ Use newspaper/blog writing style
+✗ Write overly academic or casual
+✗ Use clickbait or FOMO tactics
+✗ Ramble or lose focus
+
+✅ CONTENT INTEGRITY:
+- Keep core content unchanged
+- Only include facts from input
+- If info is missing → summarize only what exists
+- No speculation or assumptions
+
+📐 EXECUTION LOGIC:
+1. Read input content
+2. Identify: main topic, key insight, significance
+3. Restructure content
+4. Rewrite in Facebook format
+5. Add discussion prompt
+6. Add relevant hashtags
+7. Output ONLY the post (no reasoning/explanation)
 
 OUTPUT FORMAT (valid JSON only):
 {
-  "summary": "2-3 câu tóm tắt bằng tiếng Việt, giải thích nội dung chính",
-  "bullets": [
-    "Điểm nổi bật 1 (tiếng Việt, giữ nguyên thuật ngữ tiếng Anh)",
-    "Điểm nổi bật 2",
-    "Điểm nổi bật 3",
-    "Điểm nổi bật 4 (nếu có)",
-    "Điểm nổi bật 5 (nếu có)"
-  ],
-  "whyItMatters": "1-2 câu giải thích tại sao điều này quan trọng với cộng đồng Open Campus Vietnam (tiếng Việt)",
-  "riskFlags": ["Cảnh báo nếu có (tiếng Việt)", "hoặc mảng rỗng nếu không có"],
-  "suggestedHashtags": ["education", "edtech", "blockchain", "web3", "opencampus"]
+  "fullArticle": "Complete Facebook post with TITLE (bold + emoji), opening, structured content with emoji subheadings and bullets, key insight, discussion question, and hashtags at end. Written in ${langInstructions.languageName}. Must follow format rules strictly. Include relevant hashtags from: ${hashtagSuggestions}"
 }
 
-RULES:
-1. Summary: 2-3 sentences in Vietnamese, clear and concise
-2. Bullets: 3-5 key points in Vietnamese (keep English technical terms as-is)
-3. WhyItMatters: Why this matters for OCVN community (Vietnamese)
-4. RiskFlags: Any concerns or caveats (Vietnamese), empty array if none
-5. Hashtags: 3-7 relevant English hashtags (lowercase, no #)
+🎨 STYLE CHECKLIST:
+✓ Title is bold with 1-2 emojis
+✓ Use ______________ separator between major sections (after title, opening, main content, key insight)
+✓ Clear line breaks between sections
+✓ Each major section starts with emoji
+✓ Paragraphs are 2-4 lines max
+✓ Bullets use • ✔️ 1️⃣ 2️⃣ 3️⃣ only
+✓ NO long dashes (—)
+✓ NO links mid-paragraph
+✓ Hashtags ONLY at the end
+✓ Has discussion question before hashtags
+✓ Voice is clear, structured, analytical (not hyped)
 
-IMPORTANT:
-- Write 100% in Vietnamese (except technical terms and hashtags)
-- Keep technical terms in English: blockchain, smart contract, NFT, DeFi, Web3, etc.
-- NO marketing fluff or hype
-- Focus on educational value
-- Be specific and actionable
+⚠️ CRITICAL: fullArticle must be COMPLETE Facebook post (300-450 words), ready to copy-paste. NO explanations, NO reasoning text. Just the post itself.
 
 Respond with JSON only, no other text.`;
 }
@@ -88,7 +293,7 @@ async function callStageB(prompt: string): Promise<StageBOutput> {
         messages: [
             {
                 role: 'system',
-                content: 'You are a Vietnamese content writer for educational blockchain content. Respond only with valid JSON.',
+                content: `You are a Facebook Content Writing Agent converting articles to ${getLanguageInstructions(env.CONTENT_LANGUAGE).languageName} Facebook posts. Follow format rules strictly. Respond only with valid JSON.`,
             },
             {
                 role: 'user',
@@ -96,7 +301,7 @@ async function callStageB(prompt: string): Promise<StageBOutput> {
             },
         ],
         temperature: 0.7,
-        max_tokens: 1500,
+        max_tokens: 2500, // Increased for full article
         response_format: { type: 'json_object' },
     });
 
@@ -108,16 +313,12 @@ async function callStageB(prompt: string): Promise<StageBOutput> {
     const parsed = JSON.parse(content) as StageBOutput;
 
     // Validate response structure
-    if (!parsed.summary || !Array.isArray(parsed.bullets)) {
-        throw new Error('Invalid response: missing required fields');
+    if (!parsed.fullArticle || parsed.fullArticle.length < 100) {
+        throw new Error('Invalid response: missing or too short fullArticle');
     }
 
     return {
-        summary: parsed.summary,
-        bullets: parsed.bullets.filter(b => b && b.length > 0),
-        whyItMatters: parsed.whyItMatters || '',
-        riskFlags: Array.isArray(parsed.riskFlags) ? parsed.riskFlags : [],
-        suggestedHashtags: Array.isArray(parsed.suggestedHashtags) ? parsed.suggestedHashtags : [],
+        fullArticle: parsed.fullArticle,
     };
 }
 
@@ -134,11 +335,7 @@ async function checkStageBCache(contentHash: string): Promise<StageBOutput | nul
             },
         },
         select: {
-            summary: true,
-            bullets: true,
-            whyItMatters: true,
-            riskFlags: true,
-            suggestedHashtags: true,
+            fullArticle: true,
         },
     });
 
@@ -147,11 +344,7 @@ async function checkStageBCache(contentHash: string): Promise<StageBOutput | nul
     }
 
     return {
-        summary: existingResult.summary || '',
-        bullets: existingResult.bullets,
-        whyItMatters: existingResult.whyItMatters || '',
-        riskFlags: existingResult.riskFlags,
-        suggestedHashtags: existingResult.suggestedHashtags,
+        fullArticle: existingResult.fullArticle || '',
     };
 }
 
@@ -234,7 +427,7 @@ export async function processStageB(itemId: number): Promise<{
 
             // Call OpenAI
             result = await callStageB(prompt);
-            console.log(`[AI Stage B] Generated Vietnamese summary (${result.bullets.length} bullets)`);
+            console.log(`[AI Stage B] Generated Facebook post (${result.fullArticle.length} chars)`);
         }
 
         // Save AI result
@@ -242,11 +435,7 @@ export async function processStageB(itemId: number): Promise<{
             data: {
                 itemId: item.id,
                 stage: 'B',
-                summary: result.summary,
-                bullets: result.bullets,
-                whyItMatters: result.whyItMatters,
-                riskFlags: result.riskFlags,
-                suggestedHashtags: result.suggestedHashtags,
+                fullArticle: result.fullArticle,
                 model: AI_CONFIG.STAGE_B_MODEL,
             },
         });

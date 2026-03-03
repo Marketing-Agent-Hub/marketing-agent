@@ -27,12 +27,12 @@ async function testPipeline() {
             console.log('No enabled source found. Creating test source...');
             testSource = await prisma.source.create({
                 data: {
-                    name: 'Open Campus Blog (Test)',
-                    rssUrl: 'https://www.opencampus.xyz/blog/rss.xml',
-                    siteUrl: 'https://www.opencampus.xyz',
+                    name: 'TechCrunch (Test)',
+                    rssUrl: 'https://techcrunch.com/feed/',
+                    siteUrl: 'https://techcrunch.com',
                     lang: 'EN',
-                    topicTags: ['education', 'edtech', 'blockchain-tech', 'open-campus'],
-                    trustScore: 90,
+                    topicTags: ['technology', 'business', 'startups'],
+                    trustScore: 85,
                     enabled: true,
                     fetchIntervalMinutes: 60,
                     denyKeywords: [],

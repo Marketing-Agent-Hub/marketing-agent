@@ -1,7 +1,7 @@
 {
-    "name": "ocvn-rss-bot-server",
+    "name": "news-aggregator-server",
     "version": "1.0.0",
-    "description": "Open Campus Vietnam RSS Bot - Backend Server",
+    "description": "AI-powered news aggregator with intelligent content processing",
     "main": "dist/index.js",
     "type": "module",
     "scripts": {
@@ -20,11 +20,12 @@
     },
     "keywords": [
         "rss",
+        "aggregator",
+        "news",
         "ai",
-        "education",
-        "blockchain"
+        "content-processing"
     ],
-    "author": "Open Campus Vietnam",
+    "author": "Your Organization",
     "license": "MIT",
     "dependencies": {
         "@mozilla/readability": "^0.6.0",

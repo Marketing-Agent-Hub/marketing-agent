@@ -117,12 +117,8 @@ model AiResult {
   importanceScore        Int?
   oneLineSummary         String?
   
-  // Stage B output
-  summary                String?
-  bullets                String[]          @default([])
-  whyItMatters           String?
-  riskFlags              String[]          @default([])
-  suggestedHashtags      String[]          @default([])
+  // Stage B output - Complete Facebook post
+  fullArticle            String?
   
   // Metadata
   model                  String?

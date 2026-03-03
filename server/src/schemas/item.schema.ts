@@ -12,3 +12,13 @@ export const getItemByIdSchema = z.object({
     id: z.string().transform(Number),
 });
 
+export const getReadyItemsSchema = z.object({
+    limit: z.string().transform(Number).default('20'),
+    offset: z.string().transform(Number).default('0'),
+    sortBy: z.enum(['importance', 'date', 'recent']).default('importance'),
+    sourceId: z.string().transform(Number).optional(),
+    topicTag: z.string().optional(),
+    fromDate: z.string().optional(), // ISO date string
+    toDate: z.string().optional(),   // ISO date string
+});
+

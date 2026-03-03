@@ -14,7 +14,7 @@ export const monitorConfig = {
 
     // OpenTelemetry configuration
     telemetry: {
-        serviceName: 'ocvn-rss-bot',
+        serviceName: env.APP_NAME.toLowerCase().replace(/\s+/g, '-'),
         serviceVersion: '1.0.0',
         environment: env.NODE_ENV,
         enabled: true,

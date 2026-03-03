@@ -10,6 +10,9 @@ router.use(requireAuth);
 // Get items list with filtering
 router.get('/', itemController.getItems);
 
+// Get ready-to-publish items
+router.get('/ready', itemController.getReadyItems);
+
 // Get statistics
 router.get('/stats', itemController.getItemsStats);
 

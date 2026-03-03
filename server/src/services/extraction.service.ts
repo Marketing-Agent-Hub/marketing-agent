@@ -2,6 +2,7 @@ import { JSDOM } from 'jsdom';
 import { Readability } from '@mozilla/readability';
 import { prisma } from '../db/index.js';
 import { ItemStatus } from '@prisma/client';
+import { env } from '../config/env.js';
 
 const MAX_CONTENT_LENGTH_CHARS = 10000; // ~2500 tokens for AI processing
 
@@ -16,7 +17,7 @@ export async function fetchFullHtml(url: string, timeoutMs = 10000): Promise<str
         const response = await fetch(url, {
             signal: controller.signal,
             headers: {
-                'User-Agent': 'OpenCampusVietnamBot/1.0',
+                'User-Agent': env.USER_AGENT,
                 Accept: 'text/html,application/xhtml+xml,application/xml',
             },
         });

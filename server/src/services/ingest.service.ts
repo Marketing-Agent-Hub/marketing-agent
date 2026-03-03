@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import { prisma } from '../db/index.js';
 import { ItemStatus } from '@prisma/client';
 import { logProcessingError } from '../lib/job-monitoring.js';
+import { env } from '../config/env.js';
 
 interface RssItem {
     sourceId: number;
@@ -41,7 +42,7 @@ export async function fetchRssFeed(url: string, timeoutMs = 10000): Promise<stri
         const response = await fetch(url, {
             signal: controller.signal,
             headers: {
-                'User-Agent': 'OpenCampusVietnamBot/1.0',
+                'User-Agent': env.USER_AGENT,
             },
         });
 

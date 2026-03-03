@@ -1,6 +1,7 @@
 import { openai, AI_CONFIG } from '../config/ai.config.js';
 import { prisma } from '../db/index.js';
 import { ItemStatus } from '@prisma/client';
+import { env } from '../config/env.js';
 
 interface StageAOutput {
     isAllowed: boolean;
@@ -12,7 +13,7 @@ interface StageAOutput {
 
 /**
  * Build AI Stage A prompt
- * Simplified version - accepts most content for testing
+ * Configurable content analyzer based on environment settings
  */
 function buildStageAPrompt(item: {
     title: string;
@@ -20,12 +21,17 @@ function buildStageAPrompt(item: {
     sourceName: string;
     publishedAt?: Date | null;
 }): string {
-    return `You are a content analyzer for Open Campus Vietnam, an educational blockchain community.
+    const focusTopics = env.FOCUS_TOPICS.split(',').map(t => t.trim());
+    const topicTagsDescription = focusTopics.length > 0
+        ? `Focus on topics related to: ${focusTopics.join(', ')}`
+        : 'Accept diverse content across various topics';
+
+    return `You are a content analyzer for ${env.APP_NAME}, ${env.APP_DESCRIPTION}.
 
 TASK: Analyze this RSS item and categorize it.
 
 ACCEPT all content unless it's:
-- Spam or clearly irrelevant (adult content, unrelated industries)
+- Spam or clearly irrelevant (adult content, completely unrelated industries)
 - Duplicate or broken content
 
 RSS ITEM:
@@ -39,24 +45,18 @@ OUTPUT FORMAT (valid JSON only):
   "isAllowed": true,
   "topicTags": ["tag1", "tag2", "tag3"],
   "importanceScore": 0-100,
-  "oneLineSummary": "Brief summary in English",
+  "oneLineSummary": "Brief summary",
   "reason": "Why accepted"
 }
 
-TOPIC TAGS (use relevant ones):
-- education, edtech, online-learning, education-tech
-- blockchain, crypto, web3, defi, nft
-- blockchain-tech, smart-contracts, layer2
-- open-campus, partnerships, announcements
-- research, innovation, case-study
-- policy, regulation, government
-- events, conferences, community
-- trading, market, investment (financial content)
+TOPIC TAGS:
+${topicTagsDescription}
+Suggested categories: ${focusTopics.join(', ')}, research, innovation, case-study, policy, regulation, events, community, announcements, partnerships
 
 IMPORTANCE SCORE:
 - 90-100: Breaking news, major announcements
 - 70-89: Significant developments, partnerships
-- 50-69: Regular updates, educational content
+- 50-69: Regular updates, informative content
 - 30-49: Minor news, opinion pieces
 - 0-29: Low priority, tangential content
 
