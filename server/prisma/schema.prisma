@@ -32,21 +32,6 @@ enum ItemStatus {
   REJECTED
 }
 
-enum TimeSlot {
-  MORNING_1   // 08:00
-  MORNING_2   // 08:00
-  NOON        // 12:00
-  EVENING_1   // 18:30
-  EVENING_2   // 18:30
-}
-
-enum PostStatus {
-  DRAFT
-  APPROVED
-  REJECTED
-  POSTED
-}
-
 model Source {
   id                     Int               @id @default(autoincrement())
   name                   String
@@ -94,7 +79,6 @@ model Item {
 
   article                Article?
   aiResults              AiResult[]
-  postItems              PostItem[]
 
   @@unique([sourceId, link])
   @@index([status])
@@ -152,51 +136,6 @@ model AiResult {
   @@index([itemId])
   @@index([stage])
   @@map("ai_results")
-}
-
-model DailyPost {
-  id                     Int               @id @default(autoincrement())
-  targetDate             DateTime
-  timeSlot               TimeSlot
-  
-  content                String
-  hookText               String?
-  bulletsText            String?
-  ocvnTakeText           String?
-  ctaText                String?
-  hashtags               String[]          @default([])
-  
-  status                 PostStatus        @default(DRAFT)
-  
-  editedContent          String?
-  rejectionReason        String?
-  
-  fbPostId               String?
-  fbPostUrl              String?
-  postedAt               DateTime?
-  
-  createdAt              DateTime          @default(now())
-  updatedAt              DateTime          @updatedAt
-
-  postItems              PostItem[]
-
-  @@unique([targetDate, timeSlot])
-  @@index([status])
-  @@index([targetDate])
-  @@map("daily_posts")
-}
-
-model PostItem {
-  id                     Int               @id @default(autoincrement())
-  postId                 Int
-  post                   DailyPost         @relation(fields: [postId], references: [id], onDelete: Cascade)
-  itemId                 Int
-  item                   Item              @relation(fields: [itemId], references: [id], onDelete: Cascade)
-  
-  createdAt              DateTime          @default(now())
-
-  @@unique([postId, itemId])
-  @@map("post_items")
 }
 
 // ============ MONITORING MODELS ============

@@ -86,18 +86,6 @@ export const getItemById = asyncHandler(async (req: Request, res: Response) => {
                     createdAt: 'desc',
                 },
             },
-            postItems: {
-                include: {
-                    post: {
-                        select: {
-                            id: true,
-                            status: true,
-                            targetDate: true,
-                            timeSlot: true,
-                        },
-                    },
-                },
-            },
         },
     });
 

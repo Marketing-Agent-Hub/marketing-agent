@@ -16,17 +16,6 @@ export class StatsService {
             statusMap[item.status] = item._count;
         });
 
-        // Count posts by status
-        const postStatusCounts = await prisma.dailyPost.groupBy({
-            by: ['status'],
-            _count: true,
-        });
-
-        const postStatusMap: Record<string, number> = {};
-        postStatusCounts.forEach(post => {
-            postStatusMap[post.status] = post._count;
-        });
-
         // Count sources
         const totalSources = await prisma.source.count();
         const enabledSources = await prisma.source.count({
@@ -45,33 +34,6 @@ export class StatsService {
             },
         });
 
-        // Recent posts (last 7 days)
-        const lastWeek = new Date();
-        lastWeek.setDate(lastWeek.getDate() - 7);
-
-        const recentPosts = await prisma.dailyPost.count({
-            where: {
-                createdAt: {
-                    gte: lastWeek,
-                },
-            },
-        });
-
-        // Today's posts
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const tomorrow = new Date(today);
-        tomorrow.setDate(tomorrow.getDate() + 1);
-
-        const todayPosts = await prisma.dailyPost.count({
-            where: {
-                targetDate: {
-                    gte: today,
-                    lt: tomorrow,
-                },
-            },
-        });
-
         return {
             items: {
                 total: Object.values(statusMap).reduce((a, b) => a + b, 0),
@@ -86,17 +48,6 @@ export class StatsService {
                     REJECTED: statusMap['REJECTED'] || 0,
                 },
                 recent24h: recentItems,
-            },
-            posts: {
-                total: Object.values(postStatusMap).reduce((a, b) => a + b, 0),
-                byStatus: {
-                    DRAFT: postStatusMap['DRAFT'] || 0,
-                    APPROVED: postStatusMap['APPROVED'] || 0,
-                    REJECTED: postStatusMap['REJECTED'] || 0,
-                    POSTED: postStatusMap['POSTED'] || 0,
-                },
-                recent7days: recentPosts,
-                today: todayPosts,
             },
             sources: {
                 total: totalSources,
@@ -121,12 +72,6 @@ export class StatsService {
             },
         });
 
-        // Recent posts
-        const recentPosts = await prisma.dailyPost.findMany({
-            take: limit,
-            orderBy: { createdAt: 'desc' },
-        });
-
         return {
             items: recentItems.map(item => ({
                 id: item.id,
@@ -134,13 +79,6 @@ export class StatsService {
                 source: item.source.name,
                 status: item.status,
                 createdAt: item.createdAt,
-            })),
-            posts: recentPosts.map(post => ({
-                id: post.id,
-                targetDate: post.targetDate,
-                timeSlot: post.timeSlot,
-                status: post.status,
-                createdAt: post.createdAt,
             })),
         };
     }
@@ -166,10 +104,7 @@ export class StatsService {
             bottlenecks.push(`${stats.items.byStatus.AI_STAGE_A_DONE} items waiting for AI Stage B`);
         }
         if (stats.items.byStatus.AI_STAGE_B_DONE > 15) {
-            bottlenecks.push(`${stats.items.byStatus.AI_STAGE_B_DONE} items ready for digest generation`);
-        }
-        if (stats.posts.byStatus.DRAFT > 30) {
-            bottlenecks.push(`${stats.posts.byStatus.DRAFT} draft posts waiting for review`);
+            bottlenecks.push(`${stats.items.byStatus.AI_STAGE_B_DONE} items completed AI processing`);
         }
 
         return bottlenecks;

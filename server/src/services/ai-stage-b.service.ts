@@ -257,18 +257,6 @@ export async function processStageB(itemId: number): Promise<{
             data: { status: ItemStatus.AI_STAGE_B_DONE },
         });
 
-        // Auto-trigger digest generation for tomorrow
-        console.log(`[AI Stage B] Item ${itemId} completed, triggering digest generation...`);
-        try {
-            const { generateTomorrowPosts } = await import('./digest.service.js');
-            // Run async without waiting
-            generateTomorrowPosts().catch(err => {
-                console.error('[AI Stage B] Auto-digest trigger error:', err);
-            });
-        } catch (err) {
-            console.error('[AI Stage B] Failed to trigger digest:', err);
-        }
-
         return { success: true };
     } catch (error: any) {
         console.error(`[AI Stage B] Error processing item ${itemId}:`, error);

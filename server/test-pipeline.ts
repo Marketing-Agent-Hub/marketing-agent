@@ -149,7 +149,7 @@ async function testPipeline() {
         console.log('📝 Next steps:');
         console.log('   1. Review READY_FOR_AI items in database');
         console.log('   2. Setup AI Provider (OpenAI) for Stage A processing');
-        console.log('   3. Continue with AI Stage B and Digest Generation');
+        console.log('   3. Continue with AI Stage B processing');
         console.log('');
 
     } catch (error) {

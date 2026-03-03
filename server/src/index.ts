@@ -9,7 +9,6 @@ import { startExtractionJob, stopExtractionJob } from './jobs/extraction.job.js'
 import { startFilteringJob, stopFilteringJob } from './jobs/filtering.job.js';
 import { startAIStageAJob, stopAIStageAJob } from './jobs/ai-stage-a.job.js';
 import { startAIStageBJob, stopAIStageBJob } from './jobs/ai-stage-b.job.js';
-import { startDigestJob, stopDigestJob } from './jobs/digest.job.js';
 import { startMonitoringCleanupJob, stopMonitoringCleanupJob } from './jobs/monitoring-cleanup.job.js';
 import { initTelemetry, shutdownTelemetry } from './lib/telemetry.js';
 import { logger } from './lib/logger.js';
@@ -69,9 +68,6 @@ app.listen(PORT, () => {
         logger.warn('   Set OPENAI_API_KEY in .env to enable AI processing');
     }
 
-    // Start digest job
-    startDigestJob();
-
     // Start monitoring cleanup job
     startMonitoringCleanupJob();
 });
@@ -85,7 +81,6 @@ process.on('SIGTERM', async () => {
     stopFilteringJob();
     stopAIStageAJob();
     stopAIStageBJob();
-    stopDigestJob();
     stopMonitoringCleanupJob();
     await shutdownTelemetry();
     process.exit(0);
@@ -99,7 +94,6 @@ process.on('SIGINT', async () => {
     stopFilteringJob();
     stopAIStageAJob();
     stopAIStageBJob();
-    stopDigestJob();
     stopMonitoringCleanupJob();
     await shutdownTelemetry();
     process.exit(0);
