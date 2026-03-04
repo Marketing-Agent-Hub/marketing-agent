@@ -16,12 +16,13 @@ function getVietnameseInstructions(): {
 } {
     return {
         languageName: 'Vietnamese',
-        writingStyle: 'Viết như Facebook post tự nhiên, dễ đọc. Giọng văn rõ ràng, có cấu trúc, phân tích ngắn gọn. KHÔNG hype, giật tít, FOMO, quá casual hoặc quá academic. KHÔNG kể chuyện lan man.',
+        writingStyle: 'Viết như Facebook post tự nhiên, dễ đọc. Giọng văn rõ ràng, có cấu trúc, phân tích ngắn gọn nhưng đầy đủ nội dung bài gốc. KHÔNG hype, giật tít, FOMO, quá casual hoặc quá academic. KHÔNG kể chuyện lan man.',
         articleStructure: `
 📋 CẤU TRÚC BÀI ĐĂNG FACEBOOK (BẮT BUỘC):
 
 1️⃣ TITLE (dòng đầu tiên)
    Có 1-2 emoji phù hợp
+   Viết TIÊU ĐỀ BẰNG CHỮ HOA để nổi bật
    Tóm tắt insight chính
    KHÔNG giật tít
 
@@ -34,12 +35,12 @@ ______________
 ______________
 
 3️⃣ NỘI DUNG CHÍNH
-   Emoji + Subheading
+   Emoji + Subheading (text thường)
    • Bullet point
    • Bullet point  
    • Bullet point
    
-   Emoji + Subheading
+   Emoji + Subheading (text thường)
    Phân tích ngắn (2-4 câu)
 
 ______________
@@ -55,8 +56,12 @@ ______________
    
 6️⃣ HASHTAG (cuối bài)
 
-⚠️ FORMAT RULES:
-✓ Đây là bài viết facebook không phải markdown, không dùng các format **in đậm** và những thứ tương tự
+⚠️ FORMAT RULES - BẮT BUỘC:
+✓ PLAIN TEXT thuần túy - TUYỆT ĐỐI KHÔNG DÙNG markdown
+✓ KHÔNG DÙNG ** để in đậm
+✓ KHÔNG DÙNG _ để in nghiêng  
+✓ KHÔNG DÙNG bất kỳ markdown syntax nào
+✓ Nhấn mạnh bằng CHỮ HOA hoặc EMOJI thay vì markdown
 ✓ Mỗi section chính ngăn cách bằng ______________
 ✓ KHÔNG dùng dấu gạch ngang dài (—)
 ✓ Paragraph không quá 4 dòng
@@ -141,11 +146,13 @@ Tối đa: 500 từ
 
 OUTPUT FORMAT (valid JSON only):
 {
-  "fullArticle": "Bài đăng Facebook hoàn chỉnh với TIÊU ĐỀ (in đậm + emoji), mở bài, nội dung có cấu trúc với emoji subheadings và bullets, insight chính, câu hỏi thảo luận, và hashtags ở cuối. Viết bằng tiếng Việt. Phải tuân thủ format rules nghiêm ngặt. Tự generate hashtags phù hợp với nội dung."
+  "fullArticle": "Bài đăng Facebook hoàn chỉnh với TIÊU ĐỀ VIẾT HOA + EMOJI, mở bài, nội dung có cấu trúc với emoji subheadings và bullets, insight chính, câu hỏi thảo luận, và hashtags ở cuối. Viết bằng tiếng Việt. PLAIN TEXT thuần, KHÔNG DÙNG MARKDOWN. Phải tuân thủ format rules nghiêm ngặt. Tự generate hashtags phù hợp với nội dung."
 }
 
 🎨 CHECKLIST PHONG CÁCH:
-✓ Tiêu đề in đậm với 1-2 emojis
+✓ Tiêu đề VIẾT HOA với 1-2 emojis (VD: 🚀 CÔNG NGHỆ MỚI THAY ĐỔI GIÁO DỤC)
+✓ PLAIN TEXT - TUYỆT ĐỐI KHÔNG dùng ** __ # hay bất kỳ markdown nào
+✓ Nhấn mạnh bằng CHỮ HOA hoặc emoji, KHÔNG dùng markdown
 ✓ Dùng ______________ ngăn cách giữa các section chính (sau tiêu đề, mở bài, nội dung chính, insight chính)
 ✓ Line break rõ ràng giữa các phần
 ✓ Mỗi section lớn bắt đầu bằng emoji
