@@ -68,7 +68,7 @@ export interface User {
 
 export interface LoginResponse {
     token: string;
-    user: User;
+    email: string;
 }
 
 export interface UserResponse {

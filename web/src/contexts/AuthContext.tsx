@@ -39,7 +39,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const login = async (credentials: LoginInput) => {
         const response = await apiClient.login(credentials);
-        setUser(response.user);
+        // Backend returns { token, email }, construct user object
+        const user: User = {
+            id: 1, // MVP has single admin user
+            email: response.email || credentials.email,
+            role: 'ADMIN',
+            createdAt: new Date().toISOString(),
+        };
+        setUser(user);
     };
 
     const logout = () => {
