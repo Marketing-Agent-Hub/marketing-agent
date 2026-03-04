@@ -27,28 +27,24 @@ else
     exit 1
 fi
 
-# 2. Login Docker Registry
-echo -e "${YELLOW}→ Đang login vào Docker Registry...${NC}"
-echo "${DOCKER_PASSWORD}" | docker login ${DOCKER_REGISTRY:-docker.io} -u "${DOCKER_USERNAME}" --password-stdin
-
-# 3. Pull images mới nhất
+# 2. Pull images mới nhất
 echo -e "${YELLOW}→ Đang pull images mới...${NC}"
 export IMAGE_TAG=${IMAGE_TAG}
 docker compose pull
 
-# 4. Dừng và xóa containers cũ (giữ lại volumes)
+# 3. Dừng và xóa containers cũ (giữ lại volumes)
 echo -e "${YELLOW}→ Dừng containers cũ...${NC}"
 docker compose down
 
-# 5. Chạy migrations (nếu cần)
+# 4. Chạy migrations (nếu cần)
 echo -e "${YELLOW}→ Chạy database migrations...${NC}"
 docker compose run --rm server npx prisma migrate deploy
 
-# 6. Khởi động containers mới
+# 5. Khởi động containers mới
 echo -e "${YELLOW}→ Khởi động containers mới...${NC}"
 docker compose up -d
 
-# 7. Kiểm tra health
+# 6. Kiểm tra health
 echo -e "${YELLOW}→ Kiểm tra health status...${NC}"
 sleep 10
 
@@ -79,11 +75,11 @@ else
     echo -e "${YELLOW}⚠ Web chưa healthy, kiểm tra logs...${NC}"
 fi
 
-# 8. Dọn dẹp images cũ
+# 7. Dọn dẹp images cũ
 echo -e "${YELLOW}→ Dọn dẹp images cũ...${NC}"
 docker image prune -f
 
-# 9. Hiển thị trạng thái
+# 8. Hiển thị trạng thái
 echo -e "${GREEN}========================================${NC}"
 echo -e "${GREEN}  Deploy hoàn tất!${NC}"
 echo -e "${GREEN}========================================${NC}"

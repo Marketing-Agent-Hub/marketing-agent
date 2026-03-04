@@ -11,7 +11,31 @@ Automated system for RSS content curation → AI analysis → Vietnamese digests
 
 ## Quick Start
 
-### Local Development
+### 🚀 Production Deploy (VPS)
+
+**Deploy lên VPS trong 15 phút:**
+
+```bash
+# 1. Push code lên GitHub
+git push origin main
+
+# 2. Setup trên VPS
+ssh root@your-vps
+curl -fsSL https://get.docker.com | sh
+cd /opt && git clone https://github.com/your-username/ocNewsBot.git
+cd ocNewsBot && cp .env.production.example .env
+
+# 3. Chỉnh sửa .env (GitHub username, passwords, API keys)
+nano .env
+
+# 4. Deploy
+chmod +x deploy.sh && ./deploy.sh latest
+```
+
+Xem [QUICKSTART.md](QUICKSTART.md) để biết chi tiết.
+
+### 💻 Local Development
+
 ```bash
 # Backend
 cd server && npm install && npm run prisma:migrate && npm run dev
@@ -20,44 +44,24 @@ cd server && npm install && npm run prisma:migrate && npm run dev
 cd web && npm install && npm run dev
 ```
 
-### Docker Deployment (Recommended for Production)
-```bash
-# Windows
-.\docker-start.ps1
-
-# Linux/Mac
-./docker-start.sh
-
-# Or manually
-cp .env.docker.example .env.docker
-# Edit .env.docker with your JWT_SECRET and OPENAI_API_KEY
-docker-compose up -d --build
-```
-
-See **[README.Docker.md](README.Docker.md)** for complete Docker guide.
-
-See **[DEV_GUIDE.md](DEV_GUIDE.md)** for complete setup instructions.
+Xem [DEV_GUIDE.md](DEV_GUIDE.md) để biết chi tiết.
 
 ## Documentation
 
-### Quick Start
-- **[QUICKSTART.md](QUICKSTART.md)** - ⚡ Deploy trong 10 phút (Recommended for beginners)
-- **[DEPLOYMENT.md](DEPLOYMENT.md)** - 🚀 CI/CD with Docker Registry (Full guide)
-- **[DEPLOY_VPS.md](DEPLOY_VPS.md)** - 🚀 Step-by-step VPS deployment guide
-- **[README.Docker.md](README.Docker.md)** - 🐳 Docker deployment guide (production-ready)
-- **[DEV_GUIDE.md](DEV_GUIDE.md)** - Complete local development setup
+### 🎯 Deployment Guides
+- **[QUICKSTART.md](QUICKSTART.md)** - ⚡ Deploy VPS trong 15 phút (Recommended)
+- **[DEPLOYMENT.md](DEPLOYMENT.md)** - 📖 Hướng dẫn CI/CD chi tiết cho người mới
+- **[README.Docker.md](README.Docker.md)** - 🐳 Docker local development
 
-### For Developers
-- **[DEV_GUIDE.md](DEV_GUIDE.md)** - Complete setup, testing, API reference, troubleshooting
-- **[srs.md](srs.md)** - Software Requirements Specification (reference)
+### 👨‍💻 Developer Docs
+- **[DEV_GUIDE.md](DEV_GUIDE.md)** - Setup local, API docs, testing
+- **[AI_CONTEXT.md](AI_CONTEXT.md)** - Project context for AI agents
+- **[srs.md](srs.md)** - Software Requirements Specification
 
-### For AI Agents
-- **[AI_CONTEXT.md](AI_CONTEXT.md)** - Token-efficient project context, schema, rules, patterns
-
-### Additional Docs
-- **[DIGEST.md](DIGEST.md)** - Digest generation service details
-- **[AI_SETUP.md](AI_SETUP.md)** - OpenAI configuration guide
-- **[TESTING.md](TESTING.md)** - Pipeline testing instructions
+### 📚 Additional Docs
+- **[DIGEST.md](DIGEST.md)** - Digest generation service
+- **[AI_SETUP.md](AI_SETUP.md)** - OpenAI configuration
+- **[TESTING.md](TESTING.md)** - Pipeline testing
 
 ## Tech Stack
 

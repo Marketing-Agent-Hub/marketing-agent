@@ -20,7 +20,7 @@ services:
       - rss_network
 
   server:
-    image: ${DOCKER_REGISTRY:-docker.io}/${DOCKER_USERNAME}/ocnewsbot-server:${IMAGE_TAG:-latest}
+    image: ${DOCKER_REGISTRY:-ghcr.io}/${GITHUB_USERNAME}/ocnewsbot-server:${IMAGE_TAG:-latest}
     container_name: rss_server
     restart: always
     environment:
@@ -47,7 +47,7 @@ services:
       - ./server/logs:/app/logs
 
   web:
-    image: ${DOCKER_REGISTRY:-docker.io}/${DOCKER_USERNAME}/ocnewsbot-web:${IMAGE_TAG:-latest}
+    image: ${DOCKER_REGISTRY:-ghcr.io}/${GITHUB_USERNAME}/ocnewsbot-web:${IMAGE_TAG:-latest}
     container_name: rss_web
     restart: always
     ports:

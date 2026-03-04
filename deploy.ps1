@@ -34,28 +34,24 @@ Get-Content .env | ForEach-Object {
     }
 }
 
-# 2. Login Docker Registry
-Write-ColorOutput Yellow "→ Đang login vào Docker Registry..."
-$env:DOCKER_PASSWORD | docker login $($env:DOCKER_REGISTRY ?? "docker.io") -u $env:DOCKER_USERNAME --password-stdin
-
-# 3. Pull images mới nhất
+# 2. Pull images mới nhất
 Write-ColorOutput Yellow "→ Đang pull images mới..."
 $env:IMAGE_TAG = $ImageTag
 docker compose pull
 
-# 4. Dừng và xóa containers cũ
+# 3. Dừng và xóa containers cũ
 Write-ColorOutput Yellow "→ Dừng containers cũ..."
 docker compose down
 
-# 5. Chạy migrations
+# 4. Chạy migrations
 Write-ColorOutput Yellow "→ Chạy database migrations..."
 docker compose run --rm server npx prisma migrate deploy
 
-# 6. Khởi động containers mới
+# 5. Khởi động containers mới
 Write-ColorOutput Yellow "→ Khởi động containers mới..."
 docker compose up -d
 
-# 7. Kiểm tra health
+# 6. Kiểm tra health
 Write-ColorOutput Yellow "→ Kiểm tra health status..."
 Start-Sleep -Seconds 10
 
@@ -88,11 +84,11 @@ if ($webStatus) {
     Write-ColorOutput Yellow "⚠ Web chưa healthy, kiểm tra logs..."
 }
 
-# 8. Dọn dẹp images cũ
+# 7. Dọn dẹp images cũ
 Write-ColorOutput Yellow "→ Dọn dẹp images cũ..."
 docker image prune -f
 
-# 9. Hiển thị trạng thái
+# 8. Hiển thị trạng thái
 Write-ColorOutput Green "========================================"
 Write-ColorOutput Green "  Deploy hoàn tất!"
 Write-ColorOutput Green "========================================"
