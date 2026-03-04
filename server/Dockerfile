@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy package files with lock file
-COPY package.json package-lock.json* ./
+COPY package.json package-lock.json ./
 
 # Install dependencies with exact versions from lock file
 RUN npm ci
@@ -36,7 +36,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy package files with lock file
-COPY package.json package-lock.json* ./
+COPY package.json ./
 
 # Copy built files from builder
 COPY --from=builder /app/dist ./dist
