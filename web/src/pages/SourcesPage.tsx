@@ -35,7 +35,6 @@ export function SourcesPage() {
     });
 
     const filteredSources = useMemo(() => {
-        console.log('Filtering sources:', sources);
         if (!sources) {
             console.log('Sources is null/undefined');
             return [];
@@ -52,7 +51,6 @@ export function SourcesPage() {
                 source.rssUrl.toLowerCase().includes(query) ||
                 source.topicTags.some((tag) => tag.toLowerCase().includes(query))
         );
-        console.log('Filtered sources:', filtered.length);
         return filtered;
     }, [sources, searchQuery]);
 

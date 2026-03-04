@@ -447,6 +447,15 @@ Lấy danh sách items với filter và pagination.
         "id": 1,
         "name": "VnExpress"
       },
+      "article": {
+        "id": 1,
+        "mainImageUrl": "https://vnexpress.net/images/article-image.jpg",
+        "imageList": [
+          "https://vnexpress.net/images/article-image.jpg",
+          "https://vnexpress.net/images/chart-1.png",
+          "https://vnexpress.net/images/photo-2.jpg"
+        ]
+      },
       "aiResults": [
         {
           "stage": "STAGE_B",
@@ -522,6 +531,11 @@ Lấy các items đã qua AI Stage B, sẵn sàng publish lên Facebook.
       "importanceScore": 85,
       "topicTags": ["technology", "ai"],
       "fullArticle": "📱 AI mới nhất đang thay đổi cuộc sống...\n______________\nBối cảnh...",
+      "mainImageUrl": "https://vnexpress.net/images/ai-feature.jpg",
+      "imageList": [
+        "https://vnexpress.net/images/ai-feature.jpg",
+        "https://vnexpress.net/images/tech-chart.png"
+      ],
       "source": {
         "id": 1,
         "name": "VnExpress",
@@ -581,6 +595,20 @@ Lấy chi tiết 1 item.
     "name": "VnExpress",
     "rssUrl": "https://vnexpress.net/rss/...",
     "trustScore": 80
+  },
+  "article": {
+    "id": 1,
+    "fullHtml": "<html>...</html>",
+    "extractedContent": "Full text content...",
+    "truncatedContent": "Truncated for AI...",
+    "mainImageUrl": "https://vnexpress.net/images/main.jpg",
+    "imageList": [
+      "https://vnexpress.net/images/main.jpg",
+      "https://vnexpress.net/images/diagram.png",
+      "https://vnexpress.net/images/photo-1.jpg",
+      "https://vnexpress.net/images/photo-2.jpg"
+    ],
+    "createdAt": "2026-03-04T09:16:00.000Z"
   },
   "aiResults": [
     {

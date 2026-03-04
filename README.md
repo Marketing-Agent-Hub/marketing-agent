@@ -1,4 +1,4 @@
-# Open Campus Vietnam – AI RSS Bot
+# AI RSS Bot
 
 Automated system for RSS content curation → AI analysis → Vietnamese digests → Facebook publishing.
 

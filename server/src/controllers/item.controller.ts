@@ -36,6 +36,7 @@ export const getItems = asyncHandler(async (req: Request, res: Response) => {
                     select: {
                         id: true,
                         mainImageUrl: true,
+                        imageList: true,
                     },
                 },
                 aiResults: {
@@ -149,6 +150,7 @@ export const getReadyItems = asyncHandler(async (req: Request, res: Response) =>
                     select: {
                         id: true,
                         mainImageUrl: true,
+                        imageList: true,
                     },
                 },
                 aiResults: {
@@ -216,6 +218,7 @@ export const getReadyItems = asyncHandler(async (req: Request, res: Response) =>
             createdAt: item.createdAt,
             source: item.source,
             mainImageUrl: item.article?.mainImageUrl,
+            imageList: item.article?.imageList || [],
             // Stage A data
             importanceScore: stageA?.importanceScore,
             topicTags: stageA?.topicTags || [],

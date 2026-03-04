@@ -156,61 +156,6 @@ export interface GetDraftsQuery {
     timeSlot?: TimeSlot;
 }
 
-// Stats Types
-export interface PipelineStats {
-    items: {
-        total: number;
-        byStatus: {
-            NEW: number;
-            EXTRACTED: number;
-            FILTERED_OUT: number;
-            READY_FOR_AI: number;
-            AI_STAGE_A_DONE: number;
-            AI_STAGE_B_DONE: number;
-            USED_IN_POST: number;
-            REJECTED: number;
-        };
-        recent24h: number;
-    };
-    posts: {
-        total: number;
-        byStatus: {
-            DRAFT: number;
-            APPROVED: number;
-            REJECTED: number;
-            POSTED: number;
-        };
-        recent7days: number;
-        today: number;
-    };
-    sources: {
-        total: number;
-        enabled: number;
-        disabled: number;
-    };
-}
-
-export interface RecentActivity {
-    items: {
-        id: number;
-        title: string;
-        source: string;
-        status: ItemStatus;
-        createdAt: string;
-    }[];
-    posts: {
-        id: number;
-        targetDate: string;
-        timeSlot: TimeSlot;
-        status: PostStatus;
-        createdAt: string;
-    }[];
-}
-
-export interface Bottlenecks {
-    bottlenecks: string[];
-}
-
 // Monitoring Types
 export type LogLevel = 'TRACE' | 'DEBUG' | 'INFO' | 'WARN' | 'ERROR' | 'FATAL';
 
@@ -340,7 +285,7 @@ export interface GetTracesQuery {
 }
 
 // Item Types
-export type ItemStatus = 'NEW' | 'EXTRACTED' | 'FILTERED_OUT' | 'READY_FOR_AI' | 'AI_STAGE_A_DONE' | 'AI_STAGE_B_DONE' | 'USED_IN_POST' | 'REJECTED';
+export type ItemStatus = 'NEW' | 'EXTRACTED' | 'FILTERED_OUT' | 'READY_FOR_AI' | 'AI_STAGE_A_DONE' | 'AI_STAGE_B_DONE';
 
 export interface Article {
     id: number;
@@ -349,6 +294,7 @@ export interface Article {
     extractedContent: string;
     truncatedContent?: string;
     mainImageUrl?: string;
+    imageList?: string[];
     createdAt: string;
     updatedAt: string;
 }
@@ -358,22 +304,23 @@ export interface AiResult {
     itemId: number;
     stage: string; // "A" or "B"
     // Stage A
-    isAllowed?: boolean;
-    topicTags: string[];
-    importanceScore?: number;
-    oneLineSummary?: string;
+    isAllowed?: boolean | null;
+    topicTags?: string[];
+    importanceScore?: number | null;
+    oneLineSummary?: string | null;
     // Stage B
     summary?: string;
-    bullets: string[];
+    bullets?: string[];
     whyItMatters?: string;
-    riskFlags: string[];
-    suggestedHashtags: string[];
+    riskFlags?: string[];
+    suggestedHashtags?: string[];
+    fullArticle?: string | null;
     // Metadata
     model?: string;
-    promptTokens?: number;
-    completionTokens?: number;
-    totalTokens?: number;
-    rawResponse?: string;
+    promptTokens?: number | null;
+    completionTokens?: number | null;
+    totalTokens?: number | null;
+    rawResponse?: string | null;
     createdAt: string;
 }
 
@@ -393,6 +340,7 @@ export interface Item {
     source?: {
         id: number;
         name: string;
+        trustScore?: number;
     };
     article?: Article;
     aiResults?: AiResult[];
@@ -407,11 +355,13 @@ export interface PostItem {
 }
 
 export interface ItemsStats {
-    byStatus: Record<string, number>;
-    recentCount: number;
-    filteredCount: number;
-    rejectedCount: number;
-    total: number;
+    data: {
+        byStatus: Record<string, number>;
+        recentCount: number;
+        filteredCount: number;
+        rejectedCount: number;
+        total: number;
+    }
 }
 
 export interface GetItemsQuery {
@@ -430,6 +380,8 @@ export interface ReadyItem {
     importanceScore?: number;
     topicTags: string[];
     fullArticle?: string;
+    mainImageUrl?: string;
+    imageList?: string[];
     source: {
         id: number;
         name: string;

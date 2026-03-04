@@ -63,6 +63,41 @@ export function extractMainContent(html: string, url: string): {
 }
 
 /**
+ * Extract all image URLs from HTML content
+ */
+export function extractImageUrls(html: string, baseUrl: string): string[] {
+    try {
+        const dom = new JSDOM(html, { url: baseUrl });
+        const document = dom.window.document;
+        const images = document.querySelectorAll('img');
+        const imageUrls: string[] = [];
+
+        images.forEach((img) => {
+            let src = img.getAttribute('src') || img.getAttribute('data-src');
+
+            if (src) {
+                // Convert relative URLs to absolute URLs
+                try {
+                    const absoluteUrl = new URL(src, baseUrl).href;
+                    // Filter out tracking pixels and very small images
+                    if (!src.includes('1x1') && !src.includes('pixel') && !src.includes('tracking')) {
+                        imageUrls.push(absoluteUrl);
+                    }
+                } catch (error) {
+                    // Invalid URL, skip
+                }
+            }
+        });
+
+        // Remove duplicates
+        return Array.from(new Set(imageUrls));
+    } catch (error) {
+        console.error('[Extraction] Error extracting images:', error);
+        return [];
+    }
+}
+
+/**
  * Truncate content to max length for token optimization
  */
 export function truncateContent(content: string, maxLength = MAX_CONTENT_LENGTH_CHARS): string {
@@ -119,6 +154,10 @@ export async function processItem(itemId: number): Promise<{
         // Extract main content
         const extracted = extractMainContent(html, item.link);
 
+        // Extract images from HTML
+        const imageList = extractImageUrls(html, item.link);
+        console.log(`[Extraction] Found ${imageList.length} images for: ${item.title}`);
+
         if (!extracted) {
             console.warn(`[Extraction] Could not extract content for: ${item.title}`);
 
@@ -135,6 +174,7 @@ export async function processItem(itemId: number): Promise<{
                     fullHtml: null,
                     extractedContent: item.snippet || 'No content available',
                     truncatedContent: item.snippet || 'No content available',
+                    imageList: imageList,
                 },
             });
 
@@ -151,6 +191,7 @@ export async function processItem(itemId: number): Promise<{
                 fullHtml: html,
                 extractedContent: extracted.textContent,
                 truncatedContent: truncated,
+                imageList: imageList,
             },
         });
 

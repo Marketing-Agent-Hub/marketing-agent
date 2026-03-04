@@ -12,9 +12,6 @@ import type {
     UpdateDraftInput,
     RejectDraftInput,
     GetDraftsQuery,
-    PipelineStats,
-    RecentActivity,
-    Bottlenecks,
     MonitoringOverview,
     SystemLog,
     LogStats,
@@ -167,7 +164,9 @@ class ApiClient {
     }
 
     async getItemById(id: number): Promise<Item> {
-        return this.request<Item>(`/items/${id}`);
+        const response = await this.request<{ success: boolean; data: Item }>(`/items/${id}`);
+        // Backend wraps response in { success, data }
+        return response?.data as Item;
     }
 
     async getReadyItems(query?: GetReadyItemsQuery): Promise<{ items: ReadyItem[]; total: number; limit: number; offset: number }> {
@@ -237,57 +236,6 @@ class ApiClient {
         });
     }
 
-    // Stats endpoints
-    async getPipelineStats(): Promise<PipelineStats> {
-        const result = await this.request<PipelineStats>('/stats/pipeline');
-        if (!result) {
-            return {
-                items: {
-                    total: 0,
-                    byStatus: {
-                        NEW: 0,
-                        EXTRACTED: 0,
-                        FILTERED_OUT: 0,
-                        READY_FOR_AI: 0,
-                        AI_STAGE_A_DONE: 0,
-                        AI_STAGE_B_DONE: 0,
-                        USED_IN_POST: 0,
-                        REJECTED: 0,
-                    },
-                    recent24h: 0,
-                },
-                posts: {
-                    total: 0,
-                    byStatus: {
-                        DRAFT: 0,
-                        APPROVED: 0,
-                        REJECTED: 0,
-                        POSTED: 0,
-                    },
-                    recent7days: 0,
-                    today: 0,
-                },
-                sources: {
-                    total: 0,
-                    enabled: 0,
-                    disabled: 0,
-                },
-            };
-        }
-        return result;
-    }
-
-    async getRecentActivity(limit?: number): Promise<RecentActivity> {
-        const params = limit ? `?limit=${limit}` : '';
-        const result = await this.request<RecentActivity>(`/stats/activity${params}`);
-        return result || { items: [], posts: [] };
-    }
-
-    async getBottlenecks(): Promise<Bottlenecks> {
-        const result = await this.request<Bottlenecks>('/stats/bottlenecks');
-        return result || { bottlenecks: [] };
-    }
-
     // Admin trigger endpoints
     async triggerIngest(): Promise<void> {
         await this.request<void>('/admin/ingest/trigger', {
@@ -324,12 +272,6 @@ class ApiClient {
         });
     }
 
-    async triggerDigest(date?: string): Promise<void> {
-        await this.request<void>('/admin/digest/trigger', {
-            method: 'POST',
-            body: JSON.stringify({ date }),
-        });
-    }
     // Monitoring endpoints
     async getMonitoringOverview(): Promise<MonitoringOverview> {
         const response = await this.request<{ success: boolean; data: MonitoringOverview }>('/monitor/overview');

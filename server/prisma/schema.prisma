@@ -96,6 +96,7 @@ model Article {
   extractedContent       String
   truncatedContent       String?
   mainImageUrl           String?
+  imageList              String[]          @default([])
   
   createdAt              DateTime          @default(now())
   updatedAt              DateTime          @updatedAt

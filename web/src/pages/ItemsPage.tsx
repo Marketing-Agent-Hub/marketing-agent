@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '../lib/api-client';
 import type { ItemStatus } from '../types/api';
 import { SharedNav } from '../components/SharedNav';
+import { PipelineTriggers } from '../components/PipelineTriggers';
 
 const STATUS_COLORS: Record<ItemStatus, string> = {
     NEW: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
@@ -11,8 +12,6 @@ const STATUS_COLORS: Record<ItemStatus, string> = {
     READY_FOR_AI: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
     AI_STAGE_A_DONE: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
     AI_STAGE_B_DONE: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-    USED_IN_POST: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200',
-    REJECTED: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
 };
 
 const STATUS_LABELS: Record<ItemStatus, string> = {
@@ -22,8 +21,6 @@ const STATUS_LABELS: Record<ItemStatus, string> = {
     READY_FOR_AI: 'Sẵn sàng AI',
     AI_STAGE_A_DONE: 'AI Stage A xong',
     AI_STAGE_B_DONE: 'AI Stage B xong',
-    USED_IN_POST: 'Đã dùng',
-    REJECTED: 'Đã từ chối',
 };
 
 export function ItemsPage() {
@@ -60,11 +57,11 @@ export function ItemsPage() {
     const items = itemsData?.items || [];
     const total = itemsData?.total || 0;
     const stats = {
-        byStatus: statsData?.byStatus || {},
-        recentCount: statsData?.recentCount || 0,
-        filteredCount: statsData?.filteredCount || 0,
-        rejectedCount: statsData?.rejectedCount || 0,
-        total: statsData?.total || 0,
+        byStatus: statsData?.data.byStatus || {},
+        recentCount: statsData?.data.recentCount || 0,
+        filteredCount: statsData?.data.filteredCount || 0,
+        rejectedCount: statsData?.data.rejectedCount || 0,
+        total: statsData?.data.total || 0,
     };
 
     const totalPages = Math.ceil(total / limit);
@@ -79,32 +76,52 @@ export function ItemsPage() {
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
             {/* Header */}
             <SharedNav />
-
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 py-8">
+                {/* Manual Triggers */}
+                <PipelineTriggers />
+            </div>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 {/* Statistics Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
                     <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Tổng số</h3>
-                        <div className="text-3xl font-bold text-gray-900 dark:text-white">{stats.total.toLocaleString()}</div>
+                        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Tổng số tin tức</h3>
+                        <div className="text-3xl font-bold text-indigo-600 dark:text-indigo-400">{stats.total.toLocaleString()}</div>
                     </div>
                     <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
                         <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">24h gần đây</h3>
-                        <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">{stats.recentCount.toLocaleString()}</div>
+                        <div className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">{stats.recentCount.toLocaleString()}</div>
                     </div>
                     <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
                         <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Đã lọc</h3>
-                        <div className="text-3xl font-bold text-gray-600 dark:text-gray-300">{stats.filteredCount.toLocaleString()}</div>
-                    </div>
-                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Đã từ chối</h3>
-                        <div className="text-3xl font-bold text-red-600 dark:text-red-400">{stats.rejectedCount.toLocaleString()}</div>
-                    </div>
-                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Đã sử dụng</h3>
-                        <div className="text-3xl font-bold text-green-600 dark:text-green-400">{(stats.byStatus['USED_IN_POST'] || 0).toLocaleString()}</div>
+                        <div className="text-3xl font-bold text-rose-600 dark:text-rose-400">{stats.filteredCount.toLocaleString()}</div>
                     </div>
                 </div>
-
+                <div className="grid grid-cols-1 md:grid-cols-6 gap-4 mb-8">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Tin mới</h3>
+                        <div className="text-3xl font-bold text-cyan-600 dark:text-cyan-400">{stats.byStatus.NEW || 0}</div>
+                    </div>
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Tin đã trích xuất</h3>
+                        <div className="text-3xl font-bold text-purple-600 dark:text-purple-400">{stats.byStatus.EXTRACTED || 0}</div>
+                    </div>
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Tin đã lọc</h3>
+                        <div className="text-3xl font-bold text-slate-600 dark:text-slate-400">{stats.byStatus.FILTERED_OUT || 0}</div>
+                    </div>
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Sẵn sàng cho AI</h3>
+                        <div className="text-3xl font-bold text-amber-600 dark:text-amber-400">{stats.byStatus.READY_FOR_AI || 0}</div>
+                    </div>
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">AI stage A</h3>
+                        <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">{stats.byStatus.AI_STAGE_A_DONE || 0}</div>
+                    </div>
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Bài viết hoàn thành</h3>
+                        <div className="text-3xl font-bold text-green-600 dark:text-green-400">{stats.byStatus.AI_STAGE_B_DONE || 0}</div>
+                    </div>
+                </div>
                 {/* Filters */}
                 <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6">
                     <div className="flex flex-wrap gap-4">
@@ -384,9 +401,36 @@ export function ItemsPage() {
                                         {itemDetail.article.mainImageUrl && (
                                             <img
                                                 src={itemDetail.article.mainImageUrl}
-                                                alt="Article"
+                                                alt="Article Main"
                                                 className="w-full max-w-md mb-4 rounded"
                                             />
+                                        )}
+                                        {itemDetail.article.imageList && itemDetail.article.imageList.length > 0 && (
+                                            <div className="mb-4">
+                                                <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                    Hình ảnh ({itemDetail.article.imageList.length})
+                                                </h4>
+                                                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                                                    {itemDetail.article.imageList.map((imgUrl, idx) => (
+                                                        <a
+                                                            key={idx}
+                                                            href={imgUrl}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="block rounded overflow-hidden border border-gray-200 dark:border-gray-600 hover:ring-2 hover:ring-blue-500 transition-all"
+                                                        >
+                                                            <img
+                                                                src={imgUrl}
+                                                                alt={`Image ${idx + 1}`}
+                                                                className="w-full h-32 object-cover"
+                                                                onError={(e) => {
+                                                                    (e.target as HTMLImageElement).src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100"%3E%3Crect fill="%23ddd" width="100" height="100"/%3E%3Ctext x="50%" y="50%" text-anchor="middle" dy=".3em" fill="%23999"%3ENo Image%3C/text%3E%3C/svg%3E';
+                                                                }}
+                                                            />
+                                                        </a>
+                                                    ))}
+                                                </div>
+                                            </div>
                                         )}
                                         <div className="prose max-w-none">
                                             <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
@@ -425,7 +469,7 @@ export function ItemsPage() {
                                                                 <span className="ml-2 text-gray-900 dark:text-white">{result.importanceScore}/100</span>
                                                             </div>
                                                         )}
-                                                        {result.topicTags.length > 0 && (
+                                                        {result.topicTags && result.topicTags.length > 0 && (
                                                             <div>
                                                                 <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Tags:</span>
                                                                 <div className="flex flex-wrap gap-1 mt-1">
@@ -448,13 +492,21 @@ export function ItemsPage() {
 
                                                 {result.stage === 'B' && (
                                                     <div className="space-y-3">
+                                                        {result.fullArticle && (
+                                                            <div>
+                                                                <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Bài viết Facebook:</span>
+                                                                <div className="mt-2 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                                                                    <p className="text-gray-900 dark:text-white whitespace-pre-wrap">{result.fullArticle}</p>
+                                                                </div>
+                                                            </div>
+                                                        )}
                                                         {result.summary && (
                                                             <div>
                                                                 <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Tóm tắt:</span>
                                                                 <p className="text-gray-900 dark:text-white mt-1">{result.summary}</p>
                                                             </div>
                                                         )}
-                                                        {result.bullets.length > 0 && (
+                                                        {result.bullets && result.bullets.length > 0 && (
                                                             <div>
                                                                 <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Điểm chính:</span>
                                                                 <ul className="list-disc list-inside mt-1 space-y-1">
@@ -470,7 +522,7 @@ export function ItemsPage() {
                                                                 <p className="text-gray-900 dark:text-white mt-1">{result.whyItMatters}</p>
                                                             </div>
                                                         )}
-                                                        {result.riskFlags.length > 0 && (
+                                                        {result.riskFlags && result.riskFlags.length > 0 && (
                                                             <div>
                                                                 <span className="text-sm font-medium text-red-600 dark:text-red-400">Cảnh báo rủi ro:</span>
                                                                 <ul className="list-disc list-inside mt-1 space-y-1">
@@ -480,7 +532,7 @@ export function ItemsPage() {
                                                                 </ul>
                                                             </div>
                                                         )}
-                                                        {result.suggestedHashtags.length > 0 && (
+                                                        {result.suggestedHashtags && result.suggestedHashtags.length > 0 && (
                                                             <div>
                                                                 <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Hashtags:</span>
                                                                 <div className="flex flex-wrap gap-1 mt-1">

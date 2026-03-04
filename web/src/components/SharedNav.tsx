@@ -24,7 +24,7 @@ export function SharedNav() {
                             to="/dashboard"
                             className="text-2xl font-bold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400"
                         >
-                            OCVN Bot
+                            News Bot
                         </Link>
                         <nav className="hidden md:flex gap-2">
                             {navItems.map((item) => {
