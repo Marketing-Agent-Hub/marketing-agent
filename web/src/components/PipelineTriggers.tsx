@@ -76,7 +76,7 @@ export function PipelineTriggers() {
     const triggers: TriggerButton[] = [
         {
             key: 'ingest',
-            label: 'Ingest',
+            label: 'Thu thập tin',
             icon: '📥',
             color: 'bg-blue-600',
             hoverColor: 'hover:bg-blue-700',
@@ -84,7 +84,7 @@ export function PipelineTriggers() {
         },
         {
             key: 'extract',
-            label: 'Extract',
+            label: 'Tách tin',
             icon: '📄',
             color: 'bg-purple-600',
             hoverColor: 'hover:bg-purple-700',
@@ -92,7 +92,7 @@ export function PipelineTriggers() {
         },
         {
             key: 'filter',
-            label: 'Filter',
+            label: 'Lọc tin',
             icon: '🔍',
             color: 'bg-yellow-600',
             hoverColor: 'hover:bg-yellow-700',
@@ -100,7 +100,7 @@ export function PipelineTriggers() {
         },
         {
             key: 'ai-a',
-            label: 'AI Stage A',
+            label: 'Phân tích & lọc với AI',
             icon: '✨',
             color: 'bg-indigo-600',
             hoverColor: 'hover:bg-indigo-700',
@@ -108,7 +108,7 @@ export function PipelineTriggers() {
         },
         {
             key: 'ai-b',
-            label: 'AI Stage B',
+            label: 'AI viết bài',
             icon: '💎',
             color: 'bg-pink-600',
             hoverColor: 'hover:bg-pink-700',
@@ -126,7 +126,7 @@ export function PipelineTriggers() {
     return (
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                🎮 Manual Triggers
+                🎮 Gọi hệ thống xử lý tin thủ công
             </h2>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
                 {triggers.map((trigger) => (
