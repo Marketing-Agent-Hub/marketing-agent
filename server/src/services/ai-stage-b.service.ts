@@ -21,7 +21,6 @@ function getVietnameseInstructions(): {
 📋 CẤU TRÚC BÀI ĐĂNG FACEBOOK (BẮT BUỘC):
 
 1️⃣ TITLE (dòng đầu tiên)
-   **In đậm**
    Có 1-2 emoji phù hợp
    Tóm tắt insight chính
    KHÔNG giật tít
@@ -57,6 +56,7 @@ ______________
 6️⃣ HASHTAG (cuối bài)
 
 ⚠️ FORMAT RULES:
+✓ Đây là bài viết facebook không phải markdown, không dùng các format **in đậm** và những thứ tương tự
 ✓ Mỗi section chính ngăn cách bằng ______________
 ✓ KHÔNG dùng dấu gạch ngang dài (—)
 ✓ Paragraph không quá 4 dòng
