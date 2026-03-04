@@ -3,6 +3,7 @@
 .env.local
 .env.*.local
 .env.docker
+.env.production
 
 # Logs
 logs
@@ -31,3 +32,7 @@ Thumbs.db
 
 # Docker volumes
 postgres_data/
+
+# Backup files
+*.sql
+backup_*.sql

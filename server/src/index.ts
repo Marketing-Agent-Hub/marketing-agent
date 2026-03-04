@@ -43,7 +43,7 @@ app.use(errorMonitoring);
 app.use(errorHandler);
 
 // Start server
-const PORT = env.PORT;
+const PORT = env.PORT || 3001;
 app.listen(PORT, () => {
     logger.info(`✅ Server running on port ${PORT}`);
     logger.info(`📝 Environment: ${env.NODE_ENV}`);

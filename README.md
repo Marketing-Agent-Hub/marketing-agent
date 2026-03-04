@@ -41,6 +41,8 @@ See **[DEV_GUIDE.md](DEV_GUIDE.md)** for complete setup instructions.
 ## Documentation
 
 ### Quick Start
+- **[QUICKSTART.md](QUICKSTART.md)** - ⚡ Deploy trong 10 phút (Recommended for beginners)
+- **[DEPLOYMENT.md](DEPLOYMENT.md)** - 🚀 CI/CD with Docker Registry (Full guide)
 - **[DEPLOY_VPS.md](DEPLOY_VPS.md)** - 🚀 Step-by-step VPS deployment guide
 - **[README.Docker.md](README.Docker.md)** - 🐳 Docker deployment guide (production-ready)
 - **[DEV_GUIDE.md](DEV_GUIDE.md)** - Complete local development setup

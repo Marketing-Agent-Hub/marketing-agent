@@ -1,0 +1,36 @@
+# Webhook Configuration Example
+# Copy to /etc/webhook.conf trên VPS
+
+[
+  {
+    "id": "deploy-ocnewsbot",
+    "execute-command": "/opt/ocNewsBot/webhook-deploy.sh",
+    "command-working-directory": "/opt/ocNewsBot",
+    "pass-arguments-to-command": [],
+    "response-message": "Deployment started successfully",
+    "trigger-rule": {
+      "and": [
+        {
+          "match": {
+            "type": "payload-hash-sha256",
+            "secret": "CHANGE_THIS_TO_YOUR_SECRET",
+            "parameter": {
+              "source": "header",
+              "name": "X-Hub-Signature-256"
+            }
+          }
+        },
+        {
+          "match": {
+            "type": "value",
+            "value": "refs/heads/main",
+            "parameter": {
+              "source": "payload",
+              "name": "ref"
+            }
+          }
+        }
+      ]
+    }
+  }
+]
