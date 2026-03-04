@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'react-toastify';
 import { apiClient } from '../lib/api-client';
 import type { DailyPost } from '../types/api';
 
@@ -41,10 +42,10 @@ export function DraftEditor({ draft, onClose }: DraftEditorProps) {
         mutationFn: (data: any) => apiClient.updateDraft(draft.id, data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['drafts'] });
-            alert('✅ Đã lưu thay đổi');
+            toast.success('✅ Đã lưu thay đổi');
         },
         onError: (error: any) => {
-            alert(`❌ Lỗi: ${error.message}`);
+            toast.error(`❌ Lỗi: ${error.message}`);
         },
     });
 
@@ -52,7 +53,7 @@ export function DraftEditor({ draft, onClose }: DraftEditorProps) {
         mutationFn: () => apiClient.approveDraft(draft.id),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['drafts'] });
-            alert('✅ Đã duyệt bài viết');
+            toast.success('✅ Đã duyệt bài viết');
             onClose();
         },
         onError: (error: any) => {
@@ -64,11 +65,11 @@ export function DraftEditor({ draft, onClose }: DraftEditorProps) {
         mutationFn: (reason: string) => apiClient.rejectDraft(draft.id, { rejectionReason: reason }),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['drafts'] });
-            alert('✅ Đã từ chối bài viết');
+            toast.success('✅ Đã từ chối bài viết');
             onClose();
         },
         onError: (error: any) => {
-            alert(`❌ Lỗi: ${error.message}`);
+            toast.error(`❌ Lỗi: ${error.message}`);
         },
     });
 
@@ -95,7 +96,7 @@ export function DraftEditor({ draft, onClose }: DraftEditorProps) {
 
     const handleReject = () => {
         if (!rejectionReason.trim()) {
-            alert('Vui lòng nhập lý do từ chối');
+            toast.warning('Vui lòng nhập lý do từ chối');
             return;
         }
         rejectMutation.mutate(rejectionReason);

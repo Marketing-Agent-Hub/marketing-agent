@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'react-toastify';
 import { apiClient } from '../lib/api-client';
 
 interface TriggerButton {
@@ -16,60 +17,60 @@ export function PipelineTriggers() {
     const ingestMutation = useMutation({
         mutationFn: () => apiClient.triggerIngest(),
         onSuccess: () => {
-            alert('✅ Đã trigger ingest job');
+            toast.success('✅ Đã trigger ingest job');
             queryClient.invalidateQueries({ queryKey: ['stats'] });
             queryClient.invalidateQueries({ queryKey: ['pipeline-stats'] });
         },
         onError: (error: any) => {
-            alert(`❌ Lỗi: ${error.message}`);
+            toast.error(`❌ Lỗi: ${error.message}`);
         },
     });
 
     const extractionMutation = useMutation({
         mutationFn: () => apiClient.triggerExtraction(10),
         onSuccess: () => {
-            alert('✅ Đã trigger extraction job');
+            toast.success('✅ Đã trigger extraction job');
             queryClient.invalidateQueries({ queryKey: ['stats'] });
             queryClient.invalidateQueries({ queryKey: ['pipeline-stats'] });
         },
         onError: (error: any) => {
-            alert(`❌ Lỗi: ${error.message}`);
+            toast.error(`❌ Lỗi: ${error.message}`);
         },
     });
 
     const filteringMutation = useMutation({
         mutationFn: () => apiClient.triggerFiltering(10),
         onSuccess: () => {
-            alert('✅ Đã trigger filtering job');
+            toast.success('✅ Đã trigger filtering job');
             queryClient.invalidateQueries({ queryKey: ['stats'] });
             queryClient.invalidateQueries({ queryKey: ['pipeline-stats'] });
         },
         onError: (error: any) => {
-            alert(`❌ Lỗi: ${error.message}`);
+            toast.error(`❌ Lỗi: ${error.message}`);
         },
     });
 
     const aiStageAMutation = useMutation({
         mutationFn: () => apiClient.triggerAIStageA(5),
         onSuccess: () => {
-            alert('✅ Đã trigger AI Stage A job');
+            toast.success('✅ Đã trigger AI Stage A job');
             queryClient.invalidateQueries({ queryKey: ['stats'] });
             queryClient.invalidateQueries({ queryKey: ['pipeline-stats'] });
         },
         onError: (error: any) => {
-            alert(`❌ Lỗi: ${error.message}`);
+            toast.error(`❌ Lỗi: ${error.message}`);
         },
     });
 
     const aiStageBMutation = useMutation({
         mutationFn: () => apiClient.triggerAIStageB(3),
         onSuccess: () => {
-            alert('✅ Đã trigger AI Stage B job');
+            toast.success('✅ Đã trigger AI Stage B job');
             queryClient.invalidateQueries({ queryKey: ['stats'] });
             queryClient.invalidateQueries({ queryKey: ['pipeline-stats'] });
         },
         onError: (error: any) => {
-            alert(`❌ Lỗi: ${error.message}`);
+            toast.error(`❌ Lỗi: ${error.message}`);
         },
     });
 

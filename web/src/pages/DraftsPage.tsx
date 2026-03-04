@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
+import { toast } from 'react-toastify';
 import { apiClient } from '../lib/api-client';
 import { SharedNav } from '../components/SharedNav';
 import type { ReadyItem } from '../types/api';
@@ -324,7 +325,7 @@ export function DraftsPage() {
                                 <button
                                     onClick={() => {
                                         navigator.clipboard.writeText(selectedItem.fullArticle || '');
-                                        alert('✅ Đã copy nội dung!');
+                                        toast.success('✅ Đã copy nội dung!');
                                     }}
                                     className="flex-1 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 dark:bg-gray-500 dark:hover:bg-gray-600"
                                 >

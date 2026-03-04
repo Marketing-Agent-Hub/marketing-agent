@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState, useMemo, useEffect } from 'react';
+import { toast } from 'react-toastify';
 import { apiClient } from '../lib/api-client';
 import { SourceFormModal } from '../components/SourceFormModal';
 import { ImportSourcesModal } from '../components/ImportSourcesModal';
@@ -124,7 +125,7 @@ export function SourcesPage() {
         await Promise.all(promises);
         queryClient.invalidateQueries({ queryKey: ['sources'] });
         setSelectedIds(new Set());
-        alert(`✅ Đã xóa thành công!`);
+        toast.success(`✅ Đã xóa thành công!`);
     };
 
     const handleBulkEnable = async () => {
@@ -140,7 +141,7 @@ export function SourcesPage() {
         await Promise.all(promises);
         queryClient.invalidateQueries({ queryKey: ['sources'] });
         setSelectedIds(new Set());
-        alert(`✅ Đã kích hoạt ${promises.length} nguồn!`);
+        toast.success(`✅ Đã kích hoạt ${promises.length} nguồn!`);
     };
 
     const handleBulkDisable = async () => {
@@ -156,12 +157,12 @@ export function SourcesPage() {
         await Promise.all(promises);
         queryClient.invalidateQueries({ queryKey: ['sources'] });
         setSelectedIds(new Set());
-        alert(`✅ Đã vô hiệu hóa ${promises.length} nguồn!`);
+        toast.success(`✅ Đã vô hiệu hóa ${promises.length} nguồn!`);
     };
 
     const handleBulkEdit = () => {
         if (selectedIds.size !== 1) {
-            alert('⚠️ Chỉ có thể chỉnh sửa 1 nguồn tại một thời điểm!');
+            toast.warning('⚠️ Chỉ có thể chỉnh sửa 1 nguồn tại một thời điểm!');
             return;
         }
         const id = Array.from(selectedIds)[0];
@@ -184,7 +185,7 @@ export function SourcesPage() {
             document.body.removeChild(a);
         } catch (error) {
             console.error('Export failed:', error);
-            alert('❌ Export thất bại. Vui lòng thử lại!');
+            toast.error('❌ Export thất bại. Vui lòng thử lại!');
         }
     };
 

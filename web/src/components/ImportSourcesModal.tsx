@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import { toast } from 'react-toastify';
 import { apiClient } from '../lib/api-client';
 import type { CreateSourceInput } from '../types/api';
 
@@ -38,7 +39,7 @@ export function ImportSourcesModal({ onClose }: ImportSourcesModalProps) {
             const data = JSON.parse(text);
 
             if (!Array.isArray(data)) {
-                alert('❌ JSON phải là một mảng (array) các nguồn RSS');
+                toast.error('❌ JSON phải là một mảng (array) các nguồn RSS');
                 return null;
             }
 
@@ -46,25 +47,25 @@ export function ImportSourcesModal({ onClose }: ImportSourcesModalProps) {
             for (let i = 0; i < data.length; i++) {
                 const source = data[i];
                 if (!source.name || typeof source.name !== 'string') {
-                    alert(`❌ Nguồn thứ ${i + 1} thiếu trường "name" (string)`);
+                    toast.error(`❌ Nguồn thứ ${i + 1} thiếu trường "name" (string)`);
                     return null;
                 }
                 if (!source.rssUrl || typeof source.rssUrl !== 'string') {
-                    alert(`❌ Nguồn thứ ${i + 1} thiếu trường "rssUrl" (string)`);
+                    toast.error(`❌ Nguồn thứ ${i + 1} thiếu trường "rssUrl" (string)`);
                     return null;
                 }
             }
 
             return data as CreateSourceInput[];
         } catch (error) {
-            alert(`❌ JSON không hợp lệ: ${error instanceof Error ? error.message : String(error)}`);
+            toast.error(`❌ JSON không hợp lệ: ${error instanceof Error ? error.message : String(error)}`);
             return null;
         }
     };
 
     const handleImport = async () => {
         if (!jsonText.trim()) {
-            alert('⚠️ Vui lòng nhập hoặc tải lên dữ liệu JSON');
+            toast.warning('⚠️ Vui lòng nhập hoặc tải lên dữ liệu JSON');
             return;
         }
 
@@ -101,7 +102,7 @@ export function ImportSourcesModal({ onClose }: ImportSourcesModalProps) {
 
     const handleClose = () => {
         if (importing) {
-            alert('⚠️ Đang import, vui lòng đợi...');
+            toast.warning('⚠️ Đang import, vui lòng đợi...');
             return;
         }
         onClose();
