@@ -15,15 +15,8 @@ export const envSchema = z.object({
   PORT: z.string().regex(/^\d+$/).transform(Number).default('3001'),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
 
-  // Application branding
-  APP_NAME: z.string().default('News Aggregator'),
-  APP_DESCRIPTION: z.string().default('AI-powered news aggregation system'),
+  // HTTP Client
   USER_AGENT: z.string().default('NewsAggregatorBot/1.0'),
-
-  // Content configuration
-  CONTENT_LANGUAGE: z.string().default('en'), // ISO 639-1 code (en, vi, etc)
-  TARGET_AUDIENCE: z.string().default('general audience'),
-  FOCUS_TOPICS: z.string().default('technology,business,science'), // comma-separated
 });
 
 export type Env = z.infer<typeof envSchema>;

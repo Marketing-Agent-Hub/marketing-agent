@@ -1,25 +1,23 @@
 import { openai, AI_CONFIG } from '../config/ai.config.js';
 import { prisma } from '../db/index.js';
 import { ItemStatus } from '@prisma/client';
-import { env } from '../config/env.js';
 
 interface StageBOutput {
     fullArticle: string; // Complete Facebook post with all content
 }
 
 /**
- * Get language-specific instructions
+ * Get Vietnamese language instructions for Facebook post
  */
-function getLanguageInstructions(lang: string): {
+function getVietnameseInstructions(): {
     languageName: string;
     writingStyle: string;
     articleStructure: string;
 } {
-    const instructions: Record<string, any> = {
-        vi: {
-            languageName: 'Vietnamese',
-            writingStyle: 'Viết như Facebook post tự nhiên, dễ đọc. Giọng văn rõ ràng, có cấu trúc, phân tích ngắn gọn. KHÔNG hype, giật tít, FOMO, quá casual hoặc quá academic. KHÔNG kể chuyện lan man.',
-            articleStructure: `
+    return {
+        languageName: 'Vietnamese',
+        writingStyle: 'Viết như Facebook post tự nhiên, dễ đọc. Giọng văn rõ ràng, có cấu trúc, phân tích ngắn gọn. KHÔNG hype, giật tít, FOMO, quá casual hoặc quá academic. KHÔNG kể chuyện lan man.',
+        articleStructure: `
 📋 CẤU TRÚC BÀI ĐĂNG FACEBOOK (BẮT BUỘC):
 
 1️⃣ TITLE (dòng đầu tiên)
@@ -70,120 +68,7 @@ ______________
 ✓ KHÔNG viết phong cách báo chí
 
 🎯 TONE: Rõ ràng, có cấu trúc, dễ đọc, phân tích ngắn gọn. Giữ nguyên nội dung cốt lõi, KHÔNG thêm thông tin ngoài input.`,
-        },
-        en: {
-            languageName: 'English',
-            writingStyle: 'Write like natural Facebook post, easy to read. Clear voice, structured, concise analysis. NO hype, clickbait, FOMO, too casual or too academic. NO rambling storytelling.',
-            articleStructure: `
-📋 FACEBOOK POST STRUCTURE (MANDATORY):
-
-1️⃣ TITLE (first line)
-   **Bold text**
-   1-2 relevant emojis
-   Summarize main insight
-   NO clickbait
-
-______________
-
-2️⃣ OPENING (2-4 sentences)
-   Introduce topic briefly
-   Set context
-
-______________
-
-3️⃣ MAIN CONTENT
-   Emoji + Subheading
-   • Bullet point
-   • Bullet point
-   • Bullet point
-   
-   Emoji + Subheading
-   Brief analysis (2-4 sentences)
-
-______________
-
-4️⃣ KEY INSIGHT
-   Emoji + Main takeaway
-   1-2 sentences on impact/meaning
-
-______________
-
-5️⃣ DISCUSSION PROMPT
-   Question to encourage engagement
-   
-6️⃣ HASHTAGS (end of post)
-
-⚠️ FORMAT RULES:
-✓ Separate major sections with ______________
-✓ NO long dashes (—)
-✓ Paragraphs max 4 lines
-✓ Clear line breaks
-✓ Each major section starts with emoji
-✓ Bullets use: • ✔️ 1️⃣ 2️⃣ 3️⃣
-✓ Hashtags ONLY at end
-✓ NO links mid-paragraph
-✓ NO newspaper style
-
-🎯 TONE: Clear, structured, readable, concise analysis. Keep core content integrity, DO NOT add info not in input.`,
-        },
-        es: {
-            languageName: 'Spanish',
-            writingStyle: 'Escribe como publicación natural de Facebook, fácil de leer. Voz clara, estructurada, análisis conciso. SIN exageración, clickbait, FOMO, demasiado casual o académico. SIN narrativa divagante.',
-            articleStructure: `
-📋 ESTRUCTURA POST FACEBOOK (OBLIGATORIO):
-
-1️⃣ TÍTULO (primera línea)
-   **Negrita**
-   1-2 emojis relevantes
-   Resume insight principal
-   SIN clickbait
-
-______________
-
-2️⃣ APERTURA (2-4 oraciones)
-   Introduce tema brevemente
-   Establece contexto
-
-______________
-
-3️⃣ CONTENIDO PRINCIPAL
-   Emoji + Subtítulo
-   • Punto clave
-   • Punto clave
-   • Punto clave
-   
-   Emoji + Subtítulo
-   Análisis breve (2-4 oraciones)
-
-______________
-
-4️⃣ INSIGHT CLAVE
-   Emoji + Conclusión principal
-   1-2 oraciones sobre impacto/significado
-
-______________
-
-5️⃣ PREGUNTA ABIERTA
-   Pregunta para fomentar discusión
-   
-6️⃣ HASHTAGS (final del post)
-
-⚠️ REGLAS DE FORMATO:
-✓ Separar secciones mayores con ______________
-✓ SIN guiones largos (—)
-✓ Párrafos máx 4 líneas
-✓ Saltos de línea claros
-✓ Cada sección mayor inicia con emoji
-✓ Bullets usan: • ✔️ 1️⃣ 2️⃣ 3️⃣
-✓ Hashtags SOLO al final
-✓ SIN enlaces en medio de párrafos
-✓ SIN estilo periodístico
-
-🎯 TONO: Claro, estructurado, legible, análisis conciso. Mantener integridad del contenido, NO agregar información no presente en input.`,
-        },
     };
-
-    return instructions[lang] || instructions.en;
 }
 
 /**
@@ -198,90 +83,83 @@ function buildStageBPrompt(item: {
     importanceScore: number;
     oneLineSummary: string;
 }): string {
-    const langInstructions = getLanguageInstructions(env.CONTENT_LANGUAGE);
-    const focusTopics = env.FOCUS_TOPICS.split(',').map(t => t.trim().toLowerCase());
-    const hashtagSuggestions = focusTopics.map(t => `#${t}`).join(' ');
+    const instructions = getVietnameseInstructions();
 
-    return `You are a Facebook Content Writing Agent for ${env.APP_NAME}, converting news articles into clear, concise, readable Facebook posts for ${env.TARGET_AUDIENCE}.
+    return `Bạn là AI chuyên viết bài đăng Facebook tiếng Việt, chuyển đổi tin tức thành bài đăng rõ ràng, súc tích cho người Việt.
 
-⚡ YOUR ONLY TASK: Transform input content into complete Facebook post following standard format.
+⚡ NHIỆM VỤ: Chuyển tin tức thành bài đăng Facebook hoàn chỉnh theo format chuẩn.
 
-🎯 CORE RULES:
-✓ Keep original content meaning - only restructure for Facebook
-✓ DO NOT add information not in input
-✓ DO NOT infer beyond data
-✓ DO NOT change content meaning
-✓ DO NOT skip required format
+🎯 QUY TẮC CỐT LÕI:
+✓ Giữ nguyên ý nghĩa nội dung gốc - chỉ tái cấu trúc cho Facebook
+✓ KHÔNG thêm thông tin không có trong input
+✓ KHÔNG suy diễn ngoài dữ liệu
+✓ KHÔNG thay đổi ý nghĩa nội dung
+✓ KHÔNG bỏ format yêu cầu
 
-${langInstructions.writingStyle}
+${instructions.writingStyle}
 
-📊 CONTEXT:
-Source: ${item.sourceName}
-Topic Tags: ${item.topicTags.join(', ')}
-Importance: ${item.importanceScore}/100
-Quick Summary: ${item.oneLineSummary}
+� BÀI BÁO GỐC:
+Nguồn: ${item.sourceName}
+Tiêu đề: ${item.title}
 
-📰 SOURCE ARTICLE:
-Title: ${item.title}
-
-Content:
+Nội dung:
 ${item.content}
 
 ---
 
-${langInstructions.articleStructure}
+${instructions.articleStructure}
 
-📏 LENGTH REQUIREMENTS:
-Target: 300-450 words
-Minimum: 250 words
-Maximum: 500 words
+📏 YÊU CẦU ĐỘ DÀI:
+Mục tiêu: 300-450 từ
+Tối thiểu: 250 từ
+Tối đa: 500 từ
 
-🚫 HARD CONSTRAINTS (NEVER DO):
-✗ Add information not in input
-✗ Add data or statistics not provided
-✗ Add names/organizations not in input
-✗ Skip discussion prompt (CTA)
-✗ Use newspaper/blog writing style
-✗ Write overly academic or casual
-✗ Use clickbait or FOMO tactics
-✗ Ramble or lose focus
+🚫 CẤM TUYỆT ĐỐI:
+✗ Thêm thông tin không có trong input
+✗ Thêm số liệu hoặc thống kê không được cung cấp
+✗ Thêm tên người/tổ chức không có trong input
+✗ Bỏ câu hỏi mở (CTA)
+✗ Viết phong cách báo chí/blog
+✗ Viết quá academic hoặc quá casual
+✗ Dùng clickbait hoặc FOMO
+✗ Viết lan man mất focus
 
-✅ CONTENT INTEGRITY:
-- Keep core content unchanged
-- Only include facts from input
-- If info is missing → summarize only what exists
-- No speculation or assumptions
+✅ TÍNH TOÀN VẸN NỘI DUNG:
+- Giữ nguyên nội dung cốt lõi
+- Chỉ bao gồm sự kiện từ input
+- Nếu thiếu thông tin → chỉ tóm tắt những gì có
+- Không suy đoán hay giả định
 
-📐 EXECUTION LOGIC:
-1. Read input content
-2. Identify: main topic, key insight, significance
-3. Restructure content
-4. Rewrite in Facebook format
-5. Add discussion prompt
-6. Add relevant hashtags
-7. Output ONLY the post (no reasoning/explanation)
+📐 QUY TRÌNH:
+1. Đọc nội dung input
+2. Xác định: chủ đề chính, insight quan trọng, ý nghĩa
+3. Tái cấu trúc nội dung
+4. Viết lại theo format Facebook
+5. Thêm câu hỏi mở
+6. Thêm hashtag liên quan (tự generate dựa trên nội dung)
+7. Output CHỈ bài post (không giải thích/reasoning)
 
 OUTPUT FORMAT (valid JSON only):
 {
-  "fullArticle": "Complete Facebook post with TITLE (bold + emoji), opening, structured content with emoji subheadings and bullets, key insight, discussion question, and hashtags at end. Written in ${langInstructions.languageName}. Must follow format rules strictly. Include relevant hashtags from: ${hashtagSuggestions}"
+  "fullArticle": "Bài đăng Facebook hoàn chỉnh với TIÊU ĐỀ (in đậm + emoji), mở bài, nội dung có cấu trúc với emoji subheadings và bullets, insight chính, câu hỏi thảo luận, và hashtags ở cuối. Viết bằng tiếng Việt. Phải tuân thủ format rules nghiêm ngặt. Tự generate hashtags phù hợp với nội dung."
 }
 
-🎨 STYLE CHECKLIST:
-✓ Title is bold with 1-2 emojis
-✓ Use ______________ separator between major sections (after title, opening, main content, key insight)
-✓ Clear line breaks between sections
-✓ Each major section starts with emoji
-✓ Paragraphs are 2-4 lines max
-✓ Bullets use • ✔️ 1️⃣ 2️⃣ 3️⃣ only
-✓ NO long dashes (—)
-✓ NO links mid-paragraph
-✓ Hashtags ONLY at the end
-✓ Has discussion question before hashtags
-✓ Voice is clear, structured, analytical (not hyped)
+🎨 CHECKLIST PHONG CÁCH:
+✓ Tiêu đề in đậm với 1-2 emojis
+✓ Dùng ______________ ngăn cách giữa các section chính (sau tiêu đề, mở bài, nội dung chính, insight chính)
+✓ Line break rõ ràng giữa các phần
+✓ Mỗi section lớn bắt đầu bằng emoji
+✓ Đoạn văn tối đa 2-4 dòng
+✓ Bullets chỉ dùng • ✔️ 1️⃣ 2️⃣ 3️⃣
+✓ KHÔNG dùng dấu gạch ngang dài (—)
+✓ KHÔNG chèn link giữa đoạn
+✓ Hashtags CHỈ ở cuối bài
+✓ Có câu hỏi thảo luận trước hashtags
+✓ Giọng văn rõ ràng, có cấu trúc, phân tích (không hype)
 
-⚠️ CRITICAL: fullArticle must be COMPLETE Facebook post (300-450 words), ready to copy-paste. NO explanations, NO reasoning text. Just the post itself.
+⚠️ QUAN TRỌNG: fullArticle phải là bài đăng Facebook HOÀN CHỈNH (300-450 từ), sẵn sàng copy-paste. KHÔNG giải thích, KHÔNG reasoning. Chỉ bài post.
 
-Respond with JSON only, no other text.`;
+Chỉ trả về JSON, không kèm text khác.`;
 }
 
 /**
@@ -293,7 +171,7 @@ async function callStageB(prompt: string): Promise<StageBOutput> {
         messages: [
             {
                 role: 'system',
-                content: `You are a Facebook Content Writing Agent converting articles to ${getLanguageInstructions(env.CONTENT_LANGUAGE).languageName} Facebook posts. Follow format rules strictly. Respond only with valid JSON.`,
+                content: `Bạn là AI chuyên viết bài đăng Facebook tiếng Việt. Tuân thủ format rules nghiêm ngặt. Chỉ trả về valid JSON.`,
             },
             {
                 role: 'user',

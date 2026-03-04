@@ -1,7 +1,6 @@
 import { openai, AI_CONFIG } from '../config/ai.config.js';
 import { prisma } from '../db/index.js';
 import { ItemStatus } from '@prisma/client';
-import { env } from '../config/env.js';
 
 interface StageAOutput {
     isAllowed: boolean;
@@ -21,12 +20,7 @@ function buildStageAPrompt(item: {
     sourceName: string;
     publishedAt?: Date | null;
 }): string {
-    const focusTopics = env.FOCUS_TOPICS.split(',').map(t => t.trim());
-    const topicTagsDescription = focusTopics.length > 0
-        ? `Focus on topics related to: ${focusTopics.join(', ')}`
-        : 'Accept diverse content across various topics';
-
-    return `You are a content analyzer for ${env.APP_NAME}, ${env.APP_DESCRIPTION}.
+    return `You are a content analyzer for an RSS news aggregator.
 
 TASK: Analyze this RSS item and categorize it.
 
@@ -50,8 +44,7 @@ OUTPUT FORMAT (valid JSON only):
 }
 
 TOPIC TAGS:
-${topicTagsDescription}
-Suggested categories: ${focusTopics.join(', ')}, research, innovation, case-study, policy, regulation, events, community, announcements, partnerships
+Generate relevant topic tags based on content (e.g., technology, education, business, science, health, sports, entertainment, politics, etc.)
 
 IMPORTANCE SCORE:
 - 90-100: Breaking news, major announcements

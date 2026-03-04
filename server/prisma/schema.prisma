@@ -28,8 +28,7 @@ enum ItemStatus {
   READY_FOR_AI
   AI_STAGE_A_DONE
   AI_STAGE_B_DONE
-  USED_IN_POST
-  REJECTED
+  USED
 }
 
 model Source {

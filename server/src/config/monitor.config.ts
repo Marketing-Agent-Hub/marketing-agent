@@ -14,7 +14,7 @@ export const monitorConfig = {
 
     // OpenTelemetry configuration
     telemetry: {
-        serviceName: env.APP_NAME.toLowerCase().replace(/\s+/g, '-'),
+        serviceName: 'news-aggregator-server',
         serviceVersion: '1.0.0',
         environment: env.NODE_ENV,
         enabled: true,

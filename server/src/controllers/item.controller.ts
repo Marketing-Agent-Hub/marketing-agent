@@ -273,9 +273,9 @@ export const getItemsStats = asyncHandler(async (_req: Request, res: Response) =
         },
     });
 
-    const rejectedCount = await db.item.count({
+    const usedCount = await db.item.count({
         where: {
-            status: 'REJECTED',
+            status: 'USED',
         },
     });
 
@@ -285,7 +285,7 @@ export const getItemsStats = asyncHandler(async (_req: Request, res: Response) =
             byStatus: statusCounts,
             recentCount,
             filteredCount,
-            rejectedCount,
+            usedCount,
             total: stats.reduce((sum, stat) => sum + stat._count.id, 0),
         },
     });
