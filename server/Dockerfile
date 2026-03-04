@@ -3,6 +3,9 @@ FROM node:24-alpine AS builder
 
 WORKDIR /app
 
+# Install OpenSSL compatibility for Prisma
+RUN apk add --no-cache openssl1.1-compat
+
 # Copy package files (excluding package-lock.json)
 COPY package.json ./
 
@@ -22,6 +25,9 @@ RUN npm run build
 FROM node:24-alpine
 
 WORKDIR /app
+
+# Install OpenSSL 1.1 compatibility for Prisma
+RUN apk add --no-cache openssl1.1-compat
 
 # Copy package files
 COPY package.json ./
