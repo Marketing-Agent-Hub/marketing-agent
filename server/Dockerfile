@@ -13,8 +13,7 @@ RUN apt-get update && apt-get install -y \
 COPY package.json package-lock.json* ./
 
 # Install dependencies with exact versions from lock file
-# Force use of lock file, fail if it doesn't match
-RUN npm ci --include=dev
+RUN npm ci
 
 # Copy source code
 COPY . .
@@ -39,13 +38,13 @@ RUN apt-get update && apt-get install -y \
 # Copy package files with lock file
 COPY package.json package-lock.json* ./
 
-# Install production dependencies only
-RUN npm ci --production
-
 # Copy built files from builder
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/prisma ./prisma
+
+# Prune dev dependencies to reduce image size
+RUN npm prune --production
 
 # Create logs directory
 RUN mkdir -p logs
