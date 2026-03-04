@@ -8,7 +8,6 @@ import { SourcesPage } from './pages/SourcesPage';
 import { DraftsPage } from './pages/DraftsPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { MonitoringPage } from './pages/MonitoringPage';
-import { ItemsPage } from './pages/ItemsPage';
 import { DocsLayout } from './components/docs/DocsLayout';
 import { DocsPage } from './components/docs/DocsPage';
 
@@ -58,14 +57,6 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <MonitoringPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/items"
-                element={
-                  <ProtectedRoute>
-                    <ItemsPage />
                   </ProtectedRoute>
                 }
               />

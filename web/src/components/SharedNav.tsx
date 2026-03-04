@@ -10,7 +10,6 @@ export function SharedNav() {
         { label: 'Dashboard', href: '/dashboard' },
         { label: 'Nguồn RSS', href: '/sources' },
         { label: 'Bài viết', href: '/drafts' },
-        { label: 'Items', href: '/items' },
         { label: 'Monitoring', href: '/monitoring' },
         { label: '📚 Docs', href: '/docs' },
     ];
