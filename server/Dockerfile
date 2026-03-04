@@ -9,11 +9,11 @@ RUN apt-get update && apt-get install -y \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy package files (excluding package-lock.json)
-COPY package.json ./
+# Copy package files with lock file
+COPY package.json package-lock.json* ./
 
-# Install dependencies
-RUN npm install --legacy-peer-deps
+# Install dependencies (use ci for faster, reproducible builds)
+RUN npm ci --include=dev || npm install --legacy-peer-deps
 
 # Copy source code
 COPY . .
@@ -35,11 +35,11 @@ RUN apt-get update && apt-get install -y \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy package files
-COPY package.json ./
+# Copy package files with lock file
+COPY package.json package-lock.json* ./
 
 # Install production dependencies only
-RUN npm install --production --legacy-peer-deps
+RUN npm ci --omit=dev || npm install --production --legacy-peer-deps
 
 # Copy built files from builder
 COPY --from=builder /app/dist ./dist
