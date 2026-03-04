@@ -7,12 +7,12 @@ import type { LogLevel, GetLogsQuery, GetMetricsQuery, GetTracesQuery } from '..
 type Tab = 'overview' | 'logs' | 'metrics' | 'health' | 'traces';
 
 const LOG_LEVEL_COLORS: Record<LogLevel, string> = {
-    trace: 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200',
-    debug: 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200',
-    info: 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200',
-    warn: 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200',
-    error: 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200',
-    fatal: 'bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200',
+    TRACE: 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200',
+    DEBUG: 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200',
+    INFO: 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200',
+    WARN: 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200',
+    ERROR: 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200',
+    FATAL: 'bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200',
 };
 
 const HEALTH_STATUS_COLORS = {
@@ -113,26 +113,26 @@ export function MonitoringPage() {
     });
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 mt-16">
             <SharedNav />
 
             {/* Tabs */}
-            <div className="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+            <div className="sticky top-0 z-10 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <nav className="flex gap-6">
+                    <nav className="flex gap-4 overflow-x-auto">
                         {[
-                            { id: 'overview', label: '📈 Overview', icon: '' },
-                            { id: 'logs', label: '📝 Logs', icon: '' },
-                            { id: 'metrics', label: '📊 Metrics', icon: '' },
-                            { id: 'health', label: '💚 Health', icon: '' },
-                            { id: 'traces', label: '⚡ Traces', icon: '' },
+                            { id: 'overview', label: '📈 Overview' },
+                            { id: 'logs', label: '📝 Logs' },
+                            { id: 'metrics', label: '📊 Metrics' },
+                            { id: 'health', label: '💚 Health' },
+                            { id: 'traces', label: '⚡ Traces' },
                         ].map((tab) => (
                             <button
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id as Tab)}
-                                className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === tab.id
+                                className={`py-4 px-4 border-b-2 font-medium text-sm whitespace-nowrap transition-colors ${activeTab === tab.id
                                     ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
+                                    : 'border-transparent text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:border-gray-300 dark:hover:border-gray-500'
                                     }`}
                             >
                                 {tab.label}
@@ -283,12 +283,12 @@ export function MonitoringPage() {
                                     className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                                 >
                                     <option value="ALL">All</option>
-                                    <option value="trace">Trace</option>
-                                    <option value="debug">Debug</option>
-                                    <option value="info">Info</option>
-                                    <option value="warn">Warning</option>
-                                    <option value="error">Error</option>
-                                    <option value="fatal">Fatal</option>
+                                    <option value="TRACE">Trace</option>
+                                    <option value="DEBUG">Debug</option>
+                                    <option value="INFO">Info</option>
+                                    <option value="WARN">Warning</option>
+                                    <option value="ERROR">Error</option>
+                                    <option value="FATAL">Fatal</option>
                                 </select>
 
                                 {Array.isArray(logStats) && logStats.length > 0 && (
@@ -335,12 +335,12 @@ export function MonitoringPage() {
                                         </tr>
                                     </thead>
                                     <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                                        {logs && logs.length > 0 ? (
-                                            logs.map((log) => (
+                                        {logs?.logs && logs.logs.length > 0 ? (
+                                            logs.logs.map((log) => (
                                                 <tr key={log.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
                                                         {new Date(
-                                                            log.timestamp
+                                                            log.createdAt
                                                         ).toLocaleString()}
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap">
@@ -451,12 +451,12 @@ export function MonitoringPage() {
                                         </tr>
                                     </thead>
                                     <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                                        {metrics && metrics.length > 0 ? (
-                                            metrics.map((metric) => (
+                                        {metrics?.metrics && metrics.metrics.length > 0 ? (
+                                            metrics.metrics.map((metric) => (
                                                 <tr key={metric.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
                                                         {new Date(
-                                                            metric.timestamp
+                                                            metric.createdAt
                                                         ).toLocaleTimeString()}
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
@@ -581,7 +581,7 @@ export function MonitoringPage() {
                                                 <tr key={check.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
                                                         {new Date(
-                                                            check.timestamp
+                                                            check.createdAt
                                                         ).toLocaleString()}
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
@@ -657,13 +657,13 @@ export function MonitoringPage() {
                         </div>
 
                         {/* Slow Traces Alert */}
-                        {slowTraces && slowTraces.length > 0 && (
+                        {slowTraces?.traces && slowTraces.traces.length > 0 && (
                             <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg p-4">
                                 <h3 className="font-semibold text-yellow-900 dark:text-yellow-300 mb-2">
-                                    ⚠️ Slow Requests ({slowTraces.length})
+                                    ⚠️ Slow Requests ({slowTraces.traces.length})
                                 </h3>
                                 <div className="space-y-2">
-                                    {slowTraces.slice(0, 5).map((trace) => (
+                                    {slowTraces.traces.slice(0, 5).map((trace) => (
                                         <div
                                             key={trace.id}
                                             className="text-sm text-yellow-800 dark:text-yellow-200"
@@ -700,8 +700,8 @@ export function MonitoringPage() {
                                         </tr>
                                     </thead>
                                     <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                                        {traces && traces.length > 0 ? (
-                                            traces.map((trace) => (
+                                        {traces?.traces && traces.traces.length > 0 ? (
+                                            traces.traces.map((trace) => (
                                                 <tr
                                                     key={trace.id}
                                                     className={`hover:bg-gray-50 dark:hover:bg-gray-700 ${trace.duration > 5000
@@ -711,7 +711,7 @@ export function MonitoringPage() {
                                                 >
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
                                                         {new Date(
-                                                            trace.timestamp
+                                                            trace.createdAt
                                                         ).toLocaleString()}
                                                     </td>
                                                     <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">

@@ -108,12 +108,12 @@ export function DashboardPage() {
     }
 
     const pipelineFlow = [
-        { status: 'NEW', count: stats?.items.byStatus.NEW || 0, label: 'Mới', color: 'bg-blue-100 text-blue-800' },
-        { status: 'EXTRACTED', count: stats?.items.byStatus.EXTRACTED || 0, label: 'Đã trích xuất', color: 'bg-purple-100 text-purple-800' },
-        { status: 'READY_FOR_AI', count: stats?.items.byStatus.READY_FOR_AI || 0, label: 'Sẵn sàng AI', color: 'bg-yellow-100 text-yellow-800' },
-        { status: 'AI_STAGE_A_DONE', count: stats?.items.byStatus.AI_STAGE_A_DONE || 0, label: 'AI Stage A', color: 'bg-indigo-100 text-indigo-800' },
-        { status: 'AI_STAGE_B_DONE', count: stats?.items.byStatus.AI_STAGE_B_DONE || 0, label: 'AI Stage B', color: 'bg-pink-100 text-pink-800' },
-        { status: 'USED_IN_POST', count: stats?.items.byStatus.USED_IN_POST || 0, label: 'Đã dùng', color: 'bg-green-100 text-green-800' },
+        { status: 'NEW', count: stats?.items?.byStatus?.NEW || 0, label: 'Mới', color: 'bg-blue-100 text-blue-800' },
+        { status: 'EXTRACTED', count: stats?.items?.byStatus?.EXTRACTED || 0, label: 'Đã trích xuất', color: 'bg-purple-100 text-purple-800' },
+        { status: 'READY_FOR_AI', count: stats?.items?.byStatus?.READY_FOR_AI || 0, label: 'Sẵn sàng AI', color: 'bg-yellow-100 text-yellow-800' },
+        { status: 'AI_STAGE_A_DONE', count: stats?.items?.byStatus?.AI_STAGE_A_DONE || 0, label: 'AI Stage A', color: 'bg-indigo-100 text-indigo-800' },
+        { status: 'AI_STAGE_B_DONE', count: stats?.items?.byStatus?.AI_STAGE_B_DONE || 0, label: 'AI Stage B', color: 'bg-pink-100 text-pink-800' },
+        { status: 'USED_IN_POST', count: stats?.items?.byStatus?.USED_IN_POST || 0, label: 'Đã dùng', color: 'bg-green-100 text-green-800' },
     ];
 
     return (
@@ -139,49 +139,49 @@ export function DashboardPage() {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                     <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
                         <div className="text-3xl font-bold text-gray-900 dark:text-white">
-                            {stats?.sources.enabled || 0}
+                            {stats?.sources?.enabled || 0}
                         </div>
                         <div className="text-sm text-gray-600 dark:text-gray-300 mt-1">
                             Nguồn RSS đang hoạt động
                         </div>
                         <div className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                            Tổng: {stats?.sources.total || 0}
+                            Tổng: {stats?.sources?.total || 0}
                         </div>
                     </div>
 
                     <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
                         <div className="text-3xl font-bold text-gray-900 dark:text-white">
-                            {stats?.items.total || 0}
+                            {stats?.items?.total || 0}
                         </div>
                         <div className="text-sm text-gray-600 dark:text-gray-300 mt-1">
                             Tổng items
                         </div>
                         <div className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                            24h gần đây: {stats?.items.recent24h || 0}
+                            24h gần đây: {stats?.items?.recent24h || 0}
                         </div>
                     </div>
 
                     <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
                         <div className="text-3xl font-bold text-gray-900 dark:text-white">
-                            {stats?.posts.today || 0}
+                            {stats?.posts?.today || 0}
                         </div>
                         <div className="text-sm text-gray-600 dark:text-gray-300 mt-1">
                             Bài viết hôm nay
                         </div>
                         <div className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                            7 ngày: {stats?.posts.recent7days || 0}
+                            7 ngày: {stats?.posts?.recent7days || 0}
                         </div>
                     </div>
 
                     <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
                         <div className="text-3xl font-bold text-gray-900 dark:text-white">
-                            {stats?.posts.byStatus.DRAFT || 0}
+                            {stats?.posts?.byStatus?.DRAFT || 0}
                         </div>
                         <div className="text-sm text-gray-600 dark:text-gray-300 mt-1">
                             Bài nháp cần duyệt
                         </div>
                         <div className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                            Đã duyệt: {stats?.posts.byStatus.APPROVED || 0}
+                            Đã duyệt: {stats?.posts?.byStatus?.APPROVED || 0}
                         </div>
                     </div>
                 </div>
@@ -267,7 +267,7 @@ export function DashboardPage() {
                         </h2>
                         <div className="space-y-2">
                             {Object.entries(STATUS_LABELS).map(([status, label]) => {
-                                const count = stats?.items.byStatus[status as keyof typeof stats.items.byStatus] || 0;
+                                const count = stats?.items?.byStatus?.[status as keyof typeof stats.items.byStatus] || 0;
                                 return (
                                     <div key={status} className="flex items-center justify-between">
                                         <span className="text-sm text-gray-700 dark:text-gray-300">{label}</span>
@@ -284,7 +284,7 @@ export function DashboardPage() {
                         </h2>
                         <div className="space-y-2">
                             {Object.entries(POST_STATUS_LABELS).map(([status, label]) => {
-                                const count = stats?.posts.byStatus[status as keyof typeof stats.posts.byStatus] || 0;
+                                const count = stats?.posts?.byStatus?.[status as keyof typeof stats.posts.byStatus] || 0;
                                 return (
                                     <div key={status} className="flex items-center justify-between">
                                         <span className="text-sm text-gray-700 dark:text-gray-300">{label}</span>
@@ -297,43 +297,47 @@ export function DashboardPage() {
                 </div>
 
                 {/* Recent Activity */}
-                {activity && (
+                {activity && (activity.items || activity.posts) && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                                📰 Recent Items
-                            </h2>
-                            <div className="space-y-3">
-                                {activity.items.map((item) => (
-                                    <div key={item.id} className="text-sm border-b border-gray-200 dark:border-gray-700 pb-2">
-                                        <div className="font-medium text-gray-900 dark:text-white truncate">
-                                            {item.title}
+                        {activity.items && activity.items.length > 0 && (
+                            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                                <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                                    📰 Recent Items
+                                </h2>
+                                <div className="space-y-3">
+                                    {activity.items.map((item) => (
+                                        <div key={item.id} className="text-sm border-b border-gray-200 dark:border-gray-700 pb-2">
+                                            <div className="font-medium text-gray-900 dark:text-white truncate">
+                                                {item.title}
+                                            </div>
+                                            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                                {item.source} • {STATUS_LABELS[item.status]}
+                                            </div>
                                         </div>
-                                        <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                            {item.source} • {STATUS_LABELS[item.status]}
-                                        </div>
-                                    </div>
-                                ))}
+                                    ))}
+                                </div>
                             </div>
-                        </div>
+                        )}
 
-                        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                                📝 Recent Posts
-                            </h2>
-                            <div className="space-y-3">
-                                {activity.posts.map((post) => (
-                                    <div key={post.id} className="text-sm border-b border-gray-200 dark:border-gray-700 pb-2">
-                                        <div className="font-medium text-gray-900 dark:text-white">
-                                            {new Date(post.targetDate).toLocaleDateString('vi-VN')} - {post.timeSlot}
+                        {activity.posts && activity.posts.length > 0 && (
+                            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                                <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                                    📝 Recent Posts
+                                </h2>
+                                <div className="space-y-3">
+                                    {activity.posts.map((post) => (
+                                        <div key={post.id} className="text-sm border-b border-gray-200 dark:border-gray-700 pb-2">
+                                            <div className="font-medium text-gray-900 dark:text-white">
+                                                {new Date(post.targetDate).toLocaleDateString('vi-VN')} - {post.timeSlot}
+                                            </div>
+                                            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                                {POST_STATUS_LABELS[post.status]}
+                                            </div>
                                         </div>
-                                        <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                            {POST_STATUS_LABELS[post.status]}
-                                        </div>
-                                    </div>
-                                ))}
+                                    ))}
+                                </div>
                             </div>
-                        </div>
+                        )}
                     </div>
                 )}
             </div>

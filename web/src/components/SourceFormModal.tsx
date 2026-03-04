@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { apiClient } from '../lib/api-client';
-import type { Source, SourceLang } from '../types/api';
+import type { Source, SourceLang, RSSValidationResult } from '../types/api';
 
 const sourceSchema = z.object({
     name: z.string().min(1, 'Name is required').max(255, 'Name too long'),
@@ -30,13 +30,7 @@ export function SourceFormModal({ source, onClose }: SourceFormModalProps) {
     const queryClient = useQueryClient();
     const [error, setError] = useState<string | null>(null);
     const [validating, setValidating] = useState(false);
-    const [validationResult, setValidationResult] = useState<{
-        ok: boolean;
-        type?: string;
-        title?: string;
-        itemsCount?: number;
-        error?: string;
-    } | null>(null);
+    const [validationResult, setValidationResult] = useState<RSSValidationResult | null>(null);
 
     const isEditMode = !!source?.id;
 
@@ -192,12 +186,12 @@ export function SourceFormModal({ source, onClose }: SourceFormModalProps) {
                         )}
                         {validationResult && (
                             <div
-                                className={`mt-2 p-3 rounded-md text-sm ${validationResult.ok ? 'bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-400' : 'bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-400'
+                                className={`mt-2 p-3 rounded-md text-sm ${validationResult.valid ? 'bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-400' : 'bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-400'
                                     }`}
                             >
-                                {validationResult.ok ? (
+                                {validationResult.valid ? (
                                     <>
-                                        ✓ Valid {validationResult.type} feed: {validationResult.title} ({validationResult.itemsCount} items)
+                                        ✓ Valid RSS feed: {validationResult.metadata?.title} ({validationResult.metadata?.itemCount} items)
                                     </>
                                 ) : (
                                     <>✗ {validationResult.error}</>

@@ -1,59 +1,52 @@
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { apiClient } from '../lib/api-client';
-import { DraftEditor } from '../components/DraftEditor';
 import { SharedNav } from '../components/SharedNav';
-import type { DailyPost, PostStatus } from '../types/api';
-
-const STATUS_LABELS: Record<PostStatus, string> = {
-    DRAFT: '📝 Nháp',
-    APPROVED: '✅ Đã duyệt',
-    REJECTED: '❌ Đã từ chối',
-    POSTED: '🚀 Đã đăng',
-};
-
-const STATUS_COLORS: Record<PostStatus, string> = {
-    DRAFT: 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200',
-    APPROVED: 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200',
-    REJECTED: 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200',
-    POSTED: 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200',
-};
-
-const TIME_SLOT_LABELS: Record<string, string> = {
-    MORNING_1: '08:00 - Sáng 1',
-    MORNING_2: '08:00 - Sáng 2',
-    NOON: '12:00 - Trưa',
-    EVENING_1: '18:30 - Tối 1',
-    EVENING_2: '18:30 - Tối 2',
-};
+import type { ReadyItem } from '../types/api';
 
 export function DraftsPage() {
-    const [selectedDraft, setSelectedDraft] = useState<DailyPost | null>(null);
-    const [statusFilter, setStatusFilter] = useState<PostStatus | 'ALL'>('DRAFT');
-    const [dateFilter, setDateFilter] = useState('');
+    const [selectedItem, setSelectedItem] = useState<ReadyItem | null>(null);
+    const [sortBy, setSortBy] = useState<'importance' | 'date' | 'recent'>('importance');
+    const [topicTagFilter, setTopicTagFilter] = useState('');
+    const [fromDate, setFromDate] = useState('');
+    const [toDate, setToDate] = useState('');
+    const [limit] = useState(50);
 
-    const { data: drafts, isLoading, error } = useQuery({
-        queryKey: ['drafts', statusFilter, dateFilter],
-        queryFn: () => {
-            const query: any = {};
-            if (statusFilter !== 'ALL') query.status = statusFilter;
-            if (dateFilter) query.targetDate = dateFilter;
-            return apiClient.getDrafts(query);
+    const { data: itemsData, isLoading, error } = useQuery({
+        queryKey: ['ready-items', sortBy, topicTagFilter, fromDate, toDate, limit],
+        queryFn: async () => {
+            const result = await apiClient.getReadyItems({
+                sortBy,
+                topicTag: topicTagFilter || undefined,
+                fromDate: fromDate || undefined,
+                toDate: toDate || undefined,
+                limit,
+            });
+            return result;
         },
+        staleTime: 0, // Always fetch fresh data
+        refetchOnMount: true,
     });
 
-    const handleEdit = (draft: DailyPost) => {
-        setSelectedDraft(draft);
+    const items = itemsData?.items || [];
+    const total = itemsData?.total || 0;
+
+    const handleViewDetail = (item: ReadyItem) => {
+        setSelectedItem(item);
     };
 
-    const handleCloseEditor = () => {
-        setSelectedDraft(null);
+    const handleCloseModal = () => {
+        setSelectedItem(null);
     };
 
-    const getContentPreview = (draft: DailyPost) => {
-        const content = draft.editedContent || draft.content;
-        return content.substring(0, 150) + (content.length > 150 ? '...' : '');
+    const getContentPreview = (content: string) => {
+        return content.substring(0, 200) + (content.length > 200 ? '...' : '');
     };
+
+    // Get unique topic tags from items
+    const allTopicTags = Array.from(
+        new Set(items.flatMap(item => item.topicTags))
+    ).sort();
 
     if (isLoading) {
         return (
@@ -75,145 +68,272 @@ export function DraftsPage() {
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
             <SharedNav />
 
-            {/* Filters */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 py-8">
+                {/* Header */}
+                <div className="mb-6">
+                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                        📰 Bài viết sẵn sàng đăng
+                    </h1>
+                    <p className="text-gray-600 dark:text-gray-400 mt-2">
+                        Các bài viết đã qua AI Stage B, sẵn sàng để publish lên Facebook
+                    </p>
+                </div>
+
+                {/* Filters */}
                 <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-6">
-                    <div className="flex flex-wrap gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div>
                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                Trạng thái:
+                                Sắp xếp theo:
                             </label>
                             <select
-                                value={statusFilter}
-                                onChange={(e) => setStatusFilter(e.target.value as any)}
-                                className="px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                value={sortBy}
+                                onChange={(e) => setSortBy(e.target.value as any)}
+                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                             >
-                                <option value="ALL">Tất cả</option>
-                                <option value="DRAFT">📝 Nháp</option>
-                                <option value="APPROVED">✅ Đã duyệt</option>
-                                <option value="REJECTED">❌ Đã từ chối</option>
-                                <option value="POSTED">🚀 Đã đăng</option>
+                                <option value="importance">⭐ Độ quan trọng</option>
+                                <option value="date">📅 Ngày xuất bản</option>
+                                <option value="recent">🕐 Mới nhất</option>
                             </select>
                         </div>
+
                         <div>
                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                Ngày đăng:
+                                Topic Tag:
+                            </label>
+                            <select
+                                value={topicTagFilter}
+                                onChange={(e) => setTopicTagFilter(e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            >
+                                <option value="">Tất cả</option>
+                                {allTopicTags.map(tag => (
+                                    <option key={tag} value={tag}>{tag}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Từ ngày:
                             </label>
                             <input
                                 type="date"
-                                value={dateFilter}
-                                onChange={(e) => setDateFilter(e.target.value)}
-                                className="px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                value={fromDate}
+                                onChange={(e) => setFromDate(e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Đến ngày:
+                            </label>
+                            <input
+                                type="date"
+                                value={toDate}
+                                onChange={(e) => setToDate(e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
                         </div>
                     </div>
-                </div>
 
-                {/* Drafts List */}
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-                    {!drafts || drafts.length === 0 ? (
-                        <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-                            Không có bài viết nào
-                        </div>
-                    ) : (
-                        <div className="overflow-x-auto">
-                            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                                <thead className="bg-gray-50 dark:bg-gray-700">
-                                    <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                            Ngày đăng
-                                        </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                            Giờ đăng
-                                        </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                            Trạng thái
-                                        </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                            Nội dung
-                                        </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                            Nguồn tin
-                                        </th>
-                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                            Thao tác
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                                    {drafts.map((draft) => {
-                                        const targetDate = new Date(draft.targetDate);
-                                        const dateStr = targetDate.toLocaleDateString('vi-VN');
-
-                                        return (
-                                            <tr key={draft.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                                                    {dateStr}
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                                                    {TIME_SLOT_LABELS[draft.timeSlot]}
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <span
-                                                        className={`px-2 py-1 text-xs font-medium rounded-full ${STATUS_COLORS[draft.status]
-                                                            }`}
-                                                    >
-                                                        {STATUS_LABELS[draft.status]}
-                                                    </span>
-                                                </td>
-                                                <td className="px-6 py-4 text-sm text-gray-900 dark:text-white max-w-md">
-                                                    <div className="line-clamp-2">
-                                                        {getContentPreview(draft)}
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
-                                                    {draft.postItems.length} tin
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                                    <button
-                                                        onClick={() => handleEdit(draft)}
-                                                        className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300"
-                                                    >
-                                                        {draft.status === 'DRAFT' ? '✏️ Chỉnh sửa' : '👁️ Xem'}
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
+                    {(topicTagFilter || fromDate || toDate) && (
+                        <div className="mt-4 flex items-center gap-2">
+                            <button
+                                onClick={() => {
+                                    setTopicTagFilter('');
+                                    setFromDate('');
+                                    setToDate('');
+                                }}
+                                className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
+                            >
+                                🔄 Xóa bộ lọc
+                            </button>
                         </div>
                     )}
                 </div>
 
                 {/* Stats */}
-                {drafts && drafts.length > 0 && (
-                    <div className="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4">
-                        {(['DRAFT', 'APPROVED', 'REJECTED', 'POSTED'] as PostStatus[]).map(
-                            (status) => {
-                                const count = drafts.filter((d) => d.status === status).length;
-                                return (
-                                    <div
-                                        key={status}
-                                        className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 text-center"
-                                    >
-                                        <div className="text-3xl font-bold text-gray-900 dark:text-white">
-                                            {count}
+                <div className="mb-6 text-sm text-gray-600 dark:text-gray-400">
+                    Hiển thị {items.length} / {total} bài viết
+                </div>
+
+                {/* Items List */}
+                <div className="space-y-4">
+                    {items.length === 0 ? (
+                        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-12 text-center text-gray-500 dark:text-gray-400">
+                            Không có bài viết nào sẵn sàng
+                        </div>
+                    ) : (
+                        items.map((item) => (
+                            <div
+                                key={item.id}
+                                className="bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-lg transition-shadow p-6"
+                            >
+                                <div className="flex items-start justify-between">
+                                    <div className="flex-1">
+                                        {/* Title */}
+                                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                                            {item.title}
+                                        </h3>
+
+                                        {/* Meta info */}
+                                        <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600 dark:text-gray-400 mb-3">
+                                            <span className="flex items-center gap-1">
+                                                📰 {item.source.name}
+                                            </span>
+                                            {item.publishedAt && (
+                                                <span className="flex items-center gap-1">
+                                                    📅 {new Date(item.publishedAt).toLocaleDateString('vi-VN')}
+                                                </span>
+                                            )}
+                                            {item.importanceScore && (
+                                                <span className="flex items-center gap-1 font-semibold text-orange-600 dark:text-orange-400">
+                                                    ⭐ {item.importanceScore}
+                                                </span>
+                                            )}
+                                            <span className="flex items-center gap-1">
+                                                🎯 Trust: {item.source.trustScore}
+                                            </span>
                                         </div>
-                                        <div className="text-sm text-gray-600 dark:text-gray-300 mt-1">
-                                            {STATUS_LABELS[status]}
-                                        </div>
+
+                                        {/* Topic Tags */}
+                                        {item.topicTags && item.topicTags.length > 0 && (
+                                            <div className="flex flex-wrap gap-2 mb-3">
+                                                {item.topicTags.map((tag, idx) => (
+                                                    <span
+                                                        key={idx}
+                                                        className="px-2 py-1 text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full"
+                                                    >
+                                                        {tag}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        )}
+
+                                        {/* Content preview */}
+                                        {item.fullArticle && (
+                                            <div className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-line">
+                                                {getContentPreview(item.fullArticle)}
+                                            </div>
+                                        )}
                                     </div>
-                                );
-                            }
-                        )}
-                    </div>
-                )}
+
+                                    {/* Actions */}
+                                    <div className="ml-4 flex flex-col gap-2">
+                                        <button
+                                            onClick={() => handleViewDetail(item)}
+                                            className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 whitespace-nowrap"
+                                        >
+                                            👁️ Xem chi tiết
+                                        </button>
+                                        <a
+                                            href={item.link}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="px-4 py-2 bg-gray-600 text-white text-sm rounded-lg hover:bg-gray-700 dark:bg-gray-500 dark:hover:bg-gray-600 text-center whitespace-nowrap"
+                                        >
+                                            🔗 Nguồn gốc
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        ))
+                    )}
+                </div>
             </div>
 
-            {/* Editor Modal */}
-            {selectedDraft && (
-                <DraftEditor draft={selectedDraft} onClose={handleCloseEditor} />
+            {/* Detail Modal */}
+            {selectedItem && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                        <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex items-center justify-between">
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                                Chi tiết bài viết
+                            </h3>
+                            <button
+                                onClick={handleCloseModal}
+                                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                            >
+                                ✕
+                            </button>
+                        </div>
+
+                        <div className="px-6 py-4">
+                            {/* Title */}
+                            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                                {selectedItem.title}
+                            </h2>
+
+                            {/* Meta */}
+                            <div className="flex flex-wrap gap-4 text-sm text-gray-600 dark:text-gray-400 mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
+                                <span>📰 {selectedItem.source.name}</span>
+                                {selectedItem.publishedAt && (
+                                    <span>📅 {new Date(selectedItem.publishedAt).toLocaleString('vi-VN')}</span>
+                                )}
+                                {selectedItem.importanceScore && (
+                                    <span className="font-semibold text-orange-600 dark:text-orange-400">
+                                        ⭐ Importance: {selectedItem.importanceScore}
+                                    </span>
+                                )}
+                                <span>🎯 Trust Score: {selectedItem.source.trustScore}</span>
+                            </div>
+
+                            {/* Tags */}
+                            {selectedItem.topicTags && selectedItem.topicTags.length > 0 && (
+                                <div className="mb-4">
+                                    <div className="font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                        Topic Tags:
+                                    </div>
+                                    <div className="flex flex-wrap gap-2">
+                                        {selectedItem.topicTags.map((tag, idx) => (
+                                            <span
+                                                key={idx}
+                                                className="px-3 py-1 text-sm bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full"
+                                            >
+                                                {tag}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Full Article */}
+                            {selectedItem.fullArticle && (
+                                <div className="mb-4">
+                                    <div className="font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                        Full Article (AI Generated):
+                                    </div>
+                                    <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 text-gray-900 dark:text-white whitespace-pre-line">
+                                        {selectedItem.fullArticle}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Actions */}
+                            <div className="flex gap-3 mt-6">
+                                <a
+                                    href={selectedItem.link}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex-1 px-4 py-2 bg-blue-600 text-white text-center rounded-lg hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+                                >
+                                    🔗 Xem nguồn gốc
+                                </a>
+                                <button
+                                    onClick={() => {
+                                        navigator.clipboard.writeText(selectedItem.fullArticle || '');
+                                        alert('✅ Đã copy nội dung!');
+                                    }}
+                                    className="flex-1 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 dark:bg-gray-500 dark:hover:bg-gray-600"
+                                >
+                                    📋 Copy nội dung
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );

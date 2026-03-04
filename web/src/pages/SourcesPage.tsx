@@ -35,16 +35,25 @@ export function SourcesPage() {
     });
 
     const filteredSources = useMemo(() => {
-        if (!sources) return [];
-        if (!searchQuery.trim()) return sources;
+        console.log('Filtering sources:', sources);
+        if (!sources) {
+            console.log('Sources is null/undefined');
+            return [];
+        }
+        if (!searchQuery.trim()) {
+            console.log('No search query, returning all sources:', sources.length);
+            return sources;
+        }
 
         const query = searchQuery.toLowerCase();
-        return sources.filter(
+        const filtered = sources.filter(
             (source) =>
                 source.name.toLowerCase().includes(query) ||
                 source.rssUrl.toLowerCase().includes(query) ||
                 source.topicTags.some((tag) => tag.toLowerCase().includes(query))
         );
+        console.log('Filtered sources:', filtered.length);
+        return filtered;
     }, [sources, searchQuery]);
 
     // Clear selection when search changes

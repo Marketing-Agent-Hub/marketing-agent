@@ -17,6 +17,7 @@ export interface Source {
     notes: string | null;
     lastValidatedAt: string | null;
     lastValidationStatus: ValidationStatus | null;
+    lastFetchedAt: string | null;
     createdAt: string;
     updatedAt: string;
 }
@@ -47,26 +48,51 @@ export interface UpdateSourceInput {
     notes?: string;
 }
 
+export interface ExportSourcesResponse {
+    sources: Source[];
+    exportedAt: string;
+    count: number;
+}
+
 export interface LoginInput {
     email: string;
     password: string;
 }
 
+export interface User {
+    id: number;
+    email: string;
+    role: 'ADMIN' | 'USER';
+    createdAt: string;
+}
+
 export interface LoginResponse {
     token: string;
-    email: string;
+    user: User;
 }
 
 export interface UserResponse {
+    id: number;
     email: string;
+    role: 'ADMIN' | 'USER';
+    createdAt: string;
 }
 
 export interface RSSValidationResult {
-    ok: boolean;
-    type?: 'RSS' | 'Atom';
-    title?: string;
-    itemsCount?: number;
+    valid: boolean;
+    metadata?: {
+        title: string;
+        description?: string;
+        itemCount: number;
+        link: string;
+    };
     error?: string;
+}
+
+export interface ExportSourcesResponse {
+    sources: Source[];
+    exportedAt: string;
+    count: number;
 }
 
 export type ApiErrorCode =
@@ -186,7 +212,7 @@ export interface Bottlenecks {
 }
 
 // Monitoring Types
-export type LogLevel = 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal';
+export type LogLevel = 'TRACE' | 'DEBUG' | 'INFO' | 'WARN' | 'ERROR' | 'FATAL';
 
 export interface SystemLog {
     id: number;
@@ -195,7 +221,7 @@ export interface SystemLog {
     meta?: Record<string, any>;
     traceId?: string;
     spanId?: string;
-    timestamp: string;
+    createdAt: string;
 }
 
 export interface LogStats {
@@ -209,7 +235,7 @@ export interface SystemMetric {
     value: number;
     unit?: string;
     tags?: Record<string, any>;
-    timestamp: string;
+    createdAt: string;
 }
 
 export interface MetricStats {
@@ -228,7 +254,7 @@ export interface HealthCheck {
     responseTime?: number;
     message?: string;
     metadata?: Record<string, any>;
-    timestamp: string;
+    createdAt: string;
 }
 
 export interface HealthStatus {
@@ -249,7 +275,7 @@ export interface PerformanceTrace {
     duration: number;
     status: 'success' | 'error';
     metadata?: Record<string, any>;
-    timestamp: string;
+    createdAt: string;
 }
 
 export interface TraceStats {
@@ -289,10 +315,14 @@ export interface GetLogsQuery {
     traceId?: string;
     limit?: number;
     offset?: number;
+    search?: string;
 }
 
 export interface GetMetricsQuery {
     name?: string;
+    metric?: string;
+    from?: string;
+    to?: string;
     startDate?: string;
     endDate?: string;
     limit?: number;
@@ -390,4 +420,29 @@ export interface GetItemsQuery {
     limit?: number;
     offset?: number;
     search?: string;
+}
+
+export interface ReadyItem {
+    id: number;
+    title: string;
+    link: string;
+    publishedAt?: string;
+    importanceScore?: number;
+    topicTags: string[];
+    fullArticle?: string;
+    source: {
+        id: number;
+        name: string;
+        trustScore: number;
+    };
+}
+
+export interface GetReadyItemsQuery {
+    sortBy?: 'importance' | 'date' | 'recent';
+    limit?: number;
+    offset?: number;
+    sourceId?: number;
+    topicTag?: string;
+    fromDate?: string;
+    toDate?: string;
 }

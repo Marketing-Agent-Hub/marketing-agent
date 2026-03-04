@@ -1,10 +1,10 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { apiClient } from '../lib/api-client';
-import type { LoginInput, UserResponse } from '../types/api';
+import type { LoginInput, User } from '../types/api';
 
 interface AuthContextType {
-    user: UserResponse | null;
+    user: User | null;
     isLoading: boolean;
     isAuthenticated: boolean;
     login: (credentials: LoginInput) => Promise<void>;
@@ -14,7 +14,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-    const [user, setUser] = useState<UserResponse | null>(null);
+    const [user, setUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
@@ -39,7 +39,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const login = async (credentials: LoginInput) => {
         const response = await apiClient.login(credentials);
-        setUser({ email: response.email });
+        setUser(response.user);
     };
 
     const logout = () => {

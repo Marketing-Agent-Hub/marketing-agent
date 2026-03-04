@@ -2,6 +2,7 @@ import type {
     Source,
     CreateSourceInput,
     UpdateSourceInput,
+    ExportSourcesResponse,
     LoginInput,
     LoginResponse,
     UserResponse,
@@ -29,6 +30,8 @@ import type {
     Item,
     ItemsStats,
     GetItemsQuery,
+    ReadyItem,
+    GetReadyItemsQuery,
 } from '../types/api';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
@@ -98,7 +101,19 @@ class ApiClient {
 
     // Source endpoints
     async getSources(): Promise<Source[]> {
-        return this.request<Source[]>('/sources');
+        const response = await this.request<{ sources: Source[] }>('/sources');
+
+        // Nếu response là array trực tiếp
+        if (Array.isArray(response)) {
+            return response;
+        }
+
+        // Nếu response có key sources
+        return response?.sources || [];
+    }
+
+    async getSourceById(id: number): Promise<Source> {
+        return this.request<Source>(`/sources/${id}`);
     }
 
     async createSource(input: CreateSourceInput): Promise<Source> {
@@ -129,22 +144,58 @@ class ApiClient {
     }
 
     async exportSources(): Promise<Blob> {
-        const token = this.getToken();
-        const headers: Record<string, string> = {};
+        // API returns JSON but we convert to Blob for download functionality
+        const response = await this.request<ExportSourcesResponse>('/sources/export');
+        const json = JSON.stringify(response, null, 2);
+        return new Blob([json], { type: 'application/json' });
+    }
 
-        if (token) {
-            headers['Authorization'] = `Bearer ${token}`;
-        }
+    // Items endpoints
+    async getItems(query?: GetItemsQuery): Promise<{ items: Item[]; total: number; limit: number; offset: number }> {
+        const params = new URLSearchParams();
+        if (query?.status) params.append('status', query.status);
+        if (query?.sourceId) params.append('sourceId', query.sourceId.toString());
+        if (query?.limit) params.append('limit', query.limit.toString());
+        if (query?.offset) params.append('offset', query.offset.toString());
+        if (query?.search) params.append('search', query.search);
 
-        const response = await fetch(`${API_BASE_URL}/sources/export`, {
-            headers,
-        });
+        const queryString = params.toString();
+        const response = await this.request<{ success: boolean; data: { items: Item[]; total: number; limit: number; offset: number } }>(`/items${queryString ? `?${queryString}` : ''}`);
 
-        if (!response.ok) {
-            throw new Error('Failed to export sources');
-        }
+        // Backend wraps response in { success, data }
+        return response?.data || { items: [], total: 0, limit: query?.limit || 50, offset: query?.offset || 0 };
+    }
 
-        return response.blob();
+    async getItemById(id: number): Promise<Item> {
+        return this.request<Item>(`/items/${id}`);
+    }
+
+    async getReadyItems(query?: GetReadyItemsQuery): Promise<{ items: ReadyItem[]; total: number; limit: number; offset: number }> {
+        const params = new URLSearchParams();
+        if (query?.sortBy) params.append('sortBy', query.sortBy);
+        if (query?.limit) params.append('limit', query.limit.toString());
+        if (query?.offset) params.append('offset', query.offset.toString());
+        if (query?.sourceId) params.append('sourceId', query.sourceId.toString());
+        if (query?.topicTag) params.append('topicTag', query.topicTag);
+        if (query?.fromDate) params.append('fromDate', query.fromDate);
+        if (query?.toDate) params.append('toDate', query.toDate);
+
+        const queryString = params.toString();
+        const response = await this.request<{ success: boolean; data: { items: ReadyItem[]; total: number; limit: number; offset: number; sortBy?: string } }>(`/items/ready${queryString ? `?${queryString}` : ''}`);
+
+        // Backend wraps response in { success, data }
+        return response?.data || { items: [], total: 0, limit: query?.limit || 20, offset: query?.offset || 0 };
+    }
+
+    async getItemsStats(): Promise<ItemsStats> {
+        const result = await this.request<ItemsStats>('/items/stats');
+        return result || {
+            byStatus: {},
+            recentCount: 0,
+            filteredCount: 0,
+            rejectedCount: 0,
+            total: 0,
+        };
     }
 
     // Draft endpoints
@@ -157,7 +208,8 @@ class ApiClient {
         const queryString = params.toString();
         const endpoint = queryString ? `/drafts?${queryString}` : '/drafts';
 
-        return this.request<DailyPost[]>(endpoint);
+        const result = await this.request<DailyPost[]>(endpoint);
+        return result || [];
     }
 
     async getDraftById(id: number): Promise<DailyPost> {
@@ -187,16 +239,53 @@ class ApiClient {
 
     // Stats endpoints
     async getPipelineStats(): Promise<PipelineStats> {
-        return this.request<PipelineStats>('/stats/pipeline');
+        const result = await this.request<PipelineStats>('/stats/pipeline');
+        if (!result) {
+            return {
+                items: {
+                    total: 0,
+                    byStatus: {
+                        NEW: 0,
+                        EXTRACTED: 0,
+                        FILTERED_OUT: 0,
+                        READY_FOR_AI: 0,
+                        AI_STAGE_A_DONE: 0,
+                        AI_STAGE_B_DONE: 0,
+                        USED_IN_POST: 0,
+                        REJECTED: 0,
+                    },
+                    recent24h: 0,
+                },
+                posts: {
+                    total: 0,
+                    byStatus: {
+                        DRAFT: 0,
+                        APPROVED: 0,
+                        REJECTED: 0,
+                        POSTED: 0,
+                    },
+                    recent7days: 0,
+                    today: 0,
+                },
+                sources: {
+                    total: 0,
+                    enabled: 0,
+                    disabled: 0,
+                },
+            };
+        }
+        return result;
     }
 
     async getRecentActivity(limit?: number): Promise<RecentActivity> {
         const params = limit ? `?limit=${limit}` : '';
-        return this.request<RecentActivity>(`/stats/activity${params}`);
+        const result = await this.request<RecentActivity>(`/stats/activity${params}`);
+        return result || { items: [], posts: [] };
     }
 
     async getBottlenecks(): Promise<Bottlenecks> {
-        return this.request<Bottlenecks>('/stats/bottlenecks');
+        const result = await this.request<Bottlenecks>('/stats/bottlenecks');
+        return result || { bottlenecks: [] };
     }
 
     // Admin trigger endpoints
@@ -243,10 +332,22 @@ class ApiClient {
     }
     // Monitoring endpoints
     async getMonitoringOverview(): Promise<MonitoringOverview> {
-        return this.request<MonitoringOverview>('/monitor/overview');
+        const response = await this.request<{ success: boolean; data: MonitoringOverview }>('/monitor/overview');
+
+        // Backend wraps response in { success, data }
+        if (!response?.data) {
+            return {
+                health: { overall: 'DOWN', services: [] },
+                logs: { total: 0, byLevel: [], recentErrors: 0 },
+                metrics: { total: 0, recentCount: 0 },
+                traces: { total: 0, avgDuration: 0, slowCount: 0 },
+                timestamp: new Date().toISOString(),
+            };
+        }
+        return response.data;
     }
 
-    async getLogs(query?: GetLogsQuery): Promise<SystemLog[]> {
+    async getLogs(query?: GetLogsQuery): Promise<{ logs: SystemLog[]; total: number; limit: number; offset: number }> {
         const params = new URLSearchParams();
         if (query?.level) params.append('level', query.level);
         if (query?.startDate) params.append('startDate', query.startDate);
@@ -254,9 +355,11 @@ class ApiClient {
         if (query?.traceId) params.append('traceId', query.traceId);
         if (query?.limit) params.append('limit', query.limit.toString());
         if (query?.offset) params.append('offset', query.offset.toString());
+        if (query?.search) params.append('search', query.search);
 
         const queryString = params.toString();
-        return this.request<SystemLog[]>(`/monitor/logs${queryString ? `?${queryString}` : ''}`);
+        const response = await this.request<{ success: boolean; data: { logs: SystemLog[]; total: number; limit: number; offset: number } }>(`/monitor/logs${queryString ? `?${queryString}` : ''}`);
+        return response?.data || { logs: [], total: 0, limit: query?.limit || 100, offset: query?.offset || 0 };
     }
 
     async getLogStats(startDate?: string, endDate?: string): Promise<LogStats[]> {
@@ -265,31 +368,46 @@ class ApiClient {
         if (endDate) params.append('endDate', endDate);
 
         const queryString = params.toString();
-        return this.request<LogStats[]>(`/monitor/logs/stats${queryString ? `?${queryString}` : ''}`);
+        const response = await this.request<{ success: boolean; data: LogStats[] }>(`/monitor/logs/stats${queryString ? `?${queryString}` : ''}`);
+        return response?.data || [];
     }
 
-    async getMetrics(query?: GetMetricsQuery): Promise<SystemMetric[]> {
+    async getMetrics(query?: GetMetricsQuery): Promise<{ metrics: SystemMetric[]; total?: number }> {
         const params = new URLSearchParams();
         if (query?.name) params.append('name', query.name);
+        if (query?.metric) params.append('metric', query.metric);
+        if (query?.from) params.append('from', query.from);
+        if (query?.to) params.append('to', query.to);
         if (query?.startDate) params.append('startDate', query.startDate);
         if (query?.endDate) params.append('endDate', query.endDate);
         if (query?.limit) params.append('limit', query.limit.toString());
         if (query?.offset) params.append('offset', query.offset.toString());
 
         const queryString = params.toString();
-        return this.request<SystemMetric[]>(`/monitor/metrics${queryString ? `?${queryString}` : ''}`);
+        const response = await this.request<{ success: boolean; data: { metrics: SystemMetric[] } }>(`/monitor/metrics${queryString ? `?${queryString}` : ''}`);
+        return response?.data || { metrics: [] };
     }
 
     async getMetricStats(name: string): Promise<MetricStats> {
-        return this.request<MetricStats>(`/monitor/metrics/stats?name=${encodeURIComponent(name)}`);
+        const response = await this.request<{ success: boolean; data: MetricStats }>(`/monitor/metrics/stats?name=${encodeURIComponent(name)}`);
+        return response?.data || {
+            name,
+            count: 0,
+            avg: 0,
+            min: 0,
+            max: 0,
+            sum: 0,
+        };
     }
 
     async getSystemMetrics(): Promise<Record<string, any>> {
-        return this.request<Record<string, any>>('/monitor/metrics/system');
+        const response = await this.request<{ success: boolean; data: Record<string, any> }>('/monitor/metrics/system');
+        return response?.data || {};
     }
 
     async getHealthStatus(): Promise<HealthStatus> {
-        return this.request<HealthStatus>('/monitor/health');
+        const response = await this.request<{ success: boolean; data: HealthStatus }>('/monitor/health');
+        return response?.data || { overall: 'DOWN', services: [] };
     }
 
     async getHealthHistory(service?: string, limit?: number): Promise<HealthCheck[]> {
@@ -298,10 +416,11 @@ class ApiClient {
         if (limit) params.append('limit', limit.toString());
 
         const queryString = params.toString();
-        return this.request<HealthCheck[]>(`/monitor/health/history${queryString ? `?${queryString}` : ''}`);
+        const response = await this.request<{ success: boolean; data: HealthCheck[] }>(`/monitor/health/history${queryString ? `?${queryString}` : ''}`);
+        return response?.data || [];
     }
 
-    async getTraces(query?: GetTracesQuery): Promise<PerformanceTrace[]> {
+    async getTraces(query?: GetTracesQuery): Promise<{ traces: PerformanceTrace[] }> {
         const params = new URLSearchParams();
         if (query?.name) params.append('name', query.name);
         if (query?.minDuration) params.append('minDuration', query.minDuration.toString());
@@ -312,41 +431,37 @@ class ApiClient {
         if (query?.offset) params.append('offset', query.offset.toString());
 
         const queryString = params.toString();
-        return this.request<PerformanceTrace[]>(`/monitor/traces${queryString ? `?${queryString}` : ''}`);
+        const response = await this.request<{ success: boolean; data: { traces: PerformanceTrace[] } }>(`/monitor/traces${queryString ? `?${queryString}` : ''}`);
+        return response?.data || { traces: [] };
     }
 
-    async getSlowTraces(threshold?: number): Promise<PerformanceTrace[]> {
-        const params = threshold ? `?threshold=${threshold}` : '';
-        return this.request<PerformanceTrace[]>(`/monitor/traces/slow${params}`);
+    async getSlowTraces(threshold?: number, limit?: number): Promise<{ traces: PerformanceTrace[] }> {
+        const params = new URLSearchParams();
+        if (threshold) params.append('threshold', threshold.toString());
+        if (limit) params.append('limit', limit.toString());
+
+        const queryString = params.toString();
+        const response = await this.request<{ success: boolean; data: { traces: PerformanceTrace[] } }>(`/monitor/traces/slow${queryString ? `?${queryString}` : ''}`);
+        return response?.data || { traces: [] };
     }
 
     async getTraceStats(name: string): Promise<TraceStats> {
-        return this.request<TraceStats>(`/monitor/traces/stats?name=${encodeURIComponent(name)}`);
+        const response = await this.request<{ success: boolean; data: TraceStats }>(`/monitor/traces/stats?name=${encodeURIComponent(name)}`);
+        return response?.data || {
+            name,
+            count: 0,
+            avgDuration: 0,
+            minDuration: 0,
+            maxDuration: 0,
+            p50: 0,
+            p95: 0,
+            p99: 0,
+        };
     }
 
     async getTraceById(traceId: string): Promise<PerformanceTrace[]> {
-        return this.request<PerformanceTrace[]>(`/monitor/traces/${traceId}`);
-    }
-
-    // Items API
-    async getItems(query?: GetItemsQuery): Promise<{ items: Item[]; total: number; limit: number; offset: number }> {
-        const params = new URLSearchParams();
-        if (query?.status) params.append('status', query.status);
-        if (query?.sourceId) params.append('sourceId', query.sourceId.toString());
-        if (query?.limit) params.append('limit', query.limit.toString());
-        if (query?.offset) params.append('offset', query.offset.toString());
-        if (query?.search) params.append('search', query.search);
-
-        const queryString = params.toString();
-        return this.request<{ items: Item[]; total: number; limit: number; offset: number }>(`/items${queryString ? `?${queryString}` : ''}`);
-    }
-
-    async getItemById(id: number): Promise<Item> {
-        return this.request<Item>(`/items/${id}`);
-    }
-
-    async getItemsStats(): Promise<ItemsStats> {
-        return this.request<ItemsStats>('/items/stats');
+        const response = await this.request<{ success: boolean; data: PerformanceTrace[] }>(`/monitor/traces/${traceId}`);
+        return response?.data || [];
     }
 }
 
