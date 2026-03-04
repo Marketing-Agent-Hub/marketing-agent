@@ -12,8 +12,9 @@ RUN apt-get update && apt-get install -y \
 # Copy package files with lock file
 COPY package.json package-lock.json* ./
 
-# Install dependencies (use ci for faster, reproducible builds)
-RUN npm ci --include=dev || npm install --legacy-peer-deps
+# Install dependencies with exact versions from lock file
+# Force use of lock file, fail if it doesn't match
+RUN npm ci --include=dev
 
 # Copy source code
 COPY . .
@@ -38,8 +39,8 @@ RUN apt-get update && apt-get install -y \
 # Copy package files with lock file
 COPY package.json package-lock.json* ./
 
-# Install production dependencies only
-RUN npm ci --omit=dev || npm install --production --legacy-peer-deps
+# Install production dependencies with exact versions
+RUN npm ci --omit=dev
 
 # Copy built files from builder
 COPY --from=builder /app/dist ./dist
