@@ -39,8 +39,8 @@ RUN apt-get update && apt-get install -y \
 # Copy package files with lock file
 COPY package.json package-lock.json* ./
 
-# Install production dependencies with exact versions
-RUN npm ci --omit=dev
+# Install production dependencies only
+RUN npm ci --production
 
 # Copy built files from builder
 COPY --from=builder /app/dist ./dist
