@@ -26,8 +26,17 @@ jobs:
             # Pull images mới từ GHCR
             docker compose pull server web
             
-            # Restart với zero-downtime
-            docker compose up -d --no-deps --build server web
+            # Stop containers cũ
+            docker compose stop server web
+            
+            # Remove containers cũ (giữ volumes)
+            docker compose rm -f server web
+            
+            # Start containers mới với image vừa pull
+            docker compose up -d server web
+            
+            # Đợi containers khởi động
+            sleep 5
             
             # Show status
             docker compose ps
