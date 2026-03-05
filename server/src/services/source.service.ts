@@ -1,17 +1,83 @@
 import { Source, ValidationStatus } from '@prisma/client';
 import { prisma } from '../db/index.js';
-import { CreateSourceInput, UpdateSourceInput } from '../schemas/source.schema.js';
+import { CreateSourceInput, UpdateSourceInput, GetSourcesInput } from '../schemas/source.schema.js';
 import { normalizeTags, normalizeKeywords, normalizeUrl } from '../lib/normalizer.js';
 import { validateRSSFeed, RSSValidationResult } from '../lib/rss-validator.js';
 
 export class SourceService {
     /**
-     * Get all sources
+     * Get all sources with pagination, search, and filters
      */
-    async getAllSources(): Promise<Source[]> {
-        return prisma.source.findMany({
-            orderBy: [{ enabled: 'desc' }, { trustScore: 'desc' }, { createdAt: 'desc' }],
-        });
+    async getAllSources(params?: GetSourcesInput): Promise<{
+        sources: Source[];
+        total: number;
+        limit: number;
+        offset: number;
+    }> {
+        // If no params, return all sources (backward compatibility)
+        if (!params) {
+            const sources = await prisma.source.findMany({
+                orderBy: [{ enabled: 'desc' }, { trustScore: 'desc' }, { createdAt: 'desc' }],
+            });
+            return {
+                sources,
+                total: sources.length,
+                limit: sources.length,
+                offset: 0,
+            };
+        }
+
+        const { limit, offset, search, enabled, lang, minTrustScore, sortBy, sortOrder } = params;
+
+        // Build where clause
+        const where: any = {};
+
+        // Search filter (case-insensitive search in name, rssUrl, siteUrl, notes)
+        if (search) {
+            where.OR = [
+                { name: { contains: search, mode: 'insensitive' } },
+                { rssUrl: { contains: search, mode: 'insensitive' } },
+                { siteUrl: { contains: search, mode: 'insensitive' } },
+                { notes: { contains: search, mode: 'insensitive' } },
+            ];
+        }
+
+        // Filter by enabled status
+        if (enabled !== undefined) {
+            where.enabled = enabled;
+        }
+
+        // Filter by language
+        if (lang) {
+            where.lang = lang;
+        }
+
+        // Filter by minimum trust score
+        if (minTrustScore !== undefined) {
+            where.trustScore = { gte: minTrustScore };
+        }
+
+        // Build orderBy
+        const orderBy: any = {};
+        orderBy[sortBy] = sortOrder;
+
+        // Execute query with pagination
+        const [sources, total] = await Promise.all([
+            prisma.source.findMany({
+                where,
+                orderBy,
+                take: limit,
+                skip: offset,
+            }),
+            prisma.source.count({ where }),
+        ]);
+
+        return {
+            sources,
+            total,
+            limit,
+            offset,
+        };
     }
 
     /**

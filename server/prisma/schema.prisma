@@ -55,6 +55,10 @@ model Source {
 
   @@index([enabled])
   @@index([trustScore])
+  @@index([name]) // For search
+  @@index([lang]) // For language filter
+  @@index([createdAt]) // For sorting
+  @@index([enabled, trustScore]) // For common query (enabled sources by trust)
   @@map("sources")
 }
 

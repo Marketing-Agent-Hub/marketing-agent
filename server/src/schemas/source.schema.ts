@@ -21,7 +21,19 @@ export const validateRSSSchema = z.object({
   url: z.string().url('URL must be a valid URL'),
 });
 
+export const getSourcesSchema = z.object({
+  limit: z.coerce.number().int().min(1).max(100).default(20),
+  offset: z.coerce.number().int().min(0).default(0),
+  search: z.string().optional(), // Search in name, rssUrl, siteUrl
+  enabled: z.coerce.boolean().optional(), // Filter by enabled status
+  lang: sourceLangEnum.optional(), // Filter by language
+  minTrustScore: z.coerce.number().int().min(0).max(100).optional(),
+  sortBy: z.enum(['name', 'trustScore', 'createdAt', 'enabled']).default('enabled'),
+  sortOrder: z.enum(['asc', 'desc']).default('desc'),
+});
+
 export type CreateSourceInput = z.infer<typeof createSourceSchema>;
 export type UpdateSourceInput = z.infer<typeof updateSourceSchema>;
 export type ValidateRSSInput = z.infer<typeof validateRSSSchema>;
+export type GetSourcesInput = z.infer<typeof getSourcesSchema>;
 

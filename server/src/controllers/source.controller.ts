@@ -4,16 +4,23 @@ import {
     createSourceSchema,
     updateSourceSchema,
     validateRSSSchema,
+    getSourcesSchema,
 } from '../schemas/source.schema.js';
 import { ApiErrorResponse } from '../types/index.js';
 export class SourceController {
     /**
      * GET /sources
+     * Supports pagination, search, and filters
      */
-    async getAllSources(_req: Request, res: Response, next: NextFunction): Promise<void> {
+    async getAllSources(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            const sources = await sourceService.getAllSources();
-            res.json(sources);
+            const params = getSourcesSchema.parse(req.query);
+            const result = await sourceService.getAllSources(params);
+
+            res.json({
+                success: true,
+                data: result,
+            });
         } catch (error) {
             next(error);
         }
@@ -144,7 +151,9 @@ export class SourceController {
      */
     async exportSources(_req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            const sources = await sourceService.getAllSources();
+            // Export all sources without pagination
+            const result = await sourceService.getAllSources();
+            const sources = result.sources;
 
             // Transform to export format (remove IDs and timestamps)
             const exportData = sources.map(source => ({
