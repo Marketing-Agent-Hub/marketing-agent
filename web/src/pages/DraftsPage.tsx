@@ -48,7 +48,7 @@ export function DraftsPage() {
     const { data: sourcesData } = useQuery({
         queryKey: ['sources-list'],
         queryFn: async () => {
-            const result = await apiClient.getSources({ limit: 1000, sortBy: 'name', sortOrder: 'asc' });
+            const result = await apiClient.getSources({ limit: 100, sortBy: 'name', sortOrder: 'asc' });
             return result.sources;
         },
         staleTime: 10 * 60 * 1000, // Cache sources for 10 minutes
