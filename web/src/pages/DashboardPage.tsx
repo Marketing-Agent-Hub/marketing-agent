@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'react-toastify';
 import { apiClient } from '../lib/api-client';
 import type { ItemStatus } from '../types/api';
 import { SharedNav } from '../components/SharedNav';
@@ -29,6 +30,8 @@ export function DashboardPage() {
     const [limit] = useState(50);
     const [offset, setOffset] = useState(0);
     const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
+    const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+    const queryClient = useQueryClient();
 
     // Fetch items
     const { data: itemsData, isLoading: itemsLoading } = useQuery({
@@ -70,6 +73,69 @@ export function DashboardPage() {
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
         setOffset(0);
+    };
+
+    // Delete mutation
+    const deleteMutation = useMutation({
+        mutationFn: (ids: number[]) => apiClient.deleteItems(ids),
+        onSuccess: (data) => {
+            toast.success(`✅ Đã xóa ${data.deleted} items`);
+            setSelectedIds(new Set());
+            queryClient.invalidateQueries({ queryKey: ['items'] });
+            queryClient.invalidateQueries({ queryKey: ['items-stats'] });
+        },
+        onError: (error: Error) => {
+            toast.error(`❌ Lỗi: ${error.message}`);
+        },
+    });
+
+    // Delete all items mutation
+    const deleteAllMutation = useMutation({
+        mutationFn: () => apiClient.deleteAllItems(),
+        onSuccess: (data) => {
+            toast.success(`✅ Đã xóa tất cả ${data.deleted} items`);
+            setSelectedIds(new Set());
+            queryClient.invalidateQueries({ queryKey: ['items'] });
+            queryClient.invalidateQueries({ queryKey: ['items-stats'] });
+        },
+        onError: (error: Error) => {
+            toast.error(`❌ Lỗi: ${error.message}`);
+        },
+    });
+
+    const handleToggleSelect = (id: number) => {
+        const newSelected = new Set(selectedIds);
+        if (newSelected.has(id)) {
+            newSelected.delete(id);
+        } else {
+            newSelected.add(id);
+        }
+        setSelectedIds(newSelected);
+    };
+
+    const handleSelectAll = () => {
+        if (selectedIds.size === items.length) {
+            setSelectedIds(new Set());
+        } else {
+            setSelectedIds(new Set(items.map(item => item.id)));
+        }
+    };
+
+    const handleDeleteSelected = () => {
+        if (selectedIds.size === 0) return;
+
+        if (confirm(`Bạn có chắc muốn xóa ${selectedIds.size} items đã chọn?`)) {
+            deleteMutation.mutate(Array.from(selectedIds));
+        }
+    };
+
+    const handleDeleteAll = () => {
+        if (stats.total === 0) return;
+
+        if (confirm(`Bạn có chắc muốn xóa TẤT CẢ ${stats.total} items? Hành động này không thể hoàn tác!`)) {
+            toast.info('🔄 Đang xóa tất cả items...');
+            deleteAllMutation.mutate();
+        }
     };
 
     return (
@@ -172,10 +238,54 @@ export function DashboardPage() {
 
                 {/* Items Table */}
                 <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-                    <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                    <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
                         <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
                             Danh sách Items ({total.toLocaleString()})
                         </h2>
+                        <div className="flex items-center gap-3">
+                            {selectedIds.size > 0 && (
+                                <button
+                                    onClick={handleDeleteSelected}
+                                    disabled={deleteMutation.isPending}
+                                    className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                                >
+                                    {deleteMutation.isPending ? (
+                                        <>
+                                            <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                            Đang xóa...
+                                        </>
+                                    ) : (
+                                        <>
+                                            🗑️ Xóa đã chọn ({selectedIds.size})
+                                        </>
+                                    )}
+                                </button>
+                            )}
+                            {items.length > 0 && (
+                                <button
+                                    onClick={handleDeleteAll}
+                                    disabled={deleteAllMutation.isPending}
+                                    className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                                >
+                                    {deleteAllMutation.isPending ? (
+                                        <>
+                                            <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                            Đang xóa tất cả...
+                                        </>
+                                    ) : (
+                                        <>
+                                            🗑️ Xóa tất cả ({stats.total})
+                                        </>
+                                    )}
+                                </button>
+                            )}
+                        </div>
                     </div>
 
                     {itemsLoading ? (
@@ -190,6 +300,14 @@ export function DashboardPage() {
                                 <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                                     <thead className="bg-gray-50 dark:bg-gray-700">
                                         <tr>
+                                            <th className="px-3 py-3 text-center">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={items.length > 0 && selectedIds.size === items.length}
+                                                    onChange={handleSelectAll}
+                                                    className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                                                />
+                                            </th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                                 ID
                                             </th>
@@ -220,6 +338,14 @@ export function DashboardPage() {
 
                                             return (
                                                 <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                                    <td className="px-3 py-4 text-center">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={selectedIds.has(item.id)}
+                                                            onChange={() => handleToggleSelect(item.id)}
+                                                            className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                                                        />
+                                                    </td>
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
                                                         {item.id}
                                                     </td>

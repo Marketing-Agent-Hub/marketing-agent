@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { toast } from 'react-toastify';
 import { apiClient } from '../lib/api-client';
@@ -12,6 +12,8 @@ export function DraftsPage() {
     const [fromDate, setFromDate] = useState('');
     const [toDate, setToDate] = useState('');
     const [limit] = useState(50);
+    const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+    const queryClient = useQueryClient();
 
     const { data: itemsData, isLoading, error } = useQuery({
         queryKey: ['ready-items', sortBy, topicTagFilter, fromDate, toDate, limit],
@@ -43,6 +45,67 @@ export function DraftsPage() {
     const getContentPreview = (content: string) => {
         return content.substring(0, 200) + (content.length > 200 ? '...' : '');
     };
+
+    // Delete mutation
+    const deleteMutation = useMutation({
+        mutationFn: (ids: number[]) => apiClient.deleteItems(ids),
+        onSuccess: (data) => {
+            toast.success(`✅ Đã xóa ${data.deleted} bài viết`);
+            setSelectedIds(new Set());
+            queryClient.invalidateQueries({ queryKey: ['ready-items'] });
+        },
+        onError: (error: Error) => {
+            toast.error(`❌ Lỗi: ${error.message}`);
+        },
+    });
+
+    // Delete all ready items mutation
+    const deleteAllMutation = useMutation({
+        mutationFn: () => apiClient.deleteAllReadyItems(),
+        onSuccess: (data) => {
+            toast.success(`✅ Đã xóa tất cả ${data.deleted} bài viết sẵn sàng`);
+            setSelectedIds(new Set());
+            queryClient.invalidateQueries({ queryKey: ['ready-items'] });
+        },
+        onError: (error: Error) => {
+            toast.error(`❌ Lỗi: ${error.message}`);
+        },
+    });
+
+    const handleToggleSelect = (id: number) => {
+        const newSelected = new Set(selectedIds);
+        if (newSelected.has(id)) {
+            newSelected.delete(id);
+        } else {
+            newSelected.add(id);
+        }
+        setSelectedIds(newSelected);
+    };
+
+    const handleSelectAll = () => {
+        if (selectedIds.size === items.length) {
+            setSelectedIds(new Set());
+        } else {
+            setSelectedIds(new Set(items.map(item => item.id)));
+        }
+    };
+
+    const handleDeleteSelected = () => {
+        if (selectedIds.size === 0) return;
+
+        if (confirm(`Bạn có chắc muốn xóa ${selectedIds.size} bài viết đã chọn?`)) {
+            deleteMutation.mutate(Array.from(selectedIds));
+        }
+    };
+
+    const handleDeleteAll = () => {
+        if (total === 0) return;
+
+        if (confirm(`Bạn có chắc muốn xóa TẤT CẢ ${total} bài viết sẵn sàng? Hành động này không thể hoàn tác!`)) {
+            toast.info('🔄 Đang xóa tất cả bài viết...');
+            deleteAllMutation.mutate();
+        }
+    }
 
     // Get unique topic tags from items
     const allTopicTags = Array.from(
@@ -156,8 +219,62 @@ export function DraftsPage() {
                 </div>
 
                 {/* Stats */}
-                <div className="mb-6 text-sm text-gray-600 dark:text-gray-400">
-                    Hiển thị {items.length} / {total} bài viết
+                <div className="mb-6 flex items-center justify-between">
+                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                        Hiển thị {items.length} / {total} bài viết
+                    </div>
+                    <div className="flex items-center gap-3">
+                        {items.length > 0 && (
+                            <button
+                                onClick={handleSelectAll}
+                                className="text-sm px-3 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600"
+                            >
+                                {selectedIds.size === items.length ? '✓ Bỏ chọn tất cả' : '☐ Chọn tất cả'}
+                            </button>
+                        )}
+                        {selectedIds.size > 0 && (
+                            <button
+                                onClick={handleDeleteSelected}
+                                disabled={deleteMutation.isPending}
+                                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                            >
+                                {deleteMutation.isPending ? (
+                                    <>
+                                        <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        Đang xóa...
+                                    </>
+                                ) : (
+                                    <>
+                                        🗑️ Xóa đã chọn ({selectedIds.size})
+                                    </>
+                                )}
+                            </button>
+                        )}
+                        {items.length > 0 && (
+                            <button
+                                onClick={handleDeleteAll}
+                                disabled={deleteAllMutation.isPending}
+                                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                            >
+                                {deleteAllMutation.isPending ? (
+                                    <>
+                                        <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        Đang xóa tất cả...
+                                    </>
+                                ) : (
+                                    <>
+                                        🗑️ Xóa tất cả ({total})
+                                    </>
+                                )}
+                            </button>
+                        )}
+                    </div>
                 </div>
 
                 {/* Items List */}
@@ -170,9 +287,19 @@ export function DraftsPage() {
                         items.map((item) => (
                             <div
                                 key={item.id}
-                                className="bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-lg transition-shadow p-6"
+                                className={`bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-lg transition-shadow p-6 ${selectedIds.has(item.id) ? 'ring-2 ring-blue-500' : ''}`}
                             >
                                 <div className="flex items-start gap-4">
+                                    {/* Checkbox */}
+                                    <div className="flex-shrink-0 pt-1">
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedIds.has(item.id)}
+                                            onChange={() => handleToggleSelect(item.id)}
+                                            className="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                                        />
+                                    </div>
+
                                     {/* Thumbnail */}
                                     {(item.mainImageUrl || (item.imageList && item.imageList.length > 0)) && (
                                         <div className="flex-shrink-0">

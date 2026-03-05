@@ -197,6 +197,28 @@ class ApiClient {
         };
     }
 
+    async deleteItems(ids: number[]): Promise<{ deleted: number }> {
+        const response = await this.request<{ success: boolean; data: { deleted: number } }>('/items', {
+            method: 'DELETE',
+            body: JSON.stringify({ ids }),
+        });
+        return response?.data || { deleted: 0 };
+    }
+
+    async deleteAllItems(): Promise<{ deleted: number }> {
+        const response = await this.request<{ success: boolean; data: { deleted: number } }>('/items/all', {
+            method: 'DELETE',
+        });
+        return response?.data || { deleted: 0 };
+    }
+
+    async deleteAllReadyItems(): Promise<{ deleted: number }> {
+        const response = await this.request<{ success: boolean; data: { deleted: number } }>('/items/all/ready', {
+            method: 'DELETE',
+        });
+        return response?.data || { deleted: 0 };
+    }
+
     // Draft endpoints
     async getDrafts(query?: GetDraftsQuery): Promise<DailyPost[]> {
         const params = new URLSearchParams();
