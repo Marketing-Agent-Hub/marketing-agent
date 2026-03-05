@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { apiClient } from '../lib/api-client';
@@ -38,7 +38,11 @@ export function SourcesPage() {
             sortBy,
             sortOrder,
         }),
-        staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+        staleTime: 5 * 60 * 1000,        // Cache 5 phút - không refetch nếu data còn fresh
+        gcTime: 10 * 60 * 1000,          // Giữ cache trong 10 phút khi không dùng
+        placeholderData: keepPreviousData, // Giữ data cũ khi chuyển trang (UX mượt)
+        refetchOnWindowFocus: false,      // Không refetch khi focus window
+        refetchOnMount: false,            // Không refetch khi component remount
     });
 
     const sources = sourcesData?.sources || [];
