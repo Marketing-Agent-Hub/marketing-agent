@@ -23,20 +23,13 @@ jobs:
           script: |
             cd ~/opt/oc-news-bot
             
-            # Pull images mới từ GHCR
-            docker compose pull server web
-            
-            # Stop containers cũ
-            docker compose stop server web
-            
-            # Remove containers cũ (giữ volumes)
-            docker compose rm -f server web
-            
-            # Start containers mới với image vừa pull
-            docker compose up -d server web
+            # Pull images mới từ GHCR            
+            docker compose down
+
+            ./deploy.sh latest
             
             # Đợi containers khởi động
-            sleep 5
+            sleep 10
             
             # Show status
             docker compose ps
