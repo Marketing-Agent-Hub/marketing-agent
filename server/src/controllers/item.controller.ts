@@ -295,6 +295,49 @@ export const getItemsStats = asyncHandler(async (_req: Request, res: Response) =
 });
 
 /**
+ * Delete all items EXCEPT AI_STAGE_B_DONE (ready items)
+ * This is more efficient than fetching all IDs and deleting them
+ */
+export const deleteAllItems = asyncHandler(async (_req: Request, res: Response) => {
+    // Delete all items except ready items (cascade will delete related articles and aiResults)
+    const result = await db.item.deleteMany({
+        where: {
+            status: {
+                not: "AI_STAGE_B_DONE"
+            }
+        }
+    });
+
+    res.json({
+        success: true,
+        data: {
+            deleted: result.count,
+            message: `Successfully deleted ${result.count} item(s) (except ready items)`,
+        },
+    });
+});
+
+/**
+ * Delete all ready items
+ * This is more efficient than fetching all IDs and deleting them
+ */
+export const deleteAllReadyItems = asyncHandler(async (_req: Request, res: Response) => {
+    const result = await db.item.deleteMany({
+        where: {
+            status: "AI_STAGE_B_DONE"
+        }
+    });
+
+    res.json({
+        success: true,
+        data: {
+            deleted: result.count,
+            message: `Successfully deleted ${result.count} ready item(s)`,
+        },
+    });
+});
+
+/**
  * Delete multiple items by IDs
  */
 export const deleteItems = asyncHandler(async (req: Request, res: Response) => {

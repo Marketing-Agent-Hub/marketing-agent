@@ -19,6 +19,12 @@ router.get('/stats', itemController.getItemsStats);
 // Get item by ID
 router.get('/:id', itemController.getItemById);
 
+// Delete all items (must be before general delete route)
+router.delete('/all', itemController.deleteAllItems);
+
+// Delete all ready items
+router.delete('/all/ready', itemController.deleteAllReadyItems);
+
 // Delete items (bulk delete)
 router.delete('/', itemController.deleteItems);
 
