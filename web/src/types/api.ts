@@ -48,6 +48,17 @@ export interface UpdateSourceInput {
     notes?: string;
 }
 
+export interface GetSourcesQuery {
+    limit?: number;
+    offset?: number;
+    search?: string;
+    enabled?: boolean;
+    lang?: SourceLang;
+    minTrustScore?: number;
+    sortBy?: 'name' | 'trustScore' | 'createdAt' | 'enabled';
+    sortOrder?: 'asc' | 'desc';
+}
+
 export interface ExportSourcesResponse {
     sources: Source[];
     exportedAt: string;

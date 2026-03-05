@@ -2,6 +2,7 @@ import type {
     Source,
     CreateSourceInput,
     UpdateSourceInput,
+    GetSourcesQuery,
     ExportSourcesResponse,
     LoginInput,
     LoginResponse,
@@ -97,16 +98,22 @@ class ApiClient {
     }
 
     // Source endpoints
-    async getSources(): Promise<Source[]> {
-        const response = await this.request<{ sources: Source[] }>('/sources');
+    async getSources(query?: GetSourcesQuery): Promise<{ sources: Source[]; total: number; limit: number; offset: number }> {
+        const params = new URLSearchParams();
+        if (query?.limit) params.append('limit', query.limit.toString());
+        if (query?.offset) params.append('offset', query.offset.toString());
+        if (query?.search) params.append('search', query.search);
+        if (query?.enabled !== undefined) params.append('enabled', query.enabled.toString());
+        if (query?.lang) params.append('lang', query.lang);
+        if (query?.minTrustScore !== undefined) params.append('minTrustScore', query.minTrustScore.toString());
+        if (query?.sortBy) params.append('sortBy', query.sortBy);
+        if (query?.sortOrder) params.append('sortOrder', query.sortOrder);
 
-        // Nếu response là array trực tiếp
-        if (Array.isArray(response)) {
-            return response;
-        }
+        const queryString = params.toString();
+        const response = await this.request<{ success: boolean; data: { sources: Source[]; total: number; limit: number; offset: number } }>(`/sources${queryString ? `?${queryString}` : ''}`);
 
-        // Nếu response có key sources
-        return response?.sources || [];
+        // Backend wraps response in { success, data }
+        return response?.data || { sources: [], total: 0, limit: query?.limit || 20, offset: query?.offset || 0 };
     }
 
     async getSourceById(id: number): Promise<Source> {

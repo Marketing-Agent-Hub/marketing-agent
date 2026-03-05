@@ -1,24 +1,49 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { apiClient } from '../lib/api-client';
 import { SourceFormModal } from '../components/SourceFormModal';
 import { ImportSourcesModal } from '../components/ImportSourcesModal';
 import { SharedNav } from '../components/SharedNav';
-import type { Source } from '../types/api';
+import type { Source, SourceLang } from '../types/api';
 
 export function SourcesPage() {
     const queryClient = useQueryClient();
     const [selectedSource, setSelectedSource] = useState<Source | null>(null);
     const [showModal, setShowModal] = useState(false);
     const [showImportModal, setShowImportModal] = useState(false);
-    const [searchQuery, setSearchQuery] = useState('');
     const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
 
-    const { data: sources, isLoading, error } = useQuery({
-        queryKey: ['sources'],
-        queryFn: () => apiClient.getSources(),
+    // Pagination & Filters
+    const [page, setPage] = useState(1);
+    const [limit] = useState(20);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [enabledFilter, setEnabledFilter] = useState<boolean | undefined>(undefined);
+    const [langFilter, setLangFilter] = useState<SourceLang | undefined>(undefined);
+    const [minTrustScore, setMinTrustScore] = useState<number | undefined>(undefined);
+    const [sortBy, setSortBy] = useState<'name' | 'trustScore' | 'createdAt' | 'enabled'>('trustScore');
+    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+
+    const offset = (page - 1) * limit;
+
+    const { data: sourcesData, isLoading, error } = useQuery<{ sources: Source[]; total: number; limit: number; offset: number }>({
+        queryKey: ['sources', page, searchQuery, enabledFilter, langFilter, minTrustScore, sortBy, sortOrder],
+        queryFn: () => apiClient.getSources({
+            limit,
+            offset,
+            search: searchQuery || undefined,
+            enabled: enabledFilter,
+            lang: langFilter || undefined,
+            minTrustScore: minTrustScore || undefined,
+            sortBy,
+            sortOrder,
+        }),
+        staleTime: 5 * 60 * 1000, // Cache for 5 minutes
     });
+
+    const sources = sourcesData?.sources || [];
+    const total = sourcesData?.total || 0;
+    const totalPages = Math.ceil(total / limit);
 
     const deleteMutation = useMutation({
         mutationFn: (id: number) => apiClient.deleteSource(id),
@@ -35,30 +60,10 @@ export function SourcesPage() {
         },
     });
 
-    const filteredSources = useMemo(() => {
-        if (!sources) {
-            console.log('Sources is null/undefined');
-            return [];
-        }
-        if (!searchQuery.trim()) {
-            console.log('No search query, returning all sources:', sources.length);
-            return sources;
-        }
-
-        const query = searchQuery.toLowerCase();
-        const filtered = sources.filter(
-            (source) =>
-                source.name.toLowerCase().includes(query) ||
-                source.rssUrl.toLowerCase().includes(query) ||
-                source.topicTags.some((tag) => tag.toLowerCase().includes(query))
-        );
-        return filtered;
-    }, [sources, searchQuery]);
-
-    // Clear selection when search changes
+    // Clear selection when filters change
     useEffect(() => {
         setSelectedIds(new Set());
-    }, [searchQuery]);
+    }, [page, searchQuery, enabledFilter, langFilter, minTrustScore, sortBy, sortOrder]);
 
     const handleDelete = async (id: number) => {
         if (confirm('Are you sure you want to delete this source?')) {
@@ -87,10 +92,10 @@ export function SourcesPage() {
 
     // Selection handlers
     const handleSelectAll = () => {
-        if (selectedIds.size === filteredSources.length) {
+        if (selectedIds.size === sources.length) {
             setSelectedIds(new Set());
         } else {
-            setSelectedIds(new Set(filteredSources.map(s => s.id)));
+            setSelectedIds(new Set(sources.map(s => s.id)));
         }
     };
 
@@ -189,7 +194,17 @@ export function SourcesPage() {
         }
     };
 
-    const isAllSelected = filteredSources.length > 0 && selectedIds.size === filteredSources.length;
+    // Reset to page 1 when filters change
+    const handleSearchChange = (value: string) => {
+        setSearchQuery(value);
+        setPage(1);
+    };
+
+    const handleFilterChange = () => {
+        setPage(1);
+    };
+
+    const isAllSelected = sources.length > 0 && selectedIds.size === sources.length;
 
     if (isLoading) {
         return (
@@ -213,35 +228,125 @@ export function SourcesPage() {
 
             {/* Main Content */}
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 mt-12">
-                <div className="mb-6 flex justify-between items-center">
-                    <div className="flex-1 max-w-lg">
-                        <input
-                            type="text"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            placeholder="Search sources by name, URL, or tag..."
-                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                        />
+                {/* Filters Section */}
+                <div className="mb-6 space-y-4 bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+                    {/* Filter Controls Row */}
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                Trạng thái
+                            </label>
+                            <select
+                                value={enabledFilter === undefined ? 'all' : enabledFilter ? 'enabled' : 'disabled'}
+                                onChange={(e) => {
+                                    const val = e.target.value;
+                                    setEnabledFilter(val === 'all' ? undefined : val === 'enabled');
+                                    handleFilterChange();
+                                }}
+                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            >
+                                <option value="all">Tất cả</option>
+                                <option value="enabled">Đã bật</option>
+                                <option value="disabled">Đã tắt</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                Ngôn ngữ
+                            </label>
+                            <select
+                                value={langFilter || 'all'}
+                                onChange={(e) => {
+                                    const val = e.target.value;
+                                    setLangFilter(val === 'all' ? undefined : val as 'VI' | 'EN' | 'MIXED');
+                                    handleFilterChange();
+                                }}
+                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            >
+                                <option value="all">Tất cả</option>
+                                <option value="VI">VI</option>
+                                <option value="EN">EN</option>
+                                <option value="MIXED">MIXED</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                Trust Score tối thiểu
+                            </label>
+                            <input
+                                type="number"
+                                min="0"
+                                max="100"
+                                value={minTrustScore || ''}
+                                onChange={(e) => {
+                                    const val = e.target.value === '' ? undefined : parseInt(e.target.value);
+                                    setMinTrustScore(val);
+                                    handleFilterChange();
+                                }}
+                                placeholder="0-100"
+                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                Sắp xếp theo
+                            </label>
+                            <div className="flex gap-2">
+                                <select
+                                    value={sortBy}
+                                    onChange={(e) => setSortBy(e.target.value as 'name' | 'trustScore' | 'createdAt' | 'enabled')}
+                                    className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                >
+                                    <option value="name">Tên</option>
+                                    <option value="trustScore">Trust Score</option>
+                                    <option value="createdAt">Ngày tạo</option>
+                                    <option value="enabled">Trạng thái</option>
+                                </select>
+                                <button
+                                    onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+                                    className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    title={sortOrder === 'asc' ? 'Tăng dần' : 'Giảm dần'}
+                                >
+                                    {sortOrder === 'asc' ? '⬆️' : '⬇️'}
+                                </button>
+                            </div>
+                        </div>
                     </div>
-                    <div className="ml-4 flex gap-3">
-                        <button
-                            onClick={() => setShowImportModal(true)}
-                            className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-                        >
-                            📥 Import
-                        </button>
-                        <button
-                            onClick={handleExport}
-                            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                        >
-                            📤 Export
-                        </button>
-                        <button
-                            onClick={handleAdd}
-                            className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                        >
-                            ➕ Add Source
-                        </button>
+
+                    {/* Search and Actions Row */}
+                    <div className="flex justify-between items-center gap-4">
+                        <div className="flex-1 max-w-lg">
+                            <input
+                                type="text"
+                                value={searchQuery}
+                                onChange={(e) => handleSearchChange(e.target.value)}
+                                placeholder="Tìm kiếm theo tên, URL, ghi chú..."
+                                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            />
+                        </div>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setShowImportModal(true)}
+                                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                            >
+                                📥 Import
+                            </button>
+                            <button
+                                onClick={handleExport}
+                                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                            >
+                                📤 Export
+                            </button>
+                            <button
+                                onClick={handleAdd}
+                                className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                            >
+                                ➕ Add Source
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -291,7 +396,7 @@ export function SourcesPage() {
                     </div>
                 ) : (
                     <div className="mb-4 text-sm text-gray-600 dark:text-gray-300">
-                        Showing {filteredSources.length} of {sources?.length || 0} sources
+                        Hiển thị {sources.length === 0 ? '0' : `${offset + 1}-${Math.min(offset + sources.length, total)}`} / {total} nguồn
                     </div>
                 )}
 
@@ -330,7 +435,7 @@ export function SourcesPage() {
                             </tr>
                         </thead>
                         <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                            {filteredSources.map((source) => (
+                            {sources.map((source) => (
                                 <tr
                                     key={source.id}
                                     className={selectedIds.has(source.id) ? 'bg-blue-50 dark:bg-blue-900/20' : 'hover:bg-gray-50 dark:hover:bg-gray-700'}
@@ -395,12 +500,35 @@ export function SourcesPage() {
                             ))}
                         </tbody>
                     </table>
-                    {filteredSources.length === 0 && (
+                    {sources.length === 0 && (
                         <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-                            {searchQuery ? 'No sources found matching your search.' : 'No sources yet. Click "Add Source" to create one.'}
+                            {searchQuery ? 'Không tìm thấy nguồn nào.' : 'Chưa có nguồn nào. Nhấn "Add Source" để tạo mới.'}
                         </div>
                     )}
                 </div>
+
+                {/* Pagination Controls */}
+                {totalPages > 1 && (
+                    <div className="mt-6 flex items-center justify-between bg-white dark:bg-gray-800 px-4 py-3 rounded-lg shadow">
+                        <button
+                            onClick={() => setPage(page - 1)}
+                            disabled={page === 1 || isLoading}
+                            className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        >
+                            ← Trước
+                        </button>
+                        <div className="text-sm text-gray-700 dark:text-gray-300">
+                            Trang {page} / {totalPages}
+                        </div>
+                        <button
+                            onClick={() => setPage(page + 1)}
+                            disabled={page >= totalPages || isLoading}
+                            className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        >
+                            Sau →
+                        </button>
+                    </div>
+                )}
 
                 {/* Modal */}
                 {showModal && (
