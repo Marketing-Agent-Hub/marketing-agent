@@ -1,0 +1,35 @@
+name: Deploy to VPS
+
+on:
+  workflow_run:
+    workflows: ["Build and Deploy Docker Images"]
+    types:
+      - completed
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    
+    steps:
+      - name: Deploy to VPS via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            cd /root/oc-news-bot
+            
+            # Pull images mới từ GHCR
+            docker compose pull server web
+            
+            # Restart với zero-downtime
+            docker compose up -d --no-deps --build server web
+            
+            # Show status
+            docker compose ps
+            
+            echo "✅ Deployment completed!"
