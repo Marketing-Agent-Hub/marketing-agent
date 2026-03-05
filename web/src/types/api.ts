@@ -377,11 +377,15 @@ export interface ReadyItem {
     title: string;
     link: string;
     publishedAt?: string;
+    createdAt?: string;
     importanceScore?: number;
     topicTags: string[];
+    oneLineSummary?: string;
     fullArticle?: string;
     mainImageUrl?: string;
     imageList?: string[];
+    aiModel?: string;
+    aiProcessedAt?: string;
     source: {
         id: number;
         name: string;

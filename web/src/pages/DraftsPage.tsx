@@ -177,7 +177,7 @@ export function DraftsPage() {
                                     {(item.mainImageUrl || (item.imageList && item.imageList.length > 0)) && (
                                         <div className="flex-shrink-0">
                                             <img
-                                                src={item.mainImageUrl || item.imageList[0]}
+                                                src={item.mainImageUrl || (item.imageList && item.imageList[0]) || ''}
                                                 alt={item.title}
                                                 className="w-32 h-32 object-cover rounded-lg"
                                                 onError={(e) => {
@@ -313,7 +313,7 @@ export function DraftsPage() {
                             {(selectedItem.mainImageUrl || (selectedItem.imageList && selectedItem.imageList.length > 0)) && (
                                 <div className="mb-4">
                                     <img
-                                        src={selectedItem.mainImageUrl || selectedItem.imageList[0]}
+                                        src={selectedItem.mainImageUrl || (selectedItem.imageList && selectedItem.imageList[0]) || ''}
                                         alt={selectedItem.title}
                                         className="w-full max-h-96 object-cover rounded-lg"
                                         onError={(e) => {
