@@ -63,9 +63,52 @@ export function extractMainContent(html: string, url: string): {
 }
 
 /**
- * Extract all image URLs from HTML content
+ * Check if image URL is likely a logo/icon/banner
  */
-export function extractImageUrls(html: string, baseUrl: string): string[] {
+function isLikelyLogoOrIcon(url: string): boolean {
+    const urlLower = url.toLowerCase();
+
+    // Common logo/icon keywords in URL
+    const logoKeywords = [
+        'logo', 'icon', 'lockup', 'banner', 'header', 'footer',
+        'favicon', 'sprite', 'badge', 'avatar', 'thumb',
+        'social', 'share', 'button', 'brand', 'emblem'
+    ];
+
+    // Common logo/icon paths
+    const logoPaths = [
+        '/assets/logo', '/img/icon', '/images/brand', '/static/brand',
+        '/wp-content/themes', '/dist/svg', '/svg/', '/icons/',
+        '/favicons/', '/apple-touch-icon'
+    ];
+
+    // Check keywords in URL
+    if (logoKeywords.some(keyword => urlLower.includes(keyword))) {
+        return true;
+    }
+
+    // Check logo paths
+    if (logoPaths.some(path => urlLower.includes(path))) {
+        return true;
+    }
+
+    // Check file extensions (SVG, ICO are often logos)
+    if (urlLower.endsWith('.svg') || urlLower.endsWith('.ico')) {
+        return true;
+    }
+
+    // Check size patterns in filename (e.g., logo-32x32, icon-16x16)
+    if (/[-_](16|32|48|64|96|128|192|256)x?\d*\.(png|jpg|jpeg|webp)/i.test(urlLower)) {
+        return true;
+    }
+
+    return false;
+}
+
+/**
+ * Extract all image URLs from HTML content with smart filtering
+ */
+export function extractImageUrls(html: string, baseUrl: string, maxImages = 15): string[] {
     try {
         const dom = new JSDOM(html, { url: baseUrl });
         const document = dom.window.document;
@@ -79,8 +122,19 @@ export function extractImageUrls(html: string, baseUrl: string): string[] {
                 // Convert relative URLs to absolute URLs
                 try {
                     const absoluteUrl = new URL(src, baseUrl).href;
-                    // Filter out tracking pixels and very small images
-                    if (!src.includes('1x1') && !src.includes('pixel') && !src.includes('tracking')) {
+
+                    // Filter out unwanted images
+                    const shouldSkip =
+                        // Tracking pixels and very small images
+                        src.includes('1x1') ||
+                        src.includes('pixel') ||
+                        src.includes('tracking') ||
+                        // Logo, icon, banner patterns
+                        isLikelyLogoOrIcon(absoluteUrl) ||
+                        // Data URLs (embedded images)
+                        absoluteUrl.startsWith('data:');
+
+                    if (!shouldSkip) {
                         imageUrls.push(absoluteUrl);
                     }
                 } catch (error) {
@@ -90,7 +144,10 @@ export function extractImageUrls(html: string, baseUrl: string): string[] {
         });
 
         // Remove duplicates
-        return Array.from(new Set(imageUrls));
+        const uniqueUrls = Array.from(new Set(imageUrls));
+
+        // Limit total images to prevent overload
+        return uniqueUrls.slice(0, maxImages);
     } catch (error) {
         console.error('[Extraction] Error extracting images:', error);
         return [];
