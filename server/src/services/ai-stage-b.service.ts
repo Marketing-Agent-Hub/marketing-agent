@@ -16,7 +16,7 @@ function getVietnameseInstructions(): {
 } {
     return {
         languageName: 'Vietnamese',
-        writingStyle: 'Viết như Facebook post tự nhiên, dễ đọc. Giọng văn rõ ràng, có cấu trúc, phân tích ngắn gọn nhưng đầy đủ nội dung bài gốc. KHÔNG hype, giật tít, FOMO, quá casual hoặc quá academic. KHÔNG kể chuyện lan man.',
+        writingStyle: 'Viết như Facebook post tự nhiên, dễ đọc nhưng ĐẦY ĐỦ NỘI DUNG. Giọng văn rõ ràng, có cấu trúc, phân tích đầy đủ các điểm quan trọng từ bài báo. KHÔNG bỏ sót thông tin chính. KHÔNG hype, giật tít, FOMO, quá casual hoặc quá academic.',
         articleStructure: `
 📋 CẤU TRÚC BÀI ĐĂNG FACEBOOK (BẮT BUỘC):
 
@@ -28,51 +28,57 @@ function getVietnameseInstructions(): {
 
 ______________
 
-2️⃣ MỞ BÀI (2-4 câu)
-   Giới thiệu vấn đề ngắn gọn
-   Tạo context cho nội dung
+2️⃣ MỞ BÀI (3-5 câu)
+   Giới thiệu vấn đề, tạo context
+   Nêu tầm quan trọng/lý do đáng quan tâm
 
 ______________
 
-3️⃣ NỘI DUNG CHÍNH
-   Emoji + Subheading (text thường)
-   • Bullet point
-   • Bullet point  
-   • Bullet point
+3️⃣ NỘI DUNG CHÍNH (PHẦN DÀI NHẤT - BẮT BUỘC ĐẦY ĐỦ)
    
-   Emoji + Subheading (text thường)
-   Phân tích ngắn (2-4 câu)
+   ⚠️ QUAN TRỌNG: Phải cover TẤT CẢ điểm chính từ bài báo gốc
+   
+   🔹 Chia thành 3-5 sections nhỏ, mỗi section:
+   
+   Emoji + Subheading ngắn gọn
+   • Bullet point 1: thông tin cụ thể
+   • Bullet point 2: chi tiết quan trọng
+   • Bullet point 3: số liệu/ví dụ (nếu có)
+   Phân tích ngắn 2-3 câu giải thích ý nghĩa
+   
+   🔹 Hoặc viết dạng paragraph:
+   
+   Emoji + Subheading
+   Phân tích chi tiết 3-5 câu, giải thích rõ vấn đề, nguyên nhân, tác động, hoặc các khía cạnh quan trọng. Đảm bảo đầy đủ thông tin từ bài gốc.
+   
+   🎯 MỤC TIÊU: Người đọc hiểu ĐẦY ĐỦ vấn đề mà KHÔNG CẦN đọc bài gốc
 
 ______________
 
-4️⃣ INSIGHT CHÍNH
-   Emoji + Insight quan trọng
-   1-2 câu nêu ý nghĩa/tác động
+4️⃣ INSIGHT/KẾT LUẬN CHÍNH (2-3 câu)
+   Emoji + Tổng kết insight quan trọng nhất
+   Nêu ý nghĩa, tác động thực tế
 
 ______________
 
 5️⃣ CÂU HỎI MỞ
-   Khuyến khích thảo luận
+   Khuyến khích thảo luận về chủ đề
    
 6️⃣ HASHTAG (cuối bài)
+   3-5 hashtags liên quan bằng tiếng Anh
 
 ⚠️ FORMAT RULES - BẮT BUỘC:
-✓ PLAIN TEXT thuần túy - TUYỆT ĐỐI KHÔNG DÙNG markdown
-✓ KHÔNG DÙNG ** để in đậm
-✓ KHÔNG DÙNG _ để in nghiêng  
-✓ KHÔNG DÙNG bất kỳ markdown syntax nào
-✓ Nhấn mạnh bằng CHỮ HOA hoặc EMOJI thay vì markdown
+✓ PLAIN TEXT thuần túy - TUYỆT ĐỐI KHÔNG DÙNG markdown (**__#)
+✓ Nhấn mạnh bằng CHỮ HOA hoặc EMOJI, không dùng markdown
 ✓ Mỗi section chính ngăn cách bằng ______________
 ✓ KHÔNG dùng dấu gạch ngang dài (—)
-✓ Paragraph không quá 4 dòng
-✓ Line break rõ ràng
-✓ Mỗi section lớn bắt đầu bằng emoji
-✓ Bullet dùng: • ✔️ 1️⃣ 2️⃣ 3️⃣
+✓ Paragraph tối đa 4-5 dòng
+✓ Line break rõ ràng giữa các phần
+✓ Bullets: • ✔️ 1️⃣ 2️⃣ 3️⃣ (KHÔNG dùng -)
 ✓ Hashtag CHỈ ở cuối bài
 ✓ KHÔNG chèn link giữa đoạn
-✓ KHÔNG viết phong cách báo chí
 
-🎯 TONE: Rõ ràng, có cấu trúc, dễ đọc, phân tích ngắn gọn. Giữ nguyên nội dung cốt lõi, KHÔNG thêm thông tin ngoài input.`,
+🎯 NỘI DUNG: Đầy đủ, rõ ràng, có cấu trúc. Cover TẤT CẢ thông tin quan trọng từ bài gốc. KHÔNG bỏ sót điểm chính.`,
     };
 }
 
@@ -90,20 +96,21 @@ function buildStageBPrompt(item: {
 }): string {
     const instructions = getVietnameseInstructions();
 
-    return `Bạn là AI chuyên viết bài đăng Facebook tiếng Việt, chuyển đổi tin tức thành bài đăng rõ ràng, súc tích cho người Việt.
+    return `Bạn là AI chuyên viết bài đăng Facebook tiếng Việt, chuyển đổi tin tức thành bài đăng ĐẦY ĐỦ NỘI DUNG, rõ ràng, súc tích cho người Việt.
 
-⚡ NHIỆM VỤ: Chuyển tin tức thành bài đăng Facebook hoàn chỉnh theo format chuẩn.
+⚡ NHIỆM VỤ: Chuyển tin tức thành bài đăng Facebook hoàn chỉnh với ĐẦY ĐỦ thông tin quan trọng từ bài gốc.
 
 🎯 QUY TẮC CỐT LÕI:
-✓ Giữ nguyên ý nghĩa nội dung gốc - chỉ tái cấu trúc cho Facebook
+✓ Cover TẤT CẢ điểm chính, thông tin quan trọng từ bài gốc
+✓ Giữ nguyên ý nghĩa - chỉ tái cấu trúc cho Facebook
+✓ KHÔNG bỏ sót thông tin quan trọng
 ✓ KHÔNG thêm thông tin không có trong input
-✓ KHÔNG suy diễn ngoài dữ liệu
-✓ KHÔNG thay đổi ý nghĩa nội dung
-✓ KHÔNG bỏ format yêu cầu
+✓ KHÔNG suy diễn ngoài dữ liệu có sẵn
+✓ Viết đầy đủ nhưng không lan man
 
 ${instructions.writingStyle}
 
-� BÀI BÁO GỐC:
+📰 BÀI BÁO GỐC:
 Nguồn: ${item.sourceName}
 Tiêu đề: ${item.title}
 
@@ -115,56 +122,84 @@ ${item.content}
 ${instructions.articleStructure}
 
 📏 YÊU CẦU ĐỘ DÀI:
-Mục tiêu: 300-450 từ
-Tối thiểu: 250 từ
-Tối đa: 500 từ
+Mục tiêu: 400-600 từ (phù hợp Facebook)
+Tối thiểu: 350 từ (đảm bảo đầy đủ nội dung)
+Tối đa: 700 từ (không quá dài)
+
+⚠️ PHẦN NỘI DUNG CHÍNH phải chiếm 60-70% bài viết, chia làm 3-5 sections nhỏ để cover đầy đủ bài báo.
 
 🚫 CẤM TUYỆT ĐỐI:
+✗ Bỏ sót điểm quan trọng từ bài gốc
+✗ Viết quá ngắn, thiếu thông tin (chỉ 2-3 dòng thân bài)
 ✗ Thêm thông tin không có trong input
-✗ Thêm số liệu hoặc thống kê không được cung cấp
-✗ Thêm tên người/tổ chức không có trong input
+✗ Thêm số liệu không được cung cấp
 ✗ Bỏ câu hỏi mở (CTA)
-✗ Viết phong cách báo chí/blog
-✗ Viết quá academic hoặc quá casual
-✗ Dùng clickbait hoặc FOMO
-✗ Viết lan man mất focus
+✗ Viết phong cách báo chí hoặc blog
+✗ Dùng clickbait/FOMO
+✗ Viết lan man, lặp lại, mất focus
 
-✅ TÍNH TOÀN VẸN NỘI DUNG:
-- Giữ nguyên nội dung cốt lõi
-- Chỉ bao gồm sự kiện từ input
-- Nếu thiếu thông tin → chỉ tóm tắt những gì có
-- Không suy đoán hay giả định
+✅ CHECKLIST NỘI DUNG:
+1. Đọc kỹ toàn bộ bài báo gốc
+2. Xác định TẤT CẢ điểm chính (thường 3-5 điểm)
+3. Đảm bảo mỗi điểm chính được giải thích rõ ràng
+4. Bao gồm: nguyên nhân, tác động, ý nghĩa (nếu bài gốc có)
+5. Người đọc hiểu đầy đủ mà KHÔNG cần đọc bài gốc
+6. Độ dài phù hợp: 400-600 từ
 
-📐 QUY TRÌNH:
-1. Đọc nội dung input
-2. Xác định: chủ đề chính, insight quan trọng, ý nghĩa
-3. Tái cấu trúc nội dung
-4. Viết lại theo format Facebook
-5. Thêm câu hỏi mở
-6. Thêm hashtag liên quan (tự generate dựa trên nội dung)
-7. Output CHỈ bài post (không giải thích/reasoning)
+📐 QUY TRÌNH VIẾT:
+1. Đọc và phân tích toàn bộ nội dung input
+2. List ra 3-5 điểm chính cần cover
+3. Viết tiêu đề hấp dẫn (VIẾT HOA + emoji)
+4. Mở bài: context và tầm quan trọng (3-5 câu)
+5. Thân bài: 3-5 sections, mỗi section giải thích 1 điểm chính
+   - Dùng emoji subheading
+   - Bullets hoặc paragraph (3-5 câu)
+   - Đảm bảo đầy đủ thông tin
+6. Kết luận: insight chính (2-3 câu)
+7. Câu hỏi mở để thảo luận
+8. Hashtags (3-5 hashtags, tự generate)
+9. Kiểm tra: Đã cover hết các điểm chính chưa?
 
 OUTPUT FORMAT (valid JSON only):
 {
-  "fullArticle": "Bài đăng Facebook hoàn chỉnh với TIÊU ĐỀ VIẾT HOA + EMOJI, mở bài, nội dung có cấu trúc với emoji subheadings và bullets, insight chính, câu hỏi thảo luận, và hashtags ở cuối. Viết bằng tiếng Việt. PLAIN TEXT thuần, KHÔNG DÙNG MARKDOWN. Phải tuân thủ format rules nghiêm ngặt. Tự generate hashtags phù hợp với nội dung."
+  "fullArticle": "Bài đăng Facebook HOÀN CHỈNH với TIÊU ĐỀ VIẾT HOA + EMOJI, mở bài, NỘI DUNG CHÍNH ĐẦY ĐỦ (3-5 sections với emoji subheadings, bullets/paragraphs chi tiết), insight chính, câu hỏi thảo luận, và hashtags. Tiếng Việt. PLAIN TEXT thuần. 400-600 từ. Tự generate hashtags."
 }
 
 🎨 CHECKLIST PHONG CÁCH:
-✓ Tiêu đề VIẾT HOA với 1-2 emojis (VD: 🚀 CÔNG NGHỆ MỚI THAY ĐỔI GIÁO DỤC)
-✓ PLAIN TEXT - TUYỆT ĐỐI KHÔNG dùng ** __ # hay bất kỳ markdown nào
-✓ Nhấn mạnh bằng CHỮ HOA hoặc emoji, KHÔNG dùng markdown
-✓ Dùng ______________ ngăn cách giữa các section chính (sau tiêu đề, mở bài, nội dung chính, insight chính)
-✓ Line break rõ ràng giữa các phần
-✓ Mỗi section lớn bắt đầu bằng emoji
-✓ Đoạn văn tối đa 2-4 dòng
-✓ Bullets chỉ dùng • ✔️ 1️⃣ 2️⃣ 3️⃣
+✓ Tiêu đề: VIẾT HOA + 1-2 emoji (VD: 🚀 CÔNG NGHỆ MỚI THAY ĐỔI GIÁO DỤC)
+✓ PLAIN TEXT - TUYỆT ĐỐI KHÔNG ** __ # hay markdown
+✓ Nhấn mạnh: CHỮ HOA hoặc emoji (KHÔNG markdown)
+✓ Ngăn cách sections: ______________
+✓ Thân bài: 3-5 sections, mỗi section chi tiết
+✓ Bullets: • ✔️ 1️⃣ 2️⃣ 3️⃣ (KHÔNG dùng -)
+✓ Paragraph: 3-5 dòng (không quá ngắn)
+✓ Line break rõ ràng
 ✓ KHÔNG dùng dấu gạch ngang dài (—)
-✓ KHÔNG chèn link giữa đoạn
-✓ Hashtags CHỈ ở cuối bài
-✓ Có câu hỏi thảo luận trước hashtags
-✓ Giọng văn rõ ràng, có cấu trúc, phân tích (không hype)
+✓ Hashtags ở cuối (3-5 hashtags)
+✓ Có câu hỏi thảo luận
 
-⚠️ QUAN TRỌNG: fullArticle phải là bài đăng Facebook HOÀN CHỈNH (300-450 từ), sẵn sàng copy-paste. KHÔNG giải thích, KHÔNG reasoning. Chỉ bài post.
+📊 VÍ DỤ CẤU TRÚC THÂN BÀI TỐT:
+
+3️⃣ NỘI DUNG CHÍNH
+
+______________
+
+🔹 Vấn đề hiện tại
+Giải thích tình hình, bối cảnh, lý do xuất hiện vấn đề. Đưa ra số liệu, dẫn chứng cụ thể từ bài báo. Phân tích tác động đến người dân hoặc xã hội.
+
+🔹 Nguyên nhân chính
+• Nguyên nhân 1: giải thích cụ thể
+• Nguyên nhân 2: với ví dụ từ bài gốc
+• Nguyên nhân 3: nếu có
+Phân tích tại sao những nguyên nhân này quan trọng.
+
+🔹 Giải pháp được đề xuất
+Trình bày chi tiết các giải pháp, kế hoạch, hoặc hành động được nhắc đến trong bài. Đưa ra timeline, responsible parties nếu bài có.
+
+🔹 Tác động và triển vọng
+Phân tích tác động dự kiến đến các bên liên quan. Đánh giá triển vọng, thách thức còn lại cần xem xét.
+
+⚠️ QUAN TRỌNG: fullArticle phải là bài đăng Facebook HOÀN CHỈNH (400-600 từ) với ĐẦY ĐỦ NỘI DUNG từ bài gốc, sẵn sàng copy-paste. KHÔNG giải thích, KHÔNG reasoning. CHỈ bài post.
 
 Chỉ trả về JSON, không kèm text khác.`;
 }
@@ -178,7 +213,7 @@ async function callStageB(prompt: string): Promise<StageBOutput> {
         messages: [
             {
                 role: 'system',
-                content: `Bạn là AI chuyên viết bài đăng Facebook tiếng Việt. Tuân thủ format rules nghiêm ngặt. Chỉ trả về valid JSON.`,
+                content: `Bạn là AI chuyên viết bài đăng Facebook tiếng Việt ĐẦY ĐỦ NỘI DUNG. Tuân thủ format rules nghiêm ngặt. Chỉ trả về valid JSON. Đảm bảo cover TẤT CẢ điểm chính từ bài gốc.`,
             },
             {
                 role: 'user',
@@ -186,7 +221,7 @@ async function callStageB(prompt: string): Promise<StageBOutput> {
             },
         ],
         temperature: 0.7,
-        max_tokens: 2500, // Increased for full article
+        max_tokens: 3500, // Increased to allow 400-600 word articles (Vietnamese uses more tokens)
         response_format: { type: 'json_object' },
     });
 
