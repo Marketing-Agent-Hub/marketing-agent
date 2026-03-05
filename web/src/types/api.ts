@@ -369,8 +369,7 @@ export interface ItemsStats {
     data: {
         byStatus: Record<string, number>;
         recentCount: number;
-        filteredCount: number;
-        rejectedCount: number;
+        usedCount: number;
         total: number;
     }
 }

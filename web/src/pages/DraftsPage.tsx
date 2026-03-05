@@ -357,7 +357,7 @@ export function DraftsPage() {
                             >
                                 <div className="flex items-start gap-4">
                                     {/* Checkbox */}
-                                    <div className="flex-shrink-0 pt-1">
+                                    <div className="shrink-0 pt-1">
                                         <input
                                             type="checkbox"
                                             checked={selectedIds.has(item.id)}
@@ -368,7 +368,7 @@ export function DraftsPage() {
 
                                     {/* Thumbnail */}
                                     {(item.mainImageUrl || (item.imageList && item.imageList.length > 0)) && (
-                                        <div className="flex-shrink-0">
+                                        <div className="shrink-0">
                                             <img
                                                 src={item.mainImageUrl || (item.imageList && item.imageList[0]) || ''}
                                                 alt={item.title}

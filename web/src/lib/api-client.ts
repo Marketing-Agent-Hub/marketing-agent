@@ -198,7 +198,6 @@ class ApiClient {
         return result || {
             byStatus: {},
             recentCount: 0,
-            filteredCount: 0,
             rejectedCount: 0,
             total: 0,
         };

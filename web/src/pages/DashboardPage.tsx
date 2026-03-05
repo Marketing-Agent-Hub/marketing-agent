@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
 import { apiClient } from '../lib/api-client';
 import type { ItemStatus } from '../types/api';
@@ -26,6 +26,7 @@ const STATUS_LABELS: Record<ItemStatus, string> = {
 
 export function DashboardPage() {
     const [statusFilter, setStatusFilter] = useState<ItemStatus | ''>('');
+    const [sourceIdFilter, setSourceIdFilter] = useState<number | undefined>(undefined);
     const [searchQuery, setSearchQuery] = useState('');
     const [limit] = useState(50);
     const [offset, setOffset] = useState(0);
@@ -33,21 +34,42 @@ export function DashboardPage() {
     const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
     const queryClient = useQueryClient();
 
+    // Fetch sources list for filter
+    const { data: sourcesData } = useQuery({
+        queryKey: ['sources-list'],
+        queryFn: async () => {
+            const result = await apiClient.getSources({ limit: 1000, sortBy: 'name', sortOrder: 'asc' });
+            return result.sources;
+        },
+        staleTime: 10 * 60 * 1000, // Cache sources for 10 minutes
+    });
+
+    const sources = sourcesData || [];
+
     // Fetch items
     const { data: itemsData, isLoading: itemsLoading } = useQuery({
-        queryKey: ['items', statusFilter, searchQuery, limit, offset],
+        queryKey: ['items', statusFilter, sourceIdFilter, searchQuery, limit, offset],
         queryFn: () => apiClient.getItems({
             status: statusFilter || undefined,
+            sourceId: sourceIdFilter,
             search: searchQuery || undefined,
             limit,
             offset,
         }),
+        staleTime: 2 * 60 * 1000,        // Cache 2 phút - items thay đổi thường xuyên hơn AI content
+        gcTime: 10 * 60 * 1000,          // Giữ cache 10 phút
+        placeholderData: keepPreviousData, // Giữ data cũ khi chuyển trang (UX mượt)
+        refetchOnWindowFocus: false,      // Không refetch khi focus window
+        refetchOnMount: false,            // Không refetch khi remount
     });
 
     // Fetch stats
     const { data: statsData } = useQuery({
         queryKey: ['items-stats'],
         queryFn: () => apiClient.getItemsStats(),
+        staleTime: 5 * 60 * 1000,        // Cache stats 5 phút
+        gcTime: 10 * 60 * 1000,
+        refetchOnWindowFocus: false,
     });
 
     // Fetch item detail
@@ -55,6 +77,8 @@ export function DashboardPage() {
         queryKey: ['item', selectedItemId],
         queryFn: () => apiClient.getItemById(selectedItemId!),
         enabled: !!selectedItemId,
+        staleTime: 3 * 60 * 1000,        // Cache item details 3 phút
+        gcTime: 10 * 60 * 1000,
     });
 
     const items = itemsData?.items || [];
@@ -62,8 +86,7 @@ export function DashboardPage() {
     const stats = {
         byStatus: statsData?.data.byStatus || {},
         recentCount: statsData?.data.recentCount || 0,
-        filteredCount: statsData?.data.filteredCount || 0,
-        rejectedCount: statsData?.data.rejectedCount || 0,
+        usedCount: statsData?.data.usedCount || 0,
         total: statsData?.data.total || 0,
     };
 
@@ -73,6 +96,20 @@ export function DashboardPage() {
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
         setOffset(0);
+    };
+
+    // Filter handlers - reset to first page when filters change
+    const handleFilterChange = () => {
+        setOffset(0);
+        setSelectedIds(new Set());
+    };
+
+    const handleResetFilters = () => {
+        setStatusFilter('');
+        setSourceIdFilter(undefined);
+        setSearchQuery('');
+        setOffset(0);
+        setSelectedIds(new Set());
     };
 
     // Delete mutation
@@ -142,7 +179,7 @@ export function DashboardPage() {
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
             {/* Header */}
             <SharedNav />
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 py-8">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 py-t">
                 {/* Manual Triggers */}
                 <PipelineTriggers />
             </div>
@@ -155,14 +192,14 @@ export function DashboardPage() {
                     </div>
                     <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
                         <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">24h gần đây</h3>
-                        <div className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">{stats.recentCount.toLocaleString()}</div>
+                        <div className="text-3xl font-bold text-rose-600 dark:text-rose-400">{stats.recentCount.toLocaleString()}</div>
                     </div>
                     <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Đã lọc</h3>
-                        <div className="text-3xl font-bold text-rose-600 dark:text-rose-400">{stats.filteredCount.toLocaleString()}</div>
+                        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Bài viết hoàn thành</h3>
+                        <div className="text-3xl font-bold text-green-600 dark:text-green-400">{stats.byStatus.AI_STAGE_B_DONE || 0}</div>
                     </div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-6 gap-4 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
                     <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
                         <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Tin mới</h3>
                         <div className="text-3xl font-bold text-cyan-600 dark:text-cyan-400">{stats.byStatus.NEW || 0}</div>
@@ -183,14 +220,10 @@ export function DashboardPage() {
                         <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">AI sàn lọc</h3>
                         <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">{stats.byStatus.AI_STAGE_A_DONE || 0}</div>
                     </div>
-                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Bài viết hoàn thành</h3>
-                        <div className="text-3xl font-bold text-green-600 dark:text-green-400">{stats.byStatus.AI_STAGE_B_DONE || 0}</div>
-                    </div>
                 </div>
                 {/* Filters */}
                 <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6">
-                    <div className="flex flex-wrap gap-4">
+                    <div className="flex flex-wrap gap-4 items-end">
                         <div>
                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                 Trạng thái
@@ -199,17 +232,36 @@ export function DashboardPage() {
                                 value={statusFilter}
                                 onChange={(e) => {
                                     setStatusFilter(e.target.value as ItemStatus | '');
-                                    setOffset(0);
+                                    handleFilterChange();
                                 }}
                                 className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                             >
-                                <option value="">Tất cả</option>
+                                <option value="">Tất cả trạng thái</option>
                                 <option value="NEW">Mới</option>
                                 <option value="EXTRACTED">Đã trích xuất</option>
                                 <option value="FILTERED_OUT">Đã lọc</option>
                                 <option value="READY_FOR_AI">Sẵn sàng AI</option>
                                 <option value="AI_STAGE_A_DONE">AI Stage A xong</option>
                                 <option value="AI_STAGE_B_DONE">AI Stage B xong</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Nguồn
+                            </label>
+                            <select
+                                value={sourceIdFilter || ''}
+                                onChange={(e) => {
+                                    setSourceIdFilter(e.target.value ? parseInt(e.target.value) : undefined);
+                                    handleFilterChange();
+                                }}
+                                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                            >
+                                <option value="">Tất cả nguồn</option>
+                                {sources.map(source => (
+                                    <option key={source.id} value={source.id}>{source.name}</option>
+                                ))}
                             </select>
                         </div>
 
@@ -233,6 +285,18 @@ export function DashboardPage() {
                                 </button>
                             </form>
                         </div>
+
+                        {(statusFilter || sourceIdFilter || searchQuery) && (
+                            <div>
+                                <button
+                                    onClick={handleResetFilters}
+                                    className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600"
+                                    title="Xóa tất cả bộ lọc"
+                                >
+                                    🔄 Reset
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </div>
 

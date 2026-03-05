@@ -269,13 +269,6 @@ export const getItemsStats = asyncHandler(async (_req: Request, res: Response) =
         },
     });
 
-    // Get counts for items with errors/filtered
-    const filteredCount = await db.item.count({
-        where: {
-            status: 'FILTERED_OUT',
-        },
-    });
-
     const usedCount = await db.item.count({
         where: {
             status: 'USED',
@@ -287,7 +280,6 @@ export const getItemsStats = asyncHandler(async (_req: Request, res: Response) =
         data: {
             byStatus: statusCounts,
             recentCount,
-            filteredCount,
             usedCount,
             total: stats.reduce((sum, stat) => sum + stat._count.id, 0),
         },
