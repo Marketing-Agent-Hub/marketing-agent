@@ -172,12 +172,33 @@ export function DraftsPage() {
                                 key={item.id}
                                 className="bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-lg transition-shadow p-6"
                             >
-                                <div className="flex items-start justify-between">
+                                <div className="flex items-start gap-4">
+                                    {/* Thumbnail */}
+                                    {(item.mainImageUrl || (item.imageList && item.imageList.length > 0)) && (
+                                        <div className="flex-shrink-0">
+                                            <img
+                                                src={item.mainImageUrl || item.imageList[0]}
+                                                alt={item.title}
+                                                className="w-32 h-32 object-cover rounded-lg"
+                                                onError={(e) => {
+                                                    e.currentTarget.style.display = 'none';
+                                                }}
+                                            />
+                                        </div>
+                                    )}
+
                                     <div className="flex-1">
                                         {/* Title */}
                                         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
                                             {item.title}
                                         </h3>
+
+                                        {/* One-line summary */}
+                                        {item.oneLineSummary && (
+                                            <p className="text-sm text-blue-600 dark:text-blue-400 italic mb-3">
+                                                💡 {item.oneLineSummary}
+                                            </p>
+                                        )}
 
                                         {/* Meta info */}
                                         <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600 dark:text-gray-400 mb-3">
@@ -189,6 +210,11 @@ export function DraftsPage() {
                                                     📅 {new Date(item.publishedAt).toLocaleDateString('vi-VN')}
                                                 </span>
                                             )}
+                                            {item.createdAt && (
+                                                <span className="flex items-center gap-1 text-xs">
+                                                    🕐 Nhận: {new Date(item.createdAt).toLocaleString('vi-VN')}
+                                                </span>
+                                            )}
                                             {item.importanceScore && (
                                                 <span className="flex items-center gap-1 font-semibold text-orange-600 dark:text-orange-400">
                                                     ⭐ {item.importanceScore}
@@ -198,6 +224,22 @@ export function DraftsPage() {
                                                 🎯 Trust: {item.source.trustScore}
                                             </span>
                                         </div>
+
+                                        {/* AI Processing Info */}
+                                        {(item.aiModel || item.aiProcessedAt) && (
+                                            <div className="flex flex-wrap items-center gap-3 text-xs text-gray-500 dark:text-gray-500 mb-3">
+                                                {item.aiModel && (
+                                                    <span className="flex items-center gap-1">
+                                                        🤖 {item.aiModel}
+                                                    </span>
+                                                )}
+                                                {item.aiProcessedAt && (
+                                                    <span className="flex items-center gap-1">
+                                                        ⚡ AI: {new Date(item.aiProcessedAt).toLocaleString('vi-VN')}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        )}
 
                                         {/* Topic Tags */}
                                         {item.topicTags && item.topicTags.length > 0 && (
@@ -267,11 +309,40 @@ export function DraftsPage() {
                                 {selectedItem.title}
                             </h2>
 
+                            {/* Main Image */}
+                            {(selectedItem.mainImageUrl || (selectedItem.imageList && selectedItem.imageList.length > 0)) && (
+                                <div className="mb-4">
+                                    <img
+                                        src={selectedItem.mainImageUrl || selectedItem.imageList[0]}
+                                        alt={selectedItem.title}
+                                        className="w-full max-h-96 object-cover rounded-lg"
+                                        onError={(e) => {
+                                            e.currentTarget.style.display = 'none';
+                                        }}
+                                    />
+                                </div>
+                            )}
+
+                            {/* One-line Summary */}
+                            {selectedItem.oneLineSummary && (
+                                <div className="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                                    <div className="font-semibold text-blue-900 dark:text-blue-300 mb-1">
+                                        💡 Tóm tắt nhanh (AI Stage A):
+                                    </div>
+                                    <p className="text-blue-800 dark:text-blue-200">
+                                        {selectedItem.oneLineSummary}
+                                    </p>
+                                </div>
+                            )}
+
                             {/* Meta */}
                             <div className="flex flex-wrap gap-4 text-sm text-gray-600 dark:text-gray-400 mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
                                 <span>📰 {selectedItem.source.name}</span>
                                 {selectedItem.publishedAt && (
-                                    <span>📅 {new Date(selectedItem.publishedAt).toLocaleString('vi-VN')}</span>
+                                    <span>📅 Xuất bản: {new Date(selectedItem.publishedAt).toLocaleString('vi-VN')}</span>
+                                )}
+                                {selectedItem.createdAt && (
+                                    <span>🕐 Nhận vào hệ thống: {new Date(selectedItem.createdAt).toLocaleString('vi-VN')}</span>
                                 )}
                                 {selectedItem.importanceScore && (
                                     <span className="font-semibold text-orange-600 dark:text-orange-400">
@@ -281,11 +352,28 @@ export function DraftsPage() {
                                 <span>🎯 Trust Score: {selectedItem.source.trustScore}</span>
                             </div>
 
+                            {/* AI Processing Info */}
+                            {(selectedItem.aiModel || selectedItem.aiProcessedAt) && (
+                                <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+                                    <div className="font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                        🤖 Thông tin xử lý AI:
+                                    </div>
+                                    <div className="flex flex-wrap gap-4 text-sm text-gray-600 dark:text-gray-400">
+                                        {selectedItem.aiModel && (
+                                            <span>Model: {selectedItem.aiModel}</span>
+                                        )}
+                                        {selectedItem.aiProcessedAt && (
+                                            <span>Thời gian xử lý: {new Date(selectedItem.aiProcessedAt).toLocaleString('vi-VN')}</span>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+
                             {/* Tags */}
                             {selectedItem.topicTags && selectedItem.topicTags.length > 0 && (
                                 <div className="mb-4">
                                     <div className="font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                                        Topic Tags:
+                                        🏷️ Topic Tags:
                                     </div>
                                     <div className="flex flex-wrap gap-2">
                                         {selectedItem.topicTags.map((tag, idx) => (
@@ -300,13 +388,36 @@ export function DraftsPage() {
                                 </div>
                             )}
 
+                            {/* Image Gallery */}
+                            {selectedItem.imageList && selectedItem.imageList.length > 1 && (
+                                <div className="mb-4">
+                                    <div className="font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                        🖼️ Hình ảnh ({selectedItem.imageList.length}):
+                                    </div>
+                                    <div className="grid grid-cols-3 gap-2 max-h-48 overflow-y-auto">
+                                        {selectedItem.imageList.map((img, idx) => (
+                                            <img
+                                                key={idx}
+                                                src={img}
+                                                alt={`Image ${idx + 1}`}
+                                                className="w-full h-24 object-cover rounded cursor-pointer hover:opacity-80"
+                                                onClick={() => window.open(img, '_blank')}
+                                                onError={(e) => {
+                                                    e.currentTarget.style.display = 'none';
+                                                }}
+                                            />
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
                             {/* Full Article */}
                             {selectedItem.fullArticle && (
                                 <div className="mb-4">
                                     <div className="font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                                        Full Article (AI Generated):
+                                        📄 Bài viết Facebook đầy đủ (AI Stage B):
                                     </div>
-                                    <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 text-gray-900 dark:text-white whitespace-pre-line">
+                                    <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 text-gray-900 dark:text-white whitespace-pre-line border border-gray-200 dark:border-gray-700">
                                         {selectedItem.fullArticle}
                                     </div>
                                 </div>
