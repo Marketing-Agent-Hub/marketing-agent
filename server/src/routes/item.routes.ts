@@ -19,5 +19,8 @@ router.get('/stats', itemController.getItemsStats);
 // Get item by ID
 router.get('/:id', itemController.getItemById);
 
+// Delete items (bulk delete)
+router.delete('/', itemController.deleteItems);
+
 export default router;
 

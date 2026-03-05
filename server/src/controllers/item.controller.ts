@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { asyncHandler } from '../lib/async-handler.js';
 import { db } from '../db/index.js';
-import { getItemsSchema, getItemByIdSchema, getReadyItemsSchema } from '../schemas/item.schema.js';
+import { getItemsSchema, getItemByIdSchema, getReadyItemsSchema, deleteItemsSchema } from '../schemas/item.schema.js';
 
 /**
  * Get items with filtering and pagination
@@ -290,6 +290,30 @@ export const getItemsStats = asyncHandler(async (_req: Request, res: Response) =
             filteredCount,
             usedCount,
             total: stats.reduce((sum, stat) => sum + stat._count.id, 0),
+        },
+    });
+});
+
+/**
+ * Delete multiple items by IDs
+ */
+export const deleteItems = asyncHandler(async (req: Request, res: Response) => {
+    const { ids } = deleteItemsSchema.parse(req.body);
+
+    // Delete items (cascade will delete related articles and aiResults)
+    const result = await db.item.deleteMany({
+        where: {
+            id: {
+                in: ids,
+            },
+        },
+    });
+
+    res.json({
+        success: true,
+        data: {
+            deleted: result.count,
+            message: `Successfully deleted ${result.count} item(s)`,
         },
     });
 });

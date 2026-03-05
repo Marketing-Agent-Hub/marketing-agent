@@ -22,3 +22,9 @@ export const getReadyItemsSchema = z.object({
     toDate: z.string().optional(),   // ISO date string
 });
 
+export const deleteItemsSchema = z.object({
+    ids: z.array(z.number()).min(1, 'At least one item ID is required'),
+});
+
+export type DeleteItemsInput = z.infer<typeof deleteItemsSchema>;
+
