@@ -16,69 +16,69 @@ function getVietnameseInstructions(): {
 } {
     return {
         languageName: 'Vietnamese',
-        writingStyle: 'Viết như Facebook post tự nhiên, dễ đọc nhưng ĐẦY ĐỦ NỘI DUNG. Giọng văn rõ ràng, có cấu trúc, phân tích đầy đủ các điểm quan trọng từ bài báo. KHÔNG bỏ sót thông tin chính. KHÔNG hype, giật tít, FOMO, quá casual hoặc quá academic.',
+        writingStyle: `
+Viết như một Facebook post tiếng Việt tự nhiên, rõ ràng, dễ đọc và giống người thật biên tập lại tin tức.
+
+Yêu cầu giọng văn:
+- Tự nhiên, mạch lạc, sáng sủa
+- Đủ ý nhưng không rườm rà
+- Linh hoạt theo từng loại tin: tin ngắn viết gọn, tin nhiều dữ kiện viết đầy đủ hơn
+- Nghe như admin/editor social đang tóm tắt và giải thích tin cho người đọc
+- Không viết như báo cáo, giáo trình, bản tin truyền hình hay bài blog SEO
+
+Tránh:
+- Giọng văn khuôn mẫu, sáo, quá “AI”
+- Dùng các nhãn mục cứng như “KẾT LUẬN”, “NGUYÊN NHÂN CHÍNH”, “TÁC ĐỘNG DỰ KIẾN”, “GIẢI PHÁP”
+- Mở bài chung chung, ít thông tin
+- Lặp ý để kéo dài bài
+- Chia section máy móc cho mọi loại tin
+- Hype, giật tít, FOMO hoặc thêm cảm xúc quá đà
+`,
         articleStructure: `
-📋 CẤU TRÚC BÀI ĐĂNG FACEBOOK (BẮT BUỘC):
+FORMAT BẮT BUỘC:
 
-1️⃣ TITLE (dòng đầu tiên)
-   Có 1-2 emoji phù hợp
-   Viết TIÊU ĐỀ BẰNG CHỮ HOA để nổi bật
-   Tóm tắt insight chính
-   KHÔNG giật tít
+1. Dòng đầu tiên:
+- Là 1 câu mở đầu/tiêu đề ngắn
+- Có thể dùng 1-2 emoji phù hợp
+- Viết nổi bật, dễ hiểu
+- Không bắt buộc IN HOA toàn bộ
+- Không giật tít
 
+2. Separator:
 ______________
 
-2️⃣ MỞ BÀI (3-5 câu)
-   Giới thiệu vấn đề, tạo context
-   Nêu tầm quan trọng/lý do đáng quan tâm
+3. Phần thân bài:
+- Viết theo flow tự nhiên
+- Linh hoạt số đoạn tùy lượng thông tin của bài gốc
+- Mỗi đoạn nên ngắn, dễ đọc trên Facebook
+- Có thể dùng bullet nếu thật sự giúp rõ ý hơn
+- Nếu bài gốc ngắn, thân bài có thể chỉ cần 1-2 đoạn
+- Nếu bài gốc dài hoặc nhiều ý, thân bài có thể triển khai dài hơn
+- Ưu tiên giải thích rõ điều gì đang xảy ra, chi tiết đáng chú ý, nguyên nhân, tác động hoặc ý nghĩa nếu bài gốc có
 
+4. Separator:
 ______________
 
-3️⃣ NỘI DUNG CHÍNH (PHẦN DÀI NHẤT - BẮT BUỘC ĐẦY ĐỦ)
-   
-   ⚠️ QUAN TRỌNG: Phải cover TẤT CẢ điểm chính từ bài báo gốc
-   
-   🔹 Chia thành 3-5 sections nhỏ, mỗi section:
-   
-   Emoji + Subheading ngắn gọn
-   • Bullet point 1: thông tin cụ thể
-   • Bullet point 2: chi tiết quan trọng
-   • Bullet point 3: số liệu/ví dụ (nếu có)
-   Phân tích ngắn 2-3 câu giải thích ý nghĩa
-   
-   🔹 Hoặc viết dạng paragraph:
-   
-   Emoji + Subheading
-   Phân tích chi tiết 3-5 câu, giải thích rõ vấn đề, nguyên nhân, tác động, hoặc các khía cạnh quan trọng. Đảm bảo đầy đủ thông tin từ bài gốc.
-   
-   🎯 MỤC TIÊU: Người đọc hiểu ĐẦY ĐỦ vấn đề mà KHÔNG CẦN đọc bài gốc
+5. Phần chốt:
+- 1-3 câu chốt tự nhiên
+- Tóm lại điểm đáng chú ý nhất hoặc điều người đọc nên lưu ý
+- Có thể thêm câu hỏi mở nếu phù hợp với chủ đề
+- Không bắt buộc lúc nào cũng phải có câu hỏi mở
 
-______________
+6. Hashtag:
+- 3-5 hashtag tiếng Anh ở cuối bài nếu phù hợp
 
-4️⃣ INSIGHT/KẾT LUẬN CHÍNH (2-3 câu)
-   Emoji + Tổng kết insight quan trọng nhất
-   Nêu ý nghĩa, tác động thực tế
+FORMAT RULES:
+- PLAIN TEXT thuần túy
+- Không dùng markdown: ** __ #
+- Có emoji nhưng dùng vừa phải
+- Có xuống dòng hợp lý để dễ đọc
+- Dùng separator: ______________
+- Không chèn link giữa bài
+- Hashtag chỉ ở cuối bài
 
-______________
-
-5️⃣ CÂU HỎI MỞ
-   Khuyến khích thảo luận về chủ đề
-   
-6️⃣ HASHTAG (cuối bài)
-   3-5 hashtags liên quan bằng tiếng Anh
-
-⚠️ FORMAT RULES - BẮT BUỘC:
-✓ PLAIN TEXT thuần túy - TUYỆT ĐỐI KHÔNG DÙNG markdown (**__#)
-✓ Nhấn mạnh bằng CHỮ HOA hoặc EMOJI, không dùng markdown
-✓ Mỗi section chính ngăn cách bằng ______________
-✓ KHÔNG dùng dấu gạch ngang dài (—)
-✓ Paragraph tối đa 4-5 dòng
-✓ Line break rõ ràng giữa các phần
-✓ Bullets: • ✔️ 1️⃣ 2️⃣ 3️⃣ (KHÔNG dùng -)
-✓ Hashtag CHỈ ở cuối bài
-✓ KHÔNG chèn link giữa đoạn
-
-🎯 NỘI DUNG: Đầy đủ, rõ ràng, có cấu trúc. Cover TẤT CẢ thông tin quan trọng từ bài gốc. KHÔNG bỏ sót điểm chính.`,
+MỤC TIÊU:
+Giữ đúng nội dung cốt lõi của bài gốc, nhưng trình bày lại theo cách dễ đọc, tự nhiên và linh hoạt theo độ dài/thể loại tin.`,
     };
 }
 
@@ -96,112 +96,62 @@ function buildStageBPrompt(item: {
 }): string {
     const instructions = getVietnameseInstructions();
 
-    return `Bạn là AI chuyên viết bài đăng Facebook tiếng Việt, chuyển đổi tin tức thành bài đăng ĐẦY ĐỦ NỘI DUNG, rõ ràng, súc tích cho người Việt.
+    return `Bạn là AI chuyên biên tập tin tức thành bài đăng Facebook tiếng Việt tự nhiên, rõ ràng và linh hoạt theo từng loại nội dung.
 
-⚡ NHIỆM VỤ: Chuyển tin tức thành bài đăng Facebook hoàn chỉnh với ĐẦY ĐỦ thông tin quan trọng từ bài gốc.
+NHIỆM VỤ:
+Chuyển bài báo gốc thành một Facebook post hoàn chỉnh bằng tiếng Việt.
 
-🎯 QUY TẮC CỐT LÕI:
-✓ Cover TẤT CẢ điểm chính, thông tin quan trọng từ bài gốc
-✓ Giữ nguyên ý nghĩa - chỉ tái cấu trúc cho Facebook
-✓ KHÔNG bỏ sót thông tin quan trọng
-✓ KHÔNG thêm thông tin không có trong input
-✓ KHÔNG suy diễn ngoài dữ liệu có sẵn
-✓ Viết đầy đủ nhưng không lan man
+MỤC TIÊU CỐT LÕI:
+- Giữ đúng ý nghĩa của bài gốc
+- Cover đủ các thông tin quan trọng có trong input
+- Không thêm dữ kiện, số liệu, suy diễn hoặc nhận định không có trong input
+- Viết lại theo văn phong social tự nhiên, mạch lạc, dễ đọc
+- Linh hoạt theo độ dài và độ phức tạp của bài gốc
+- Tin ngắn thì viết ngắn gọn
+- Tin nhiều ý thì viết đầy đủ hơn
+- Không kéo dài chỉ để đủ số từ
 
 ${instructions.writingStyle}
 
-📰 BÀI BÁO GỐC:
+THÔNG TIN ĐẦU VÀO:
 Nguồn: ${item.sourceName}
 Tiêu đề: ${item.title}
 
-Nội dung:
+Nội dung gốc:
 ${item.content}
-
----
 
 ${instructions.articleStructure}
 
-📏 YÊU CẦU ĐỘ DÀI:
-Mục tiêu: 400-600 từ (phù hợp Facebook)
-Tối thiểu: 350 từ (đảm bảo đầy đủ nội dung)
-Tối đa: 700 từ (không quá dài)
+HƯỚNG DẪN TRIỂN KHAI:
+- Mở vào vấn đề nhanh, tránh vòng vo
+- Ưu tiên flow tự nhiên như người thật viết
+- Không bắt buộc chia section nội dung cứng
+- Chỉ dùng bullet khi thông tin dạng liệt kê sẽ rõ hơn
+- Nếu bài gốc thiên về diễn biến, hãy kể theo diễn biến
+- Nếu bài gốc thiên về phân tích, hãy làm rõ nguyên nhân, tác động, ý nghĩa
+- Nếu bài gốc rất ngắn, bài post cũng nên ngắn gọn tương ứng
+- Nếu bài gốc dài và nhiều lớp thông tin, bài post có thể dài hơn nhưng vẫn phải gọn và dễ đọc
 
-⚠️ PHẦN NỘI DUNG CHÍNH phải chiếm 60-70% bài viết, chia làm 3-5 sections nhỏ để cover đầy đủ bài báo.
+QUY TẮC CHỐNG VĂN AI:
+- Không dùng các nhãn mục cứng như “KẾT LUẬN”, “NGUYÊN NHÂN CHÍNH”, “TÁC ĐỘNG DỰ KIẾN”, “GIẢI PHÁP VÀ TRIỂN VỌNG”
+- Không lặp lại cùng một ý theo nhiều cách
+- Không viết các câu chung chung chỉ để làm đầy bài
+- Không biến mọi tin thành cùng một template
+- Không dùng giọng văn quá trang trọng hoặc quá công thức
+- Không mở bài kiểu sáo rỗng như “đang thu hút sự chú ý”, “đang đối mặt với biến động lớn”, “đây là vấn đề đáng quan tâm”
 
-🚫 CẤM TUYỆT ĐỐI:
-✗ Bỏ sót điểm quan trọng từ bài gốc
-✗ Viết quá ngắn, thiếu thông tin (chỉ 2-3 dòng thân bài)
-✗ Thêm thông tin không có trong input
-✗ Thêm số liệu không được cung cấp
-✗ Bỏ câu hỏi mở (CTA)
-✗ Viết phong cách báo chí hoặc blog
-✗ Dùng clickbait/FOMO
-✗ Viết lan man, lặp lại, mất focus
-
-✅ CHECKLIST NỘI DUNG:
-1. Đọc kỹ toàn bộ bài báo gốc
-2. Xác định TẤT CẢ điểm chính (thường 3-5 điểm)
-3. Đảm bảo mỗi điểm chính được giải thích rõ ràng
-4. Bao gồm: nguyên nhân, tác động, ý nghĩa (nếu bài gốc có)
-5. Người đọc hiểu đầy đủ mà KHÔNG cần đọc bài gốc
-6. Độ dài phù hợp: 400-600 từ
-
-📐 QUY TRÌNH VIẾT:
-1. Đọc và phân tích toàn bộ nội dung input
-2. List ra 3-5 điểm chính cần cover
-3. Viết tiêu đề hấp dẫn (VIẾT HOA + emoji)
-4. Mở bài: context và tầm quan trọng (3-5 câu)
-5. Thân bài: 3-5 sections, mỗi section giải thích 1 điểm chính
-   - Dùng emoji subheading
-   - Bullets hoặc paragraph (3-5 câu)
-   - Đảm bảo đầy đủ thông tin
-6. Kết luận: insight chính (2-3 câu)
-7. Câu hỏi mở để thảo luận
-8. Hashtags (3-5 hashtags, tự generate)
-9. Kiểm tra: Đã cover hết các điểm chính chưa?
+ĐỘ DÀI LINH HOẠT:
+- Tin rất ngắn: khoảng 120-220 từ
+- Tin mức trung bình: khoảng 220-400 từ
+- Tin nhiều dữ kiện / nhiều ý: khoảng 400-650 từ
+- Chọn độ dài phù hợp với lượng thông tin thực tế trong input
 
 OUTPUT FORMAT (valid JSON only):
 {
-  "fullArticle": "Bài đăng Facebook HOÀN CHỈNH với TIÊU ĐỀ VIẾT HOA + EMOJI, mở bài, NỘI DUNG CHÍNH ĐẦY ĐỦ (3-5 sections với emoji subheadings, bullets/paragraphs chi tiết), insight chính, câu hỏi thảo luận, và hashtags. Tiếng Việt. PLAIN TEXT thuần. 400-600 từ. Tự generate hashtags."
+  "fullArticle": "Facebook post hoàn chỉnh bằng tiếng Việt, plain text, có emoji, có line break hợp lý, có separator, tự nhiên, mạch lạc, sẵn sàng copy-paste."
 }
 
-🎨 CHECKLIST PHONG CÁCH:
-✓ Tiêu đề: VIẾT HOA + 1-2 emoji (VD: 🚀 CÔNG NGHỆ MỚI THAY ĐỔI GIÁO DỤC)
-✓ PLAIN TEXT - TUYỆT ĐỐI KHÔNG ** __ # hay markdown
-✓ Nhấn mạnh: CHỮ HOA hoặc emoji (KHÔNG markdown)
-✓ Ngăn cách sections: ______________
-✓ Thân bài: 3-5 sections, mỗi section chi tiết
-✓ Bullets: • ✔️ 1️⃣ 2️⃣ 3️⃣ (KHÔNG dùng -)
-✓ Paragraph: 3-5 dòng (không quá ngắn)
-✓ Line break rõ ràng
-✓ KHÔNG dùng dấu gạch ngang dài (—)
-✓ Hashtags ở cuối (3-5 hashtags)
-✓ Có câu hỏi thảo luận
-
-📊 VÍ DỤ CẤU TRÚC THÂN BÀI TỐT:
-
-3️⃣ NỘI DUNG CHÍNH
-
-______________
-
-🔹 Vấn đề hiện tại
-Giải thích tình hình, bối cảnh, lý do xuất hiện vấn đề. Đưa ra số liệu, dẫn chứng cụ thể từ bài báo. Phân tích tác động đến người dân hoặc xã hội.
-
-🔹 Nguyên nhân chính
-• Nguyên nhân 1: giải thích cụ thể
-• Nguyên nhân 2: với ví dụ từ bài gốc
-• Nguyên nhân 3: nếu có
-Phân tích tại sao những nguyên nhân này quan trọng.
-
-🔹 Giải pháp được đề xuất
-Trình bày chi tiết các giải pháp, kế hoạch, hoặc hành động được nhắc đến trong bài. Đưa ra timeline, responsible parties nếu bài có.
-
-🔹 Tác động và triển vọng
-Phân tích tác động dự kiến đến các bên liên quan. Đánh giá triển vọng, thách thức còn lại cần xem xét.
-
-⚠️ QUAN TRỌNG: fullArticle phải là bài đăng Facebook HOÀN CHỈNH (400-600 từ) với ĐẦY ĐỦ NỘI DUNG từ bài gốc, sẵn sàng copy-paste. KHÔNG giải thích, KHÔNG reasoning. CHỈ bài post.
-
-Chỉ trả về JSON, không kèm text khác.`;
+Chỉ trả về JSON hợp lệ, không kèm giải thích.`;
 }
 
 /**
@@ -213,14 +163,14 @@ async function callStageB(prompt: string): Promise<StageBOutput> {
         messages: [
             {
                 role: 'system',
-                content: `Bạn là AI chuyên viết bài đăng Facebook tiếng Việt ĐẦY ĐỦ NỘI DUNG. Tuân thủ format rules nghiêm ngặt. Chỉ trả về valid JSON. Đảm bảo cover TẤT CẢ điểm chính từ bài gốc.`,
+                content: `Bạn là AI chuyên viết lại tin tức thành bài đăng Facebook tiếng Việt tự nhiên, dễ đọc và linh hoạt theo độ dài/thể loại của nội dung gốc. Ưu tiên sự mạch lạc và cảm giác người thật viết. Giữ đúng nội dung input, không thêm thông tin ngoài dữ liệu đã cho. Chỉ trả về valid JSON.`,
             },
             {
                 role: 'user',
                 content: prompt,
             },
         ],
-        temperature: 0.7,
+        temperature: 0.75,
         max_tokens: 3500, // Increased to allow 400-600 word articles (Vietnamese uses more tokens)
         response_format: { type: 'json_object' },
     });
