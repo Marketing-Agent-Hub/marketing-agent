@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { useState } from 'react';
 import { toast } from 'react-toastify';
 import { apiClient } from '../lib/api-client';
@@ -9,30 +9,52 @@ export function DraftsPage() {
     const [selectedItem, setSelectedItem] = useState<ReadyItem | null>(null);
     const [sortBy, setSortBy] = useState<'importance' | 'date' | 'recent'>('importance');
     const [topicTagFilter, setTopicTagFilter] = useState('');
+    const [sourceIdFilter, setSourceIdFilter] = useState<number | undefined>(undefined);
     const [fromDate, setFromDate] = useState('');
     const [toDate, setToDate] = useState('');
+    const [page, setPage] = useState(1);
     const [limit] = useState(50);
     const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
     const queryClient = useQueryClient();
 
+    const offset = (page - 1) * limit;
+
     const { data: itemsData, isLoading, error } = useQuery({
-        queryKey: ['ready-items', sortBy, topicTagFilter, fromDate, toDate, limit],
+        queryKey: ['ready-items', page, sortBy, topicTagFilter, sourceIdFilter, fromDate, toDate, limit],
         queryFn: async () => {
             const result = await apiClient.getReadyItems({
                 sortBy,
                 topicTag: topicTagFilter || undefined,
+                sourceId: sourceIdFilter,
                 fromDate: fromDate || undefined,
                 toDate: toDate || undefined,
                 limit,
+                offset,
             });
             return result;
         },
-        staleTime: 0, // Always fetch fresh data
-        refetchOnMount: true,
+        staleTime: 3 * 60 * 1000,        // Cache 3 phút - AI content ít thay đổi
+        gcTime: 10 * 60 * 1000,          // Giữ cache 10 phút
+        placeholderData: keepPreviousData, // Giữ data cũ khi chuyển trang
+        refetchOnWindowFocus: false,      // Không refetch khi focus window
+        refetchOnMount: false,            // Không refetch khi remount
     });
 
     const items = itemsData?.items || [];
     const total = itemsData?.total || 0;
+    const totalPages = Math.ceil(total / limit);
+
+    // Get available sources for filter
+    const { data: sourcesData } = useQuery({
+        queryKey: ['sources-list'],
+        queryFn: async () => {
+            const result = await apiClient.getSources({ limit: 1000, sortBy: 'name', sortOrder: 'asc' });
+            return result.sources;
+        },
+        staleTime: 10 * 60 * 1000, // Cache sources for 10 minutes
+    });
+
+    const sources = sourcesData || [];
 
     const handleViewDetail = (item: ReadyItem) => {
         setSelectedItem(item);
@@ -107,6 +129,22 @@ export function DraftsPage() {
         }
     }
 
+    // Filter handlers - reset to page 1 when filters change
+    const handleFilterChange = () => {
+        setPage(1);
+        setSelectedIds(new Set());
+    };
+
+    const handleResetFilters = () => {
+        setSortBy('importance');
+        setTopicTagFilter('');
+        setSourceIdFilter(undefined);
+        setFromDate('');
+        setToDate('');
+        setPage(1);
+        setSelectedIds(new Set());
+    };
+
     // Get unique topic tags from items
     const allTopicTags = Array.from(
         new Set(items.flatMap(item => item.topicTags))
@@ -145,14 +183,17 @@ export function DraftsPage() {
 
                 {/* Filters */}
                 <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-6">
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                         <div>
                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                 Sắp xếp theo:
                             </label>
                             <select
                                 value={sortBy}
-                                onChange={(e) => setSortBy(e.target.value as any)}
+                                onChange={(e) => {
+                                    setSortBy(e.target.value as any);
+                                    handleFilterChange();
+                                }}
                                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                             >
                                 <option value="importance">⭐ Độ quan trọng</option>
@@ -163,11 +204,33 @@ export function DraftsPage() {
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Nguồn:
+                            </label>
+                            <select
+                                value={sourceIdFilter || ''}
+                                onChange={(e) => {
+                                    setSourceIdFilter(e.target.value ? parseInt(e.target.value) : undefined);
+                                    handleFilterChange();
+                                }}
+                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            >
+                                <option value="">Tất cả nguồn</option>
+                                {sources.map(source => (
+                                    <option key={source.id} value={source.id}>{source.name}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                 Topic Tag:
                             </label>
                             <select
                                 value={topicTagFilter}
-                                onChange={(e) => setTopicTagFilter(e.target.value)}
+                                onChange={(e) => {
+                                    setTopicTagFilter(e.target.value);
+                                    handleFilterChange();
+                                }}
                                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                             >
                                 <option value="">Tất cả</option>
@@ -184,7 +247,10 @@ export function DraftsPage() {
                             <input
                                 type="date"
                                 value={fromDate}
-                                onChange={(e) => setFromDate(e.target.value)}
+                                onChange={(e) => {
+                                    setFromDate(e.target.value);
+                                    handleFilterChange();
+                                }}
                                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
                         </div>
@@ -196,23 +262,22 @@ export function DraftsPage() {
                             <input
                                 type="date"
                                 value={toDate}
-                                onChange={(e) => setToDate(e.target.value)}
+                                onChange={(e) => {
+                                    setToDate(e.target.value);
+                                    handleFilterChange();
+                                }}
                                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
                         </div>
                     </div>
 
-                    {(topicTagFilter || fromDate || toDate) && (
+                    {(topicTagFilter || sourceIdFilter || fromDate || toDate || sortBy !== 'importance') && (
                         <div className="mt-4 flex items-center gap-2">
                             <button
-                                onClick={() => {
-                                    setTopicTagFilter('');
-                                    setFromDate('');
-                                    setToDate('');
-                                }}
-                                className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
+                                onClick={handleResetFilters}
+                                className="text-sm px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600"
                             >
-                                🔄 Xóa bộ lọc
+                                🔄 Xóa tất cả bộ lọc
                             </button>
                         </div>
                     )}
@@ -221,7 +286,8 @@ export function DraftsPage() {
                 {/* Stats */}
                 <div className="mb-6 flex items-center justify-between">
                     <div className="text-sm text-gray-600 dark:text-gray-400">
-                        Hiển thị {items.length} / {total} bài viết
+                        Hiển thị {items.length === 0 ? '0' : `${offset + 1}-${Math.min(offset + items.length, total)}`} / {total} bài viết
+                        {totalPages > 1 && ` (Trang ${page}/${totalPages})`}
                     </div>
                     <div className="flex items-center gap-3">
                         {items.length > 0 && (
@@ -412,6 +478,29 @@ export function DraftsPage() {
                         ))
                     )}
                 </div>
+
+                {/* Pagination Controls */}
+                {totalPages > 1 && (
+                    <div className="mt-6 flex items-center justify-between bg-white dark:bg-gray-800 px-4 py-3 rounded-lg shadow">
+                        <button
+                            onClick={() => setPage(page - 1)}
+                            disabled={page === 1 || isLoading}
+                            className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                            ← Trước
+                        </button>
+                        <div className="text-sm text-gray-700 dark:text-gray-300">
+                            Trang {page} / {totalPages}
+                        </div>
+                        <button
+                            onClick={() => setPage(page + 1)}
+                            disabled={page >= totalPages || isLoading}
+                            className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                            Sau →
+                        </button>
+                    </div>
+                )}
             </div>
 
             {/* Detail Modal */}
