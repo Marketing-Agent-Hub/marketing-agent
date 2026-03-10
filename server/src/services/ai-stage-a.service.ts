@@ -57,6 +57,81 @@ Respond with JSON only, no other text.`;
 }
 
 /**
+ * Heuristic-based filtering when AI is disabled
+ * Simple rule-based approach to categorize content
+ */
+function applyHeuristicFilter(item: {
+    title: string;
+    snippet?: string;
+    sourceName: string;
+}): StageAOutput {
+    const text = `${item.title} ${item.snippet || ''}`.toLowerCase();
+
+    // Spam/irrelevant keywords
+    const spamKeywords = ['adult', 'casino', 'gambling', 'xxx', 'porn'];
+    const isSpam = spamKeywords.some(keyword => text.includes(keyword));
+
+    if (isSpam) {
+        return {
+            isAllowed: false,
+            topicTags: ['spam'],
+            importanceScore: 0,
+            oneLineSummary: 'Filtered as spam content',
+            reason: 'Contains spam keywords',
+        };
+    }
+
+    // Basic topic detection
+    const topicKeywords = {
+        technology: ['tech', 'ai', 'software', 'hardware', 'computer', 'digital', 'startup', 'app', 'mobile', 'cloud'],
+        business: ['business', 'market', 'economy', 'trade', 'company', 'finance', 'investment', 'stock'],
+        science: ['science', 'research', 'study', 'discovery', 'scientist', 'experiment'],
+        health: ['health', 'medical', 'disease', 'vaccine', 'hospital', 'doctor', 'treatment'],
+        education: ['education', 'school', 'university', 'student', 'teacher', 'learning', 'course'],
+        entertainment: ['movie', 'music', 'game', 'celebrity', 'entertainment', 'film', 'actor'],
+        sports: ['sport', 'football', 'basketball', 'soccer', 'tennis', 'olympic', 'athlete'],
+        politics: ['politics', 'government', 'election', 'president', 'minister', 'policy', 'law'],
+    };
+
+    const detectedTags: string[] = [];
+    for (const [topic, keywords] of Object.entries(topicKeywords)) {
+        if (keywords.some(keyword => text.includes(keyword))) {
+            detectedTags.push(topic);
+        }
+    }
+
+    if (detectedTags.length === 0) {
+        detectedTags.push('general');
+    }
+
+    // Simple importance scoring based on keywords
+    let importanceScore = 50; // Base score
+
+    // Breaking news indicators
+    const urgentKeywords = ['breaking', 'urgent', 'announce', 'launch', 'release', 'unveil'];
+    if (urgentKeywords.some(keyword => text.includes(keyword))) {
+        importanceScore += 20;
+    }
+
+    // High profile indicators
+    const highProfileKeywords = ['ceo', 'founder', 'president', 'major', 'billion', 'partnership'];
+    if (highProfileKeywords.some(keyword => text.includes(keyword))) {
+        importanceScore += 15;
+    }
+
+    // Cap at 100
+    importanceScore = Math.min(importanceScore, 100);
+
+    return {
+        isAllowed: true,
+        topicTags: detectedTags.slice(0, 3),
+        importanceScore,
+        oneLineSummary: item.title,
+        reason: 'Auto-categorized (AI disabled)',
+    };
+}
+
+/**
  * Call OpenAI API for Stage A analysis
  */
 async function callStageA(prompt: string): Promise<StageAOutput> {
@@ -130,18 +205,28 @@ export async function processStageA(itemId: number): Promise<{
 
         console.log(`[AI Stage A] Processing: ${item.title.substring(0, 60)}...`);
 
-        // Build prompt
-        const prompt = buildStageAPrompt({
-            title: item.title,
-            snippet: item.snippet || undefined,
-            sourceName: item.source.name,
-            publishedAt: item.publishedAt,
-        });
+        let result: StageAOutput;
 
-        // Call OpenAI
-        const result = await callStageA(prompt);
+        if (AI_CONFIG.STAGE_A_ENABLED) {
+            // Use AI analysis
+            const prompt = buildStageAPrompt({
+                title: item.title,
+                snippet: item.snippet || undefined,
+                sourceName: item.source.name,
+                publishedAt: item.publishedAt,
+            });
 
-        console.log(`[AI Stage A] Result: ${result.isAllowed ? 'ALLOWED' : 'REJECTED'} (importance: ${result.importanceScore})`);
+            result = await callStageA(prompt);
+            console.log(`[AI Stage A] AI Result: ${result.isAllowed ? 'ALLOWED' : 'REJECTED'} (importance: ${result.importanceScore})`);
+        } else {
+            // Use heuristic filtering
+            result = applyHeuristicFilter({
+                title: item.title,
+                snippet: item.snippet || undefined,
+                sourceName: item.source.name,
+            });
+            console.log(`[AI Stage A] Heuristic Result: ${result.isAllowed ? 'ALLOWED' : 'REJECTED'} (importance: ${result.importanceScore})`);
+        }
 
         // Save AI result
         await prisma.aiResult.create({
@@ -152,7 +237,7 @@ export async function processStageA(itemId: number): Promise<{
                 topicTags: result.topicTags,
                 importanceScore: result.importanceScore,
                 oneLineSummary: result.oneLineSummary,
-                model: AI_CONFIG.STAGE_A_MODEL,
+                model: AI_CONFIG.STAGE_A_ENABLED ? AI_CONFIG.STAGE_A_MODEL : 'heuristic-fallback',
             },
         });
 

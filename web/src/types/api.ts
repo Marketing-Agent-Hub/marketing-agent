@@ -412,3 +412,33 @@ export interface GetReadyItemsQuery {
     fromDate?: string;
     toDate?: string;
 }
+
+// AI Settings
+export interface AIStageSettings {
+    enabled: boolean;
+    model: string;
+    description: string;
+}
+
+export interface AISettings {
+    stageA: AIStageSettings;
+    stageB: AIStageSettings;
+}
+
+export interface AISettingsResponse {
+    success: boolean;
+    data: AISettings;
+}
+
+export interface UpdateAISettingRequest {
+    enabled: boolean;
+}
+
+export interface UpdateAISettingResponse {
+    success: boolean;
+    data: {
+        stage: string;
+        enabled: boolean;
+        message: string;
+    };
+}

@@ -30,6 +30,9 @@ import type {
     GetItemsQuery,
     ReadyItem,
     GetReadyItemsQuery,
+    AISettings,
+    AISettingsResponse,
+    UpdateAISettingResponse,
 } from '../types/api';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
@@ -432,6 +435,26 @@ class ApiClient {
     async getTraceById(traceId: string): Promise<PerformanceTrace[]> {
         const response = await this.request<{ success: boolean; data: PerformanceTrace[] }>(`/monitor/traces/${traceId}`);
         return response?.data || [];
+    }
+
+    // AI Settings endpoints
+    async getAISettings(): Promise<AISettings> {
+        const response = await this.request<AISettingsResponse>('/settings/ai');
+        return response.data;
+    }
+
+    async updateAIStageA(enabled: boolean): Promise<UpdateAISettingResponse> {
+        return this.request<UpdateAISettingResponse>('/settings/ai/stage-a', {
+            method: 'PUT',
+            body: JSON.stringify({ enabled }),
+        });
+    }
+
+    async updateAIStageB(enabled: boolean): Promise<UpdateAISettingResponse> {
+        return this.request<UpdateAISettingResponse>('/settings/ai/stage-b', {
+            method: 'PUT',
+            body: JSON.stringify({ enabled }),
+        });
     }
 }
 

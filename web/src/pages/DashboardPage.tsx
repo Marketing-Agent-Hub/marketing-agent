@@ -5,6 +5,7 @@ import { apiClient } from '../lib/api-client';
 import type { ItemStatus } from '../types/api';
 import { SharedNav } from '../components/SharedNav';
 import { PipelineTriggers } from '../components/PipelineTriggers';
+import { AISettingsCard } from '../components/AISettingsCard';
 
 const STATUS_COLORS: Record<ItemStatus, string> = {
     NEW: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
@@ -179,9 +180,17 @@ export function DashboardPage() {
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
             {/* Header */}
             <SharedNav />
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 py-t">
-                {/* Manual Triggers */}
-                <PipelineTriggers />
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 py-8">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                    {/* Pipeline Triggers - 2/3 width */}
+                    <div className="lg:col-span-2">
+                        <PipelineTriggers />
+                    </div>
+                    {/* AI Settings - 1/3 width */}
+                    <div>
+                        <AISettingsCard />
+                    </div>
+                </div>
             </div>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 {/* Statistics Cards */}

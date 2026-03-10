@@ -244,3 +244,14 @@ model PerformanceTrace {
   @@index([startTime])
   @@map("performance_traces")
 }
+
+model Setting {
+  id                     Int               @id @default(autoincrement())
+  key                    String            @unique
+  value                  String
+  description            String?
+  updatedAt              DateTime          @updatedAt
+  createdAt              DateTime          @default(now())
+
+  @@map("settings")
+}

@@ -4,6 +4,7 @@ import { env } from './config/env.js';
 import { errorHandler } from './middleware/error-handler.js';
 import { requestMonitoring, errorMonitoring } from './middleware/monitoring.js';
 import routes from './routes/index.js';
+import { loadAISettings } from './config/ai.config.js';
 import { startIngestJob, stopIngestJob } from './jobs/ingest.job.js';
 import { startExtractionJob, stopExtractionJob } from './jobs/extraction.job.js';
 import { startFilteringJob, stopFilteringJob } from './jobs/filtering.job.js';
@@ -44,10 +45,14 @@ app.use(errorHandler);
 
 // Start server
 const PORT = env.PORT || 3001;
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
     logger.info(`✅ Server running on port ${PORT}`);
     logger.info(`📝 Environment: ${env.NODE_ENV}`);
     logger.info(`🔒 CORS origin: ${env.CORS_ORIGIN}`);
+
+    // Load AI settings from database
+    logger.info('🤖 Loading AI settings...');
+    await loadAISettings();
 
     // Start health monitoring
     logger.info('🏥 Starting health checks...');

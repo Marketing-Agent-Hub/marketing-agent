@@ -155,6 +155,39 @@ Chỉ trả về JSON hợp lệ, không kèm giải thích.`;
 }
 
 /**
+ * Generate simple article when AI is disabled
+ * Uses title, one-line summary, and basic formatting
+ */
+function generateSimpleArticle(item: {
+    title: string;
+    oneLineSummary: string;
+    sourceName: string;
+    topicTags: string[];
+}): StageBOutput {
+    const emoji = '📰';
+    const hashtags = item.topicTags
+        .slice(0, 3)
+        .map(tag => `#${tag.charAt(0).toUpperCase() + tag.slice(1)}`)
+        .join(' ');
+
+    const article = `${emoji} ${item.title.toUpperCase()}
+
+______________
+
+${item.oneLineSummary}
+
+______________
+
+Nguồn: ${item.sourceName}
+
+${hashtags}`;
+
+    return {
+        fullArticle: article,
+    };
+}
+
+/**
  * Call OpenAI API for Stage B analysis
  */
 async function callStageB(prompt: string): Promise<StageBOutput> {
@@ -277,27 +310,38 @@ export async function processStageB(itemId: number): Promise<{
 
         console.log(`[AI Stage B] Processing: ${item.title.substring(0, 60)}...`);
 
-        // Check cache first
-        const cachedResult = await checkStageBCache(item.contentHash);
         let result: StageBOutput;
 
-        if (cachedResult) {
-            console.log(`[AI Stage B] Using cached result for content hash: ${item.contentHash.substring(0, 16)}`);
-            result = cachedResult;
-        } else {
-            // Build prompt
-            const prompt = buildStageBPrompt({
+        if (!AI_CONFIG.STAGE_B_ENABLED) {
+            // Use simple article generation (no AI)
+            result = generateSimpleArticle({
                 title: item.title,
-                content: item.article.truncatedContent,
+                oneLineSummary: stageAResult.oneLineSummary || item.title,
                 sourceName: item.source.name,
                 topicTags: stageAResult.topicTags,
-                importanceScore: stageAResult.importanceScore || 50,
-                oneLineSummary: stageAResult.oneLineSummary || '',
             });
+            console.log(`[AI Stage B] Generated simple article (AI disabled, ${result.fullArticle.length} chars)`);
+        } else {
+            // Check cache first
+            const cachedResult = await checkStageBCache(item.contentHash);
 
-            // Call OpenAI
-            result = await callStageB(prompt);
-            console.log(`[AI Stage B] Generated Facebook post (${result.fullArticle.length} chars)`);
+            if (cachedResult) {
+                console.log(`[AI Stage B] Using cached result for content hash: ${item.contentHash.substring(0, 16)}`);
+                result = cachedResult;
+            } else {
+                // Build prompt and call AI
+                const prompt = buildStageBPrompt({
+                    title: item.title,
+                    content: item.article.truncatedContent,
+                    sourceName: item.source.name,
+                    topicTags: stageAResult.topicTags,
+                    importanceScore: stageAResult.importanceScore || 50,
+                    oneLineSummary: stageAResult.oneLineSummary || '',
+                });
+
+                result = await callStageB(prompt);
+                console.log(`[AI Stage B] Generated AI article (${result.fullArticle.length} chars)`);
+            }
         }
 
         // Save AI result
@@ -306,7 +350,7 @@ export async function processStageB(itemId: number): Promise<{
                 itemId: item.id,
                 stage: 'B',
                 fullArticle: result.fullArticle,
-                model: AI_CONFIG.STAGE_B_MODEL,
+                model: AI_CONFIG.STAGE_B_ENABLED ? AI_CONFIG.STAGE_B_MODEL : 'simple-fallback',
             },
         });
 
