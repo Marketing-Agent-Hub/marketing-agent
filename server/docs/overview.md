@@ -2,11 +2,11 @@
 
 ## Purpose
 
-AI-powered RSS news aggregation system with multi-stage content processing pipeline. Ingests RSS feeds, extracts full article content, applies filtering rules, and uses OpenAI for intelligent categorization and social media post generation.
+AI-powered news aggregation system with plugin-based ingestion and multi-stage content processing pipeline. Ingests content from multiple source types (RSS, Web Scraper, YouTube, Social Media, Custom APIs), extracts full article content, applies filtering rules, and uses OpenAI for intelligent categorization and social media post generation.
 
 ## Problem Domain
 
-- Aggregate news from multiple RSS sources
+- Aggregate news from multiple source types (RSS, Web Scraper, YouTube, Social Media, Custom APIs)
 - Remove market/trading content (banned per requirements)
 - Categorize and score content importance using AI
 - Generate formatted social media posts (Facebook-optimized)
@@ -15,12 +15,12 @@ AI-powered RSS news aggregation system with multi-stage content processing pipel
 
 ## Key Capabilities
 
-- **RSS Ingestion**: Fetches and parses RSS 2.0 / Atom feeds
+- **Plugin-based Ingestion**: Extensible plugin architecture supporting RSS 2.0/Atom, Web Scraper (CSS selectors), YouTube, Social Media, and Custom APIs
 - **Content Extraction**: Mozilla Readability-based full article extraction
 - **Multi-Stage Filtering**: Keyword-based filtering + AI categorization
 - **AI Processing**: Two-stage pipeline (Stage A: categorization, Stage B: post generation)
-- **Monitoring**: OpenTelemetry instrumentation, Prometheus metrics, health checks
-- **Admin API**: Manual job triggering, source management, settings configuration
+- **Monitoring**: OpenTelemetry instrumentation, Prometheus metrics with `sourceType` labels, health checks
+- **Admin API**: Manual job triggering, source management, plugin config validation
 
 ## Processing Pipeline
 
@@ -42,7 +42,7 @@ RSS Feed → Ingest (NEW) → Extract (EXTRACTED) → Filter (READY_FOR_AI)
 
 ## Core Entities
 
-- **Source**: RSS feed configuration with trust scores, language, keywords
+- **Source**: Feed/scraper configuration with type, plugin config, trust scores, language, keywords
 - **Item**: Individual news article with processing status
 - **Article**: Extracted full content and images
 - **AiResult**: AI analysis results (categorization + generated posts)

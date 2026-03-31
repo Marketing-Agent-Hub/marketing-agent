@@ -34,19 +34,21 @@
 ## Service Modules
 
 ### `src/services/ingest.service.ts`
-**Purpose**: Fetch and parse RSS feeds
+**Purpose**: Orchestrate ingestion across all source types via plugin system
 
 **Key Functions**:
-- `fetchEnabledSources()` - Query enabled sources from database
-- `fetchRssFeed(url)` - HTTP fetch with timeout and custom User-Agent
-- `parseRssItems(xml, sourceId)` - Parse RSS 2.0 / Atom XML, extract items
-- `ingestAllSources()` - Main orchestrator function
+- `fetchEnabledSources()` - Query enabled sources (includes `type` and `config` fields)
+- `saveItems(items)` - Persist `NormalizedItem[]` with deduplication (P2002 handling)
+- `ingestSource(sourceId)` - Dispatch to correct plugin, fetch → parse → save
+- `ingestAllSources()` - Process all enabled sources in parallel batches (concurrency: 5)
 
 **Responsibilities**:
-- RSS/Atom feed parsing
-- Content hash generation for deduplication
+- Plugin dispatch via `getPlugin(source.type)`
+- Plugin config validation before fetch
+- Content deduplication via `contentHash`
 - Create Item records with status NEW
 - Update source fetch status and timestamps
+- Emit `ingest_items_total`, `job_completed_total`, `job_duration_ms` metrics with `sourceType` label
 
 ### `src/services/extraction.service.ts`
 **Purpose**: Extract full article content from URLs
@@ -127,16 +129,19 @@
 **Key Functions**:
 - `getAllSources(params)` - Paginated list with search and filters
 - `getSourceById(id)` - Single source retrieval
-- `createSource(input)` - Create new source with validation
-- `updateSource(id, input)` - Partial update
+- `createSource(input)` - Create new source (supports `type` and `config` fields)
+- `updateSource(id, input)` - Partial update (supports `type` and `config`)
 - `deleteSource(id)` - Delete source (cascades to items)
 - `exportSources()` - Export all sources as JSON
+- `validatePluginConfig(id)` - Validate plugin config for a source via registry
+- `validateRSS(url)` - Validate RSS feed URL (only updates DB status when `type === RSS`)
 
 **Responsibilities**:
 - Prisma database operations
 - RSS feed validation integration
 - Tag/keyword normalization
 - Pagination and search logic
+- Plugin config validation delegation
 
 ### `src/services/auth.service.ts`
 **Purpose**: Authentication
@@ -250,6 +255,40 @@ String normalization utilities:
 RSS feed validation:
 - `validateRSSFeed(url)` - Fetch and validate RSS structure
 - Returns validation status and messages
+
+## Plugin Modules
+
+Located in `src/lib/plugins/`. Plugins are stateless utilities — each is a singleton registered in the registry.
+
+### `src/lib/plugins/base.plugin.ts`
+Core interfaces and shared utility:
+- `RawPluginData` - Raw data container from `fetch()`
+- `NormalizedItem` - Standardized output type mapping to Prisma `Item` model
+- `BasePluginConfig` - Common config fields (timeoutMs, userAgent, rateLimitDelayMs)
+- `BasePlugin` - Interface with `fetch()`, `parse()`, `validateConfig()`
+- `generateContentHash({ title, link, snippet? })` - SHA-256 hash for deduplication (single source of truth)
+
+### `src/lib/plugins/plugin-registry.ts`
+Factory/registry for plugin instances:
+- `getPlugin(type: SourceType): BasePlugin` - Returns registered plugin, throws if unsupported
+- `registerPlugin(type, plugin)` - Register a new plugin at runtime
+
+**Registered plugins**:
+- `SourceType.RSS` → `RssPlugin`
+- `SourceType.WEB_SCRAPER` → `WebScraperPlugin`
+
+### `src/lib/plugins/rss.plugin.ts`
+Handles RSS 2.0 and Atom feeds:
+- `fetch(source)` - HTTP GET `source.rssUrl` with 10s timeout, throws if `rssUrl` is null
+- `parse(raw, source)` - Parses XML via `fast-xml-parser`, supports RSS 2.0 and Atom
+- `validateConfig()` - Always returns `true` (no config required)
+
+### `src/lib/plugins/web-scraper.plugin.ts`
+Scrapes HTML pages using CSS selectors:
+- Config schema: `{ targetUrl, selectors: { items, title, link, snippet?, publishedAt? }, pagination? }`
+- `fetch(source)` - HTTP GET `config.targetUrl` with 10s timeout
+- `parse(raw, source)` - Parses HTML via `cheerio`, resolves relative URLs
+- `validateConfig(config)` - Validates via `webScraperConfigSchema.safeParse()`
 
 ## Middleware Modules
 

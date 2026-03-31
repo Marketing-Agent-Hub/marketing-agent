@@ -32,6 +32,7 @@
 - **Mozilla Readability**: 0.6.0 - article content extraction
 - **JSDOM**: 28.1.0 - DOM parsing for web scraping
 - **fast-xml-parser**: 4.5.0 - RSS/Atom feed parsing
+- **cheerio**: 1.0+ - HTML parsing for WebScraperPlugin (CSS selector-based scraping)
 
 ## Scheduling & Jobs
 
