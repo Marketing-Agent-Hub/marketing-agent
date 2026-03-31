@@ -3,6 +3,7 @@ import { prisma } from '../db/index.js';
 import { CreateSourceInput, UpdateSourceInput, GetSourcesInput } from '../schemas/source.schema.js';
 import { normalizeTags, normalizeKeywords, normalizeUrl } from '../lib/normalizer.js';
 import { validateRSSFeed, RSSValidationResult } from '../lib/rss-validator.js';
+import { getPlugin } from '../lib/plugins/plugin-registry.js';
 
 export class SourceService {
     /**
@@ -93,13 +94,12 @@ export class SourceService {
      * Create a new source
      */
     async createSource(input: CreateSourceInput): Promise<Source> {
-        // Normalize data
         const normalizedData = {
             ...input,
-            rssUrl: normalizeUrl(input.rssUrl),
+            rssUrl: input.rssUrl ? normalizeUrl(input.rssUrl) : undefined,
             siteUrl: input.siteUrl ? normalizeUrl(input.siteUrl) : undefined,
-            topicTags: normalizeTags(input.topicTags),
-            denyKeywords: normalizeKeywords(input.denyKeywords),
+            topicTags: normalizeTags(input.topicTags ?? []),
+            denyKeywords: normalizeKeywords(input.denyKeywords ?? []),
         };
 
         return prisma.source.create({
@@ -153,17 +153,34 @@ export class SourceService {
     }
 
     /**
+     * Validate plugin config của một source
+     */
+    async validatePluginConfig(id: number): Promise<{ valid: boolean; error?: string }> {
+        const source = await this.getSourceById(id);
+        if (!source) {
+            return { valid: false, error: 'Source not found' };
+        }
+
+        try {
+            const plugin = getPlugin(source.type);
+            const valid = plugin.validateConfig(source.config);
+            return { valid };
+        } catch (error: any) {
+            return { valid: false, error: error.message };
+        }
+    }
+
+    /**
      * Validate an RSS feed URL
      */
     async validateRSS(url: string): Promise<RSSValidationResult> {
         const result = await validateRSSFeed(url);
 
-        // Update validation status if this URL belongs to an existing source
         const source = await prisma.source.findUnique({
             where: { rssUrl: normalizeUrl(url) },
         });
 
-        if (source) {
+        if (source && source.type === 'RSS') {
             await prisma.source.update({
                 where: { id: source.id },
                 data: {
@@ -171,11 +188,6 @@ export class SourceService {
                     lastValidationStatus: result.ok ? ValidationStatus.OK : ValidationStatus.FAILED,
                 },
             });
-
-            console.log(
-                `Validation for source ${source.id} (${source.name}):`,
-                result.ok ? 'OK' : 'FAILED'
-            );
         }
 
         return result;

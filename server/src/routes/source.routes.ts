@@ -30,6 +30,10 @@ router.get(
     asyncHandler((req, res, next) => sourceController.getSourceById(req, res, next))
 );
 router.post(
+    '/:id/validate-config',
+    asyncHandler((req, res, next) => sourceController.validatePluginConfig(req, res, next))
+);
+router.post(
     '/',
     asyncHandler((req, res, next) => sourceController.createSource(req, res, next))
 );
