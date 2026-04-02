@@ -1,5 +1,5 @@
 import cron, { ScheduledTask } from 'node-cron';
-import { filterExtractedItems } from '../services/filtering.service.js';
+import { filterExtractedItems } from '../domains/content-intelligence/filtering.service.js';
 import { withJobMonitoring } from '../lib/job-monitoring.js';
 import { logger } from '../lib/logger.js';
 

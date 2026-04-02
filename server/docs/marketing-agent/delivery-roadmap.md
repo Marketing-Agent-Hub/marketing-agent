@@ -7,12 +7,12 @@ Ship this upgrade in phases so the backend can evolve without forcing an immedia
 ## Phase 0: Foundations
 
 ### Goals
-- establish V2 domain model
+- establish canonical domain model
 - preserve current server operability
 - prepare migration-safe scaffolding
 
 ### Deliverables
-- `/api/v2` route namespace
+- `/api` product route surface
 - user and workspace auth model
 - new Prisma models for workspace, brand, profile, strategy, draft
 - namespaced settings keys
@@ -64,7 +64,7 @@ Ship this upgrade in phases so the backend can evolve without forcing an immedia
 
 ## Technical Milestones
 
-1. Introduce new Prisma models without removing legacy tables
+1. Introduce new Prisma models without breaking existing operational data
 2. Add tenant-aware auth and middleware
 3. Add onboarding and strategy services
 4. Add content review and publishing lifecycle
@@ -88,11 +88,11 @@ Ship this upgrade in phases so the backend can evolve without forcing an immedia
 - overbuilding strategy logic before real user feedback
 - social API integration complexity
 - generic AI output if business memory is weak
-- migration complexity if legacy and V2 domains overlap too long
+- migration complexity if transitional and canonical domains overlap too long
 
 ## Mitigations
 
 - keep MVP approval-first
 - support one core channel deeply before many channels shallowly
 - measure regeneration and approval rates early
-- isolate V2 under separate route and service boundaries
+- keep canonical route and service boundaries clear

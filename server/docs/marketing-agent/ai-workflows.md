@@ -2,7 +2,7 @@
 
 ## Overview
 
-The current system uses `AI Stage A` and `AI Stage B`. V2 should move to named AI workflows with explicit contracts, structured output validation, and versioned prompts.
+The current system uses `AI Stage A` and `AI Stage B`. The canonical architecture should use named AI workflows with explicit contracts, structured output validation, and versioned prompts.
 
 ## Workflow List
 

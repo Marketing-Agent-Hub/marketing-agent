@@ -1,9 +1,9 @@
 import cron, { ScheduledTask } from 'node-cron';
 import { logger } from '../lib/logger.js';
-import { logService } from '../services/log.service.js';
-import { metricService } from '../services/metric.service.js';
-import { healthService } from '../services/health.service.js';
-import { traceService } from '../services/trace.service.js';
+import { logService } from '../domains/monitoring/log.service.js';
+import { metricService } from '../domains/monitoring/metric.service.js';
+import { healthService } from '../domains/monitoring/health.service.js';
+import { traceService } from '../domains/monitoring/trace.service.js';
 import { monitorConfig } from '../config/monitor.config.js';
 
 let cleanupJob: ScheduledTask | null = null;

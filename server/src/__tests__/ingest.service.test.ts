@@ -24,7 +24,7 @@ vi.mock('../lib/job-monitoring.js', () => ({
 }));
 
 // Mock metric service
-vi.mock('../services/metric.service.js', () => ({
+vi.mock('../domains/monitoring/metric.service.js', () => ({
     metricService: {
         incrementCounter: vi.fn(),
         recordHistogram: vi.fn(),
@@ -42,7 +42,7 @@ vi.mock('../lib/logger.js', () => ({
 
 import { prisma } from '../db/index.js';
 import { getPlugin } from '../lib/plugins/plugin-registry.js';
-import { ingestSource, ingestAllSources, saveItems } from '../services/ingest.service.js';
+import { ingestSource, ingestAllSources, saveItems } from '../domains/content-intelligence/ingest.service.js';
 import { SourceType, SourceLang } from '@prisma/client';
 
 const mockSource = (id: number, overrides = {}) => ({

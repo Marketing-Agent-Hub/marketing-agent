@@ -1,7 +1,7 @@
 {
-    "name": "news-aggregator-server",
+    "name": "marketing-agent-server",
     "version": "1.0.0",
-    "description": "AI-powered news aggregator with intelligent content processing",
+    "description": "AI-powered marketing agent backend with content intelligence and workflow automation",
     "main": "dist/index.js",
     "type": "module",
     "scripts": {
@@ -16,14 +16,15 @@
         "format": "prettier --write \"src/**/*.ts\"",
         "test": "vitest",
         "test:coverage": "vitest --coverage",
-        "test:pipeline": "tsx test-pipeline.ts"
+        "test:pipeline": "tsx test-pipeline.ts",
+        "check:imports": "node scripts/check-imports.js"
     },
     "keywords": [
-        "rss",
-        "aggregator",
-        "news",
+        "marketing",
         "ai",
-        "content-processing"
+        "social-media",
+        "content-intelligence",
+        "workflow-automation"
     ],
     "author": "Your Organization",
     "license": "MIT",

@@ -2,11 +2,11 @@
 
 ## Goal
 
-Transform the current backend into a V2 platform that supports AI-driven social media planning and publishing for multiple customers and brands.
+Transform the current backend into a platform that supports AI-driven social media planning and publishing for multiple customers and brands.
 
 ## Product Scope
 
-### In scope for V2 MVP
+### In scope for MVP
 - multi-tenant workspace model
 - AI onboarding interview
 - brand profile and business memory
@@ -19,7 +19,7 @@ Transform the current backend into a V2 platform that supports AI-driven social 
 - basic performance analytics
 - admin and internal observability
 
-### Out of scope for V2 MVP
+### Out of scope for MVP
 - ad campaign management
 - visual design editor
 - full creative asset generation pipeline
