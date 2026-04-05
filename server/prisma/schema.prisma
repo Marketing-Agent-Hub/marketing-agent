@@ -31,15 +31,25 @@ enum ItemStatus {
   USED
 }
 
+enum SourceType {
+  RSS
+  WEB_SCRAPER
+  YOUTUBE
+  SOCIAL_MEDIA
+  CUSTOM_API
+}
+
 model Source {
   id                     Int               @id @default(autoincrement())
   name                   String
-  rssUrl                 String            @unique
+  rssUrl                 String?           @unique
   siteUrl                String?
   lang                   SourceLang        @default(MIXED)
   topicTags              String[]          @default([])
   trustScore             Int               @default(70)
   enabled                Boolean           @default(false)
+  type                   SourceType        @default(RSS)
+  config                 Json?
   fetchIntervalMinutes   Int               @default(60)
   denyKeywords           String[]          @default([])
   notes                  String?

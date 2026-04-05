@@ -178,6 +178,27 @@ export class SourceController {
     }
 
     /**
+     * POST /sources/:id/validate-config
+     */
+    async validatePluginConfig(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const id = parseInt(req.params.id, 10);
+            if (isNaN(id)) {
+                const response: ApiErrorResponse = {
+                    error: { code: 'VALIDATION_ERROR', message: 'Invalid source ID' },
+                };
+                res.status(400).json(response);
+                return;
+            }
+
+            const result = await sourceService.validatePluginConfig(id);
+            res.json(result);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    /**
      * POST /sources/validate
      */
     async validateRSS(req: Request, res: Response, next: NextFunction): Promise<void> {

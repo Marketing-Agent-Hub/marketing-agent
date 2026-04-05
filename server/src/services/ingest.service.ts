@@ -1,29 +1,29 @@
-import { XMLParser } from 'fast-xml-parser';
-import crypto from 'crypto';
 import { prisma } from '../db/index.js';
 import { ItemStatus } from '@prisma/client';
+import { getPlugin } from '../lib/plugins/plugin-registry.js';
+import { NormalizedItem } from '../lib/plugins/base.plugin.js';
 import { logProcessingError } from '../lib/job-monitoring.js';
-import { env } from '../config/env.js';
+import { metricService } from './metric.service.js';
+import { logger } from '../lib/logger.js';
 
-interface RssItem {
-    sourceId: number;
-    guid?: string;
-    title: string;
-    link: string;
-    snippet?: string;
-    contentHash: string;
-    publishedAt?: Date;
+export interface IngestResult {
+    success: boolean;
+    itemsCreated: number;
+    itemsExisting: number;
+    error?: string;
 }
 
 /**
- * Fetch all enabled sources from the database
+ * Fetch tất cả enabled sources (bao gồm type và config)
  */
 export async function fetchEnabledSources() {
-    return await prisma.source.findMany({
+    return prisma.source.findMany({
         where: { enabled: true },
         select: {
             id: true,
             name: true,
+            type: true,
+            config: true,
             rssUrl: true,
             fetchIntervalMinutes: true,
             lastFetchedAt: true,
@@ -32,142 +32,9 @@ export async function fetchEnabledSources() {
 }
 
 /**
- * Fetch RSS feed from URL with timeout
- */
-export async function fetchRssFeed(url: string, timeoutMs = 10000): Promise<string> {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), timeoutMs);
-
-    try {
-        const response = await fetch(url, {
-            signal: controller.signal,
-            headers: {
-                'User-Agent': env.USER_AGENT,
-            },
-        });
-
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-
-        return await response.text();
-    } finally {
-        clearTimeout(timeout);
-    }
-}
-
-/**
- * Parse RSS/Atom XML and extract items
- */
-export async function parseRssItems(xml: string, sourceId: number): Promise<RssItem[]> {
-    const parser = new XMLParser({
-        ignoreAttributes: false,
-        attributeNamePrefix: '_',
-    });
-
-    const parsed = parser.parse(xml);
-    const items: RssItem[] = [];
-
-    // Detect RSS 2.0
-    if (parsed.rss?.channel?.item) {
-        const rssItems = Array.isArray(parsed.rss.channel.item)
-            ? parsed.rss.channel.item
-            : [parsed.rss.channel.item];
-
-        for (const item of rssItems) {
-            const title = item.title || 'Untitled';
-
-            // Normalize link - handle both string and object formats
-            let link = item.link || item.guid;
-            if (typeof link === 'object' && link !== null) {
-                link = link['#text'] || link.text || link._href || '';
-            }
-            if (!link) continue;
-
-            // Ensure link is string
-            const linkStr = typeof link === 'string' ? link : String(link);
-
-            const snippet = item.description || item['content:encoded'] || '';
-
-            // Normalize guid - handle both string and object formats
-            let guid = item.guid;
-            if (typeof guid === 'object' && guid !== null) {
-                // Handle { #text: "...", _isPermaLink: "..." } format
-                guid = guid['#text'] || guid.text || linkStr;
-            }
-            guid = guid || linkStr;
-
-            const pubDate = item.pubDate ? new Date(item.pubDate) : undefined;
-
-            items.push({
-                sourceId,
-                guid: typeof guid === 'string' ? guid : String(guid),
-                title,
-                link: linkStr,
-                snippet: snippet.substring(0, 1000), // Truncate snippets
-                contentHash: generateContentHash({ title, link: linkStr, snippet }),
-                publishedAt: pubDate,
-            });
-        }
-    }
-
-    // Detect Atom
-    if (parsed.feed?.entry) {
-        const atomEntries = Array.isArray(parsed.feed.entry)
-            ? parsed.feed.entry
-            : [parsed.feed.entry];
-
-        for (const entry of atomEntries) {
-            const title = entry.title || 'Untitled';
-
-            // Normalize link - handle both string and object formats
-            let link = entry.link?._href || entry.id;
-            if (typeof link === 'object' && link !== null) {
-                link = link['#text'] || link.text || link._href || '';
-            }
-            if (!link) continue;
-
-            // Ensure link is string
-            const linkStr = typeof link === 'string' ? link : String(link);
-
-            const snippet = entry.summary || entry.content || '';
-
-            // Normalize guid - handle both string and object formats
-            let guid = entry.id;
-            if (typeof guid === 'object' && guid !== null) {
-                guid = guid['#text'] || guid.text || linkStr;
-            }
-            guid = guid || linkStr;
-
-            const pubDate = entry.updated || entry.published;
-
-            items.push({
-                sourceId,
-                guid: typeof guid === 'string' ? guid : String(guid),
-                title,
-                link: linkStr,
-                snippet: typeof snippet === 'string' ? snippet.substring(0, 1000) : '',
-                contentHash: generateContentHash({ title, link: linkStr, snippet: typeof snippet === 'string' ? snippet : '' }),
-                publishedAt: pubDate ? new Date(pubDate) : undefined,
-            });
-        }
-    }
-
-    return items;
-}
-
-/**
- * Generate a unique content hash for deduplication
- */
-export function generateContentHash(item: { title: string; link: string; snippet?: string }): string {
-    const normalized = `${item.title.trim().toLowerCase()}|${item.link.trim()}|${(item.snippet || '').trim().toLowerCase().substring(0, 200)}`;
-    return crypto.createHash('sha256').update(normalized).digest('hex');
-}
-
-/**
  * Save items to database with deduplication
  */
-export async function saveItems(items: RssItem[]): Promise<{ created: number; existing: number }> {
+export async function saveItems(items: NormalizedItem[]): Promise<{ created: number; existing: number }> {
     let created = 0;
     let existing = 0;
 
@@ -187,7 +54,6 @@ export async function saveItems(items: RssItem[]): Promise<{ created: number; ex
             });
             created++;
         } catch (error: any) {
-            // Check for unique constraint violation (duplicate contentHash or sourceId+link)
             if (error.code === 'P2002') {
                 existing++;
             } else {
@@ -205,59 +71,69 @@ export async function saveItems(items: RssItem[]): Promise<{ created: number; ex
 }
 
 /**
- * Ingest RSS feed for a specific source
+ * Ingest một source bằng plugin tương ứng
  */
-export async function ingestSource(sourceId: number): Promise<{
-    success: boolean;
-    itemsCreated: number;
-    itemsExisting: number;
-    error?: string;
-}> {
-    try {
-        // Fetch source details
-        const source = await prisma.source.findUnique({
-            where: { id: sourceId },
-            select: { id: true, name: true, rssUrl: true },
-        });
+export async function ingestSource(sourceId: number): Promise<IngestResult> {
+    const source = await prisma.source.findUnique({ where: { id: sourceId } });
 
-        if (!source) {
-            return { success: false, itemsCreated: 0, itemsExisting: 0, error: 'Source not found' };
+    if (!source) {
+        return { success: false, itemsCreated: 0, itemsExisting: 0, error: 'Source not found' };
+    }
+
+    const startTime = Date.now();
+
+    try {
+        // 1. Lấy plugin theo type
+        const plugin = getPlugin(source.type);
+
+        // 2. Validate config
+        if (!plugin.validateConfig(source.config)) {
+            throw new Error(`Config không hợp lệ cho plugin ${source.type}`);
         }
 
-        console.log(`[Ingest] Fetching RSS feed: ${source.name} (${source.rssUrl})`);
+        // 3. Fetch → Parse → Save
+        logger.info(`[Ingest] Fetching source: ${source.name} (type: ${source.type})`);
+        const raw = await plugin.fetch(source);
+        const items = await plugin.parse(raw, source);
+        logger.info(`[Ingest] Parsed ${items.length} items from ${source.name}`);
 
-        // Fetch RSS feed
-        const xml = await fetchRssFeed(source.rssUrl);
-
-        // Parse items
-        const items = await parseRssItems(xml, sourceId);
-        console.log(`[Ingest] Parsed ${items.length} items from ${source.name}`);
-
-        // Save items
         const result = await saveItems(items);
-        console.log(`[Ingest] Saved ${result.created} new items, ${result.existing} duplicates`);
+        logger.info(`[Ingest] Saved ${result.created} new, ${result.existing} duplicates from ${source.name}`);
 
-        // Update source metadata
+        // 4. Metrics với sourceType label
+        await metricService.incrementCounter('ingest_items_total', result.created, {
+            sourceType: source.type,
+            status: 'created',
+        });
+        await metricService.incrementCounter('job_completed_total', 1, {
+            job: 'IngestJob',
+            status: 'success',
+            sourceType: source.type,
+        });
+        const duration = Date.now() - startTime;
+        await metricService.recordHistogram('job_duration_ms', duration, 'ms', {
+            job: 'IngestJob',
+            sourceType: source.type,
+        });
+
+        // 5. Cập nhật source status
         await prisma.source.update({
             where: { id: sourceId },
             data: {
                 lastFetchedAt: new Date(),
                 lastFetchStatus: 'SUCCESS',
-                itemsCount: {
-                    increment: result.created,
-                },
+                itemsCount: { increment: result.created },
             },
         });
 
-        return {
-            success: true,
-            itemsCreated: result.created,
-            itemsExisting: result.existing,
-        };
+        return { success: true, itemsCreated: result.created, itemsExisting: result.existing };
     } catch (error: any) {
-        console.error(`[Ingest] Error ingesting source ${sourceId}:`, error);
+        // Lỗi plugin không crash toàn bộ run
+        await logProcessingError('IngestService', `Lỗi ingest source ${source.name}`, error, {
+            sourceType: source.type,
+            sourceId,
+        });
 
-        // Update source with error status
         await prisma.source.update({
             where: { id: sourceId },
             data: {
@@ -266,27 +142,22 @@ export async function ingestSource(sourceId: number): Promise<{
             },
         });
 
-        return {
-            success: false,
-            itemsCreated: 0,
-            itemsExisting: 0,
-            error: error.message,
-        };
+        return { success: false, itemsCreated: 0, itemsExisting: 0, error: error.message };
     }
 }
 
 /**
- * Ingest all enabled sources
+ * Ingest tất cả enabled sources — song song với concurrency limit 5
  */
 export async function ingestAllSources(): Promise<void> {
     const sources = await fetchEnabledSources();
-    console.log(`[Ingest] Starting ingestion for ${sources.length} enabled sources`);
+    logger.info(`[Ingest] Starting ingestion for ${sources.length} enabled sources`);
 
-    for (const source of sources) {
-        const result = await ingestSource(source.id);
-        console.log(`[Ingest] ${source.name}: ${result.success ? 'SUCCESS' : 'FAILED'} - ${result.itemsCreated} new items`);
+    const CONCURRENCY = 5;
+    for (let i = 0; i < sources.length; i += CONCURRENCY) {
+        const batch = sources.slice(i, i + CONCURRENCY);
+        await Promise.allSettled(batch.map(s => ingestSource(s.id)));
     }
 
-    console.log(`[Ingest] Completed ingestion for all sources`);
+    logger.info(`[Ingest] Completed ingestion for all sources`);
 }
-

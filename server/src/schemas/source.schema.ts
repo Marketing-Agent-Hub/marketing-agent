@@ -1,10 +1,11 @@
 import { z } from 'zod';
 
 export const sourceLangEnum = z.enum(['VI', 'EN', 'MIXED']);
+export const sourceTypeEnum = z.enum(['RSS', 'WEB_SCRAPER', 'YOUTUBE', 'SOCIAL_MEDIA', 'CUSTOM_API']);
 
 export const createSourceSchema = z.object({
   name: z.string().min(1, 'Name is required').max(255, 'Name is too long'),
-  rssUrl: z.string().url('RSS URL must be a valid URL'),
+  rssUrl: z.string().url('RSS URL must be a valid URL').optional(),
   siteUrl: z.string().url('Site URL must be a valid URL').optional(),
   lang: sourceLangEnum.default('MIXED'),
   topicTags: z.array(z.string()).default([]),
@@ -13,6 +14,8 @@ export const createSourceSchema = z.object({
   fetchIntervalMinutes: z.number().int().min(5).max(1440).default(60),
   denyKeywords: z.array(z.string()).default([]),
   notes: z.string().max(1000).optional(),
+  type: sourceTypeEnum.default('RSS'),
+  config: z.record(z.unknown()).optional(),
 });
 
 export const updateSourceSchema = createSourceSchema.partial();
@@ -24,9 +27,9 @@ export const validateRSSSchema = z.object({
 export const getSourcesSchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(20),
   offset: z.coerce.number().int().min(0).default(0),
-  search: z.string().optional(), // Search in name, rssUrl, siteUrl
-  enabled: z.coerce.boolean().optional(), // Filter by enabled status
-  lang: sourceLangEnum.optional(), // Filter by language
+  search: z.string().optional(),
+  enabled: z.coerce.boolean().optional(),
+  lang: sourceLangEnum.optional(),
   minTrustScore: z.coerce.number().int().min(0).max(100).optional(),
   sortBy: z.enum(['name', 'trustScore', 'createdAt', 'enabled']).default('enabled'),
   sortOrder: z.enum(['asc', 'desc']).default('desc'),
@@ -36,4 +39,3 @@ export type CreateSourceInput = z.infer<typeof createSourceSchema>;
 export type UpdateSourceInput = z.infer<typeof updateSourceSchema>;
 export type ValidateRSSInput = z.infer<typeof validateRSSSchema>;
 export type GetSourcesInput = z.infer<typeof getSourcesSchema>;
-
