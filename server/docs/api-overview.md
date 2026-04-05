@@ -109,13 +109,15 @@ Get single source by ID.
 **Errors**: 404 NOT_FOUND
 
 #### `POST /api/sources`
-Create new RSS source.
+Create new source.
 
 **Request**:
 ```json
 {
   "name": "string",
-  "rssUrl": "string (URL)",
+  "type": "RSS | WEB_SCRAPER | YOUTUBE | SOCIAL_MEDIA | CUSTOM_API (default: RSS)",
+  "rssUrl": "string (URL, required when type=RSS)",
+  "config": "object (plugin-specific, required for non-RSS types)",
   "siteUrl": "string (URL, optional)",
   "lang": "VI | EN | MIXED (default: MIXED)",
   "topicTags": ["string[]"],
@@ -161,6 +163,26 @@ Validate RSS feed URL without creating source.
   "message": "RSS feed is valid"
 }
 ```
+
+#### `POST /api/sources/:id/validate-config`
+Validate the plugin config stored on an existing source.
+
+**Response** (200):
+```json
+{
+  "valid": true
+}
+```
+
+Or on failure:
+```json
+{
+  "valid": false,
+  "error": "Plugin chưa được hỗ trợ: YOUTUBE"
+}
+```
+
+**Errors**: 400 VALIDATION_ERROR (invalid ID)
 
 #### `GET /api/sources/export`
 Export all sources as JSON.
@@ -450,8 +472,9 @@ All errors follow consistent structure:
 Exposed at `http://localhost:9464/metrics`
 
 **Metrics**:
-- `job_started_total` - Counter of job starts
-- `job_completed_total` - Counter of job completions (labels: status=success|error)
-- `job_duration_ms` - Histogram of job durations
+- `job_started_total` - Counter of job starts (labels: job)
+- `job_completed_total` - Counter of job completions (labels: job, status=success|error, sourceType)
+- `job_duration_ms` - Histogram of job durations (labels: job, sourceType)
+- `ingest_items_total` - Counter of ingested items (labels: sourceType, status=created)
 - HTTP request metrics (auto-instrumented)
 - System metrics (auto-instrumented)

@@ -1,5 +1,5 @@
 export interface ApiError {
-  code: 'VALIDATION_ERROR' | 'UNAUTHORIZED' | 'NOT_FOUND' | 'INTERNAL' | 'FORBIDDEN';
+  code: 'VALIDATION_ERROR' | 'UNAUTHORIZED' | 'NOT_FOUND' | 'INTERNAL' | 'FORBIDDEN' | 'CONFLICT';
   message: string;
   details?: unknown;
 }

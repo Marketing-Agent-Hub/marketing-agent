@@ -114,9 +114,9 @@
 ## Content Pipeline Flow
 
 ```
-[RSS Feed URL]
+[Source (RSS / Web Scraper / YouTube / ...)]
       ↓
-  IngestJob → Parse XML → Create Item (status: NEW)
+  IngestJob → Plugin.fetch() → Plugin.parse() → Create Item (status: NEW)
       ↓
   ExtractionJob → Fetch URL → Extract content → Create Article (status: EXTRACTED)
       ↓
@@ -152,9 +152,9 @@
 - **Rules**: Must call next() or send response
 
 ### Lib
-- **Responsibility**: Reusable utilities
+- **Responsibility**: Reusable utilities and plugin implementations
 - **Depends On**: Nothing (leaf nodes)
-- **Rules**: Pure functions or standalone utilities
+- **Rules**: Pure functions or standalone utilities; plugins live in `src/lib/plugins/`
 
 ## Dependency Direction
 

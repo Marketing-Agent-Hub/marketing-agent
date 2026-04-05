@@ -1,6 +1,6 @@
 import { logger } from '../lib/logger.js';
-import { logService } from '../services/log.service.js';
-import { metricService } from '../services/metric.service.js';
+import { logService } from '../domains/monitoring/log.service.js';
+import { metricService } from '../domains/monitoring/metric.service.js';
 import { withSpan } from '../lib/telemetry.js';
 
 /**

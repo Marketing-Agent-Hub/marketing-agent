@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
-import { logService } from '../services/log.service.js';
-import { metricService } from '../services/metric.service.js';
-import { traceService } from '../services/trace.service.js';
+import { logService } from '../domains/monitoring/log.service.js';
+import { metricService } from '../domains/monitoring/metric.service.js';
+import { traceService } from '../domains/monitoring/trace.service.js';
 import { getCurrentTraceContext } from '../lib/telemetry.js';
 import { logger } from '../lib/logger.js';
 

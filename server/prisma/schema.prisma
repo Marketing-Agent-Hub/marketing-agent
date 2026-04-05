@@ -255,13 +255,444 @@ model PerformanceTrace {
   @@map("performance_traces")
 }
 
+// ============ V2 MARKETING AGENT MODELS ============
+
+enum WorkspaceRole {
+  OWNER
+  ADMIN
+  EDITOR
+  VIEWER
+}
+
+enum BrandStatus {
+  ACTIVE
+  PAUSED
+  ARCHIVED
+}
+
+enum StrategyStatus {
+  DRAFT
+  ACTIVE
+  SUPERSEDED
+  ARCHIVED
+}
+
+enum SlotStatus {
+  PLANNED
+  BRIEF_READY
+  DRAFT_READY
+  APPROVED
+  SKIPPED
+}
+
+enum BriefStatus {
+  DRAFT
+  READY_FOR_REVIEW
+  APPROVED
+  REJECTED
+}
+
+enum DraftStatus {
+  DRAFT
+  IN_REVIEW
+  APPROVED
+  REJECTED
+  SCHEDULED
+  PUBLISHED
+  FAILED
+  ARCHIVED
+}
+
+enum SocialPlatform {
+  X
+  FACEBOOK
+  LINKEDIN
+  TIKTOK
+  INSTAGRAM
+}
+
+// --- Tenant & Auth ---
+
+model User {
+  id           Int               @id @default(autoincrement())
+  email        String            @unique
+  name         String?
+  passwordHash String?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  memberships  WorkspaceMember[]
+
+  @@map("users")
+}
+
+model Workspace {
+  id        Int               @id @default(autoincrement())
+  name      String
+  slug      String            @unique
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  members   WorkspaceMember[]
+  brands    Brand[]
+
+  @@index([slug])
+  @@map("workspaces")
+}
+
+model WorkspaceMember {
+  id          Int           @id @default(autoincrement())
+  workspaceId Int
+  userId      Int
+  role        WorkspaceRole
+  createdAt   DateTime      @default(now())
+
+  workspace   Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, userId])
+  @@map("workspace_members")
+}
+
+// --- Brand & Profile ---
+
+model Brand {
+  id              Int                      @id @default(autoincrement())
+  workspaceId     Int
+  name            String
+  websiteUrl      String?
+  industry        String?
+  timezone        String?
+  defaultLanguage String                   @default("en")
+  status          BrandStatus              @default(ACTIVE)
+  createdAt       DateTime                 @default(now())
+  updatedAt       DateTime                 @updatedAt
+
+  workspace       Workspace                @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  profile         BrandProfile?
+  knowledgeDocs   BrandKnowledgeDocument[]
+  pillars         ContentPillar[]
+  strategies      StrategyPlan[]
+  socialAccounts  SocialAccount[]
+  briefs          ContentBrief[]
+  trendMatches    BrandTrendMatch[]
+
+  @@index([workspaceId, status])
+  @@map("brands")
+}
+
+model BrandProfile {
+  id              Int      @id @default(autoincrement())
+  brandId         Int      @unique
+  summary         String
+  targetAudience  Json
+  valueProps      Json
+  toneGuidelines  Json
+  businessGoals   Json
+  messagingAngles Json
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  brand           Brand    @relation(fields: [brandId], references: [id], onDelete: Cascade)
+
+  @@map("brand_profiles")
+}
+
+model BrandKnowledgeDocument {
+  id        Int      @id @default(autoincrement())
+  brandId   Int
+  title     String
+  sourceUrl String?
+  content   String
+  docType   String?
+  createdAt DateTime @default(now())
+
+  brand     Brand    @relation(fields: [brandId], references: [id], onDelete: Cascade)
+
+  @@map("brand_knowledge_documents")
+}
+
+model OnboardingSession {
+  id          Int       @id @default(autoincrement())
+  brandId     Int
+  transcript  Json      @default("[]")
+  status      String    @default("IN_PROGRESS")
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("onboarding_sessions")
+}
+
+// --- Strategy & Content ---
+
+model ContentPillar {
+  id          Int      @id @default(autoincrement())
+  brandId     Int
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+
+  brand       Brand    @relation(fields: [brandId], references: [id], onDelete: Cascade)
+
+  @@map("content_pillars")
+}
+
+model StrategyPlan {
+  id            Int            @id @default(autoincrement())
+  brandId       Int
+  title         String
+  objective     String
+  status        StrategyStatus @default(DRAFT)
+  startDate     DateTime
+  endDate       DateTime
+  cadenceConfig Json
+  weeklyThemes  Json
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  brand         Brand          @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  slots         StrategySlot[]
+
+  @@index([brandId, status, startDate])
+  @@map("strategy_plans")
+}
+
+model StrategySlot {
+  id             Int            @id @default(autoincrement())
+  strategyPlanId Int
+  brandId        Int
+  channel        SocialPlatform
+  pillarId       Int?
+  scheduledFor   DateTime
+  funnelStage    String?
+  status         SlotStatus     @default(PLANNED)
+  createdAt      DateTime       @default(now())
+
+  strategyPlan   StrategyPlan   @relation(fields: [strategyPlanId], references: [id], onDelete: Cascade)
+
+  @@index([brandId, scheduledFor, channel])
+  @@map("strategy_slots")
+}
+
+model ContentBrief {
+  id             Int            @id @default(autoincrement())
+  brandId        Int
+  strategySlotId Int?
+  title          String
+  objective      String?
+  keyAngle       String?
+  callToAction   String?
+  assetDirection String?
+  contentMode    String?
+  sourceMetadata Json?
+  status         BriefStatus    @default(DRAFT)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  brand          Brand          @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  drafts         ContentDraft[]
+
+  @@map("content_briefs")
+}
+
+model ContentDraft {
+  id             Int               @id @default(autoincrement())
+  contentBriefId Int
+  platform       SocialPlatform
+  body           String
+  hook           String?
+  cta            String?
+  hashtags       String[]          @default([])
+  sourceMetadata Json?
+  status         DraftStatus       @default(DRAFT)
+  version        Int               @default(1)
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  contentBrief   ContentBrief      @relation(fields: [contentBriefId], references: [id], onDelete: Cascade)
+  approvals      ContentApproval[]
+  publishJobs    PublishJob[]
+
+  @@index([status, updatedAt])
+  @@map("content_drafts")
+}
+
+model ContentApproval {
+  id             Int          @id @default(autoincrement())
+  contentDraftId Int
+  actorUserId    Int
+  action         String
+  comment        String?
+  createdAt      DateTime     @default(now())
+
+  contentDraft   ContentDraft @relation(fields: [contentDraftId], references: [id], onDelete: Cascade)
+
+  @@map("content_approvals")
+}
+
+// --- Publishing & Analytics ---
+
+model SocialAccount {
+  id           Int            @id @default(autoincrement())
+  brandId      Int
+  platform     SocialPlatform
+  accountName  String?
+  accessToken  String?
+  refreshToken String?
+  expiresAt    DateTime?
+  status       String         @default("CONNECTED")
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  brand        Brand          @relation(fields: [brandId], references: [id], onDelete: Cascade)
+
+  @@map("social_accounts")
+}
+
+model PublishJob {
+  id             Int            @id @default(autoincrement())
+  contentDraftId Int
+  platform       SocialPlatform
+  status         String         @default("SCHEDULED")
+  scheduledFor   DateTime
+  executedAt     DateTime?
+  errorMessage   String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  contentDraft   ContentDraft   @relation(fields: [contentDraftId], references: [id], onDelete: Cascade)
+  publishedPost  PublishedPost?
+
+  @@index([status, scheduledFor])
+  @@map("publish_jobs")
+}
+
+model PublishedPost {
+  id             Int                   @id @default(autoincrement())
+  publishJobId   Int                   @unique
+  externalPostId String?
+  platform       SocialPlatform
+  publishedAt    DateTime
+  rawResponse    Json?
+  createdAt      DateTime              @default(now())
+
+  publishJob     PublishJob            @relation(fields: [publishJobId], references: [id], onDelete: Cascade)
+  snapshots      PerformanceSnapshot[]
+
+  @@index([externalPostId])
+  @@map("published_posts")
+}
+
+model PerformanceSnapshot {
+  id              Int           @id @default(autoincrement())
+  publishedPostId Int
+  likes           Int           @default(0)
+  comments        Int           @default(0)
+  shares          Int           @default(0)
+  impressions     Int           @default(0)
+  clicks          Int           @default(0)
+  capturedAt      DateTime      @default(now())
+
+  publishedPost   PublishedPost @relation(fields: [publishedPostId], references: [id], onDelete: Cascade)
+
+  @@index([publishedPostId, capturedAt])
+  @@map("performance_snapshots")
+}
+
+// --- Tracking & Audit ---
+
+model Recommendation {
+  id          Int      @id @default(autoincrement())
+  brandId     Int
+  type        String
+  title       String
+  description String
+  data        Json?
+  isRead      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  @@map("recommendations")
+}
+
+model AuditEvent {
+  id          Int      @id @default(autoincrement())
+  workspaceId Int?
+  brandId     Int?
+  actorUserId Int?
+  action      String
+  entityType  String?
+  entityId    Int?
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  @@index([workspaceId, createdAt])
+  @@map("audit_events")
+}
+
 model Setting {
-  id                     Int               @id @default(autoincrement())
-  key                    String            @unique
-  value                  String
-  description            String?
-  updatedAt              DateTime          @updatedAt
-  createdAt              DateTime          @default(now())
+  id          Int      @id @default(autoincrement())
+  key         String   @unique
+  value       String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   @@map("settings")
+}
+
+model GenerationRun {
+  id               Int      @id @default(autoincrement())
+  workspaceId      Int?
+  brandId          Int?
+  workflow         String
+  model            String?
+  promptVersion    String?
+  status           String
+  promptTokens     Int?
+  completionTokens Int?
+  totalTokens      Int?
+  rawResponse      String?
+  inputSnapshot    Json?
+  outputSnapshot   Json?
+  createdAt        DateTime @default(now())
+
+  @@map("generation_runs")
+}
+
+model TrendSignal {
+  id              Int      @id @default(autoincrement())
+  itemId          Int?     @unique
+  headline        String
+  summary         String
+  sourceName      String?
+  canonicalUrl    String
+  publishedAt     DateTime?
+  topicTags       String[] @default([])
+  importanceScore Int?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  brandMatches    BrandTrendMatch[]
+
+  @@index([publishedAt])
+  @@index([importanceScore])
+  @@map("trend_signals")
+}
+
+model BrandTrendMatch {
+  id             Int      @id @default(autoincrement())
+  brandId        Int
+  trendSignalId  Int
+  relevanceScore Int
+  reason         String?
+  matchedAt      DateTime @default(now())
+
+  brand          Brand       @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  trendSignal    TrendSignal @relation(fields: [trendSignalId], references: [id], onDelete: Cascade)
+
+  @@unique([brandId, trendSignalId])
+  @@index([brandId, matchedAt])
+  @@index([trendSignalId])
+  @@map("brand_trend_matches")
 }

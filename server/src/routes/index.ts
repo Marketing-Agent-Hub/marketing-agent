@@ -1,10 +1,6 @@
 import { Router } from 'express';
-import authRoutes from './auth.routes.js';
-import sourceRoutes from './source.routes.js';
-import adminRoutes from './admin.routes.js';
-import monitorRoutes from './monitor.routes.js';
-import itemRoutes from './item.routes.js';
-import settingsRoutes from './settings.routes.js';
+import productRoutes from './product/index.js';
+import internalRoutes from './internal/index.js';
 
 const router = Router();
 
@@ -14,12 +10,8 @@ router.get('/health', (_req, res) => {
 });
 
 // Mount routes
-router.use('/auth', authRoutes);
-router.use('/sources', sourceRoutes);
-router.use('/admin', adminRoutes);
-router.use('/monitor', monitorRoutes);
-router.use('/items', itemRoutes);
-router.use('/settings', settingsRoutes);
+router.use('/', productRoutes);
+router.use('/internal', internalRoutes);
 
 export default router;
 

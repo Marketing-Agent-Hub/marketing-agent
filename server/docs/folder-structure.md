@@ -75,10 +75,21 @@ server/
 │   │   ├── telemetry.ts       # OpenTelemetry SDK setup
 │   │   ├── job-monitoring.ts  # Job execution wrapper
 │   │   ├── normalizer.ts      # String normalization utilities
-│   │   └── rss-validator.ts   # RSS feed validation
+│   │   ├── rss-validator.ts   # RSS feed validation
+│   │   └── plugins/           # Ingestion plugin system
+│   │       ├── base.plugin.ts        # BasePlugin interface + NormalizedItem + generateContentHash
+│   │       ├── plugin-registry.ts    # Plugin factory/registry
+│   │       ├── rss.plugin.ts         # RSS 2.0 / Atom plugin
+│   │       └── web-scraper.plugin.ts # HTML scraper plugin (cheerio)
 │   │
 │   └── __tests__/             # Test files
-│       └── normalizer.test.ts
+│       ├── normalizer.test.ts
+│       ├── ingest.service.test.ts
+│       └── plugins/
+│           ├── base.plugin.test.ts
+│           ├── rss.plugin.test.ts
+│           ├── web-scraper.plugin.test.ts
+│           └── plugin-registry.test.ts
 │
 ├── scripts/                   # Utility scripts
 │   └── generate-password-hash.ts
@@ -127,7 +138,7 @@ Core business logic. Database operations, external API calls, data transformatio
 Cron job schedulers. Thin wrappers that call service functions.
 
 ### `/src/lib`
-Reusable utilities. Pure functions and standalone helpers.
+Reusable utilities and plugin implementations. Pure functions and standalone helpers. The `plugins/` subdirectory contains the plugin system: interface definitions, registry, and concrete plugin implementations.
 
 ### `/scripts`
 One-off utility scripts (e.g., password hash generation).

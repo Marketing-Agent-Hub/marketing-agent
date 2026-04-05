@@ -11,12 +11,14 @@
 ## Data Models
 
 ### Source
-RSS feed configuration.
+Source configuration for any ingestion plugin type.
 
 **Fields**:
 - `id` - Primary key, auto-increment
 - `name` - Display name
-- `rssUrl` - Unique RSS feed URL
+- `type` - Enum: RSS | WEB_SCRAPER | YOUTUBE | SOCIAL_MEDIA | CUSTOM_API (default: RSS)
+- `config` - JSON, nullable — plugin-specific configuration (e.g., CSS selectors for scraper)
+- `rssUrl` - Unique RSS feed URL, nullable (only required for `type = RSS`)
 - `siteUrl` - Optional website URL
 - `lang` - Enum: VI | EN | MIXED
 - `topicTags` - Array of category tags
@@ -36,7 +38,7 @@ RSS feed configuration.
 - `items` - One-to-many with Item
 
 **Indexes**:
-- `rssUrl` (unique)
+- `rssUrl` (unique, nullable)
 - `enabled`
 - `trustScore`
 - `name` (search)
@@ -397,6 +399,7 @@ prisma/migrations/
 
 ### Default Values
 
+- Source.type = RSS
 - Source.lang = MIXED
 - Source.trustScore = 70
 - Source.enabled = false

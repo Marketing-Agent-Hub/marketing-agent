@@ -24,6 +24,18 @@ src/lib/normalizer.ts → (none)
 src/lib/rss-validator.ts → env.ts
 ```
 
+### Layer 2b: Plugin System
+
+```
+src/lib/plugins/base.plugin.ts → (crypto, @prisma/client types)
+
+src/lib/plugins/rss.plugin.ts → plugins/base.plugin.ts, config/env.ts
+
+src/lib/plugins/web-scraper.plugin.ts → plugins/base.plugin.ts, config/env.ts, (cheerio, zod)
+
+src/lib/plugins/plugin-registry.ts → plugins/base.plugin.ts, plugins/rss.plugin.ts, plugins/web-scraper.plugin.ts
+```
+
 ### Layer 3: Utilities & Middleware
 
 ```
@@ -66,11 +78,15 @@ src/services/source.service.ts
   → schemas/source.schema.ts
   → lib/normalizer.ts
   → lib/rss-validator.ts
+  → lib/plugins/plugin-registry.ts
 
 src/services/ingest.service.ts
   → db/index.ts
-  → env.ts (USER_AGENT)
+  → lib/plugins/plugin-registry.ts
+  → lib/plugins/base.plugin.ts (NormalizedItem type)
   → lib/job-monitoring.ts
+  → services/metric.service.ts
+  → lib/logger.ts
 
 src/services/extraction.service.ts
   → db/index.ts

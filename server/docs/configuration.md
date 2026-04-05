@@ -75,7 +75,7 @@ export const monitorConfig = {
   },
 
   telemetry: {
-    serviceName: 'news-aggregator-server',
+    serviceName: 'marketing-agent-server',
     serviceVersion: '1.0.0',
     environment: env.NODE_ENV,
     enabled: true,

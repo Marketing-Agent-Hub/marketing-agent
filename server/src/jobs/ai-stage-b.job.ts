@@ -1,5 +1,5 @@
 import cron, { ScheduledTask } from 'node-cron';
-import { processStageBBatch } from '../services/ai-stage-b.service.js';
+import { processStageBBatch } from '../domains/content-intelligence/ai-stage-b.service.js';
 
 let aiStageBJobTask: ScheduledTask | null = null;
 

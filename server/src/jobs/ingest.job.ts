@@ -1,5 +1,5 @@
 import cron, { ScheduledTask } from 'node-cron';
-import { ingestAllSources } from '../services/ingest.service.js';
+import { ingestAllSources } from '../domains/content-intelligence/ingest.service.js';
 import { withJobMonitoring } from '../lib/job-monitoring.js';
 import { logger } from '../lib/logger.js';
 
