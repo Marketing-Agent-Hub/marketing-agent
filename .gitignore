@@ -37,3 +37,12 @@ postgres_data/
 # Backup files
 *.sql
 backup_*.sql
+
+# Graphify outputs
+graphify-out/
+*.graphml
+knowledge_graph.html
+graphify_report.md
+*.pkl
+.graphify*
+.embeddings/
