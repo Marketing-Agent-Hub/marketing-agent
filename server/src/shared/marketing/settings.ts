@@ -1,4 +1,5 @@
 import { prisma } from '../../db/index.js';
+import { settingService } from '../../lib/setting.service.js';
 
 export async function getSetting(key: string, defaultValue: string): Promise<string> {
     const setting = await prisma.setting.findUnique({ where: { key } });
@@ -13,7 +14,7 @@ export async function getAIModel(
         strategyGeneration: 'marketing.models.strategyGeneration',
         postGeneration: 'marketing.models.postGeneration',
     };
-    return getSetting(keyMap[workflow], 'gpt-4o-mini');
+    return settingService.getModel(keyMap[workflow]);
 }
 
 export async function getDefaultPostingCadence(): Promise<number> {

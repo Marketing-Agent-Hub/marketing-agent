@@ -1,6 +1,25 @@
-import { openai, AI_CONFIG } from '../../config/ai.config.js';
+import { AI_CONFIG } from '../../config/ai.config.js';
 import { prisma } from '../../db/index.js';
 import { ItemStatus } from '@prisma/client';
+import { aiClient, OpenRouterCreditError, OpenRouterOverloadedError } from '../../lib/ai-client.js';
+import { settingService } from '../../lib/setting.service.js';
+import { logger } from '../../lib/logger.js';
+
+async function retryWithBackoff<T>(fn: () => Promise<T>, maxRetries = 3): Promise<T> {
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        try {
+            return await fn();
+        } catch (error) {
+            if (error instanceof OpenRouterOverloadedError && attempt < maxRetries) {
+                const delay = Math.pow(2, attempt) * 1000;
+                await new Promise(resolve => setTimeout(resolve, delay));
+                continue;
+            }
+            throw error;
+        }
+    }
+    throw new Error('Max retries exceeded');
+}
 
 interface StageAOutput {
     isAllowed: boolean;
@@ -132,11 +151,12 @@ function applyHeuristicFilter(item: {
 }
 
 /**
- * Call OpenAI API for Stage A analysis
+ * Call AI for Stage A analysis
  */
-async function callStageA(prompt: string): Promise<StageAOutput> {
-    const response = await openai.chat.completions.create({
-        model: AI_CONFIG.STAGE_A_MODEL,
+async function callStageA(prompt: string): Promise<{ result: StageAOutput; actualModel: string }> {
+    const model = await settingService.getModel('ai.models.stageA');
+    const { data: response, actualModel } = await aiClient.chat({
+        model,
         messages: [
             {
                 role: 'system',
@@ -166,11 +186,14 @@ async function callStageA(prompt: string): Promise<StageAOutput> {
 
     // Force allow all items for testing RSS sources
     return {
-        isAllowed: true, // Always allow during testing phase
-        topicTags: Array.isArray(parsed.topicTags) ? parsed.topicTags : [],
-        importanceScore: typeof parsed.importanceScore === 'number' ? parsed.importanceScore : 50,
-        oneLineSummary: parsed.oneLineSummary || '',
-        reason: parsed.reason || 'Auto-accepted for testing',
+        result: {
+            isAllowed: true, // Always allow during testing phase
+            topicTags: Array.isArray(parsed.topicTags) ? parsed.topicTags : [],
+            importanceScore: typeof parsed.importanceScore === 'number' ? parsed.importanceScore : 50,
+            oneLineSummary: parsed.oneLineSummary || '',
+            reason: parsed.reason || 'Auto-accepted for testing',
+        },
+        actualModel,
     };
 }
 
@@ -206,6 +229,7 @@ export async function processStageA(itemId: number): Promise<{
         console.log(`[AI Stage A] Processing: ${item.title.substring(0, 60)}...`);
 
         let result: StageAOutput;
+        let actualModel: string;
 
         if (AI_CONFIG.STAGE_A_ENABLED) {
             // Use AI analysis
@@ -216,7 +240,9 @@ export async function processStageA(itemId: number): Promise<{
                 publishedAt: item.publishedAt,
             });
 
-            result = await callStageA(prompt);
+            const callResult = await callStageA(prompt);
+            result = callResult.result;
+            actualModel = callResult.actualModel;
             console.log(`[AI Stage A] AI Result: ${result.isAllowed ? 'ALLOWED' : 'REJECTED'} (importance: ${result.importanceScore})`);
         } else {
             // Use heuristic filtering
@@ -225,6 +251,7 @@ export async function processStageA(itemId: number): Promise<{
                 snippet: item.snippet || undefined,
                 sourceName: item.source.name,
             });
+            actualModel = 'heuristic-fallback';
             console.log(`[AI Stage A] Heuristic Result: ${result.isAllowed ? 'ALLOWED' : 'REJECTED'} (importance: ${result.importanceScore})`);
         }
 
@@ -237,7 +264,7 @@ export async function processStageA(itemId: number): Promise<{
                 topicTags: result.topicTags,
                 importanceScore: result.importanceScore,
                 oneLineSummary: result.oneLineSummary,
-                model: AI_CONFIG.STAGE_A_ENABLED ? AI_CONFIG.STAGE_A_MODEL : 'heuristic-fallback',
+                model: actualModel,
             },
         });
 
@@ -283,15 +310,29 @@ export async function processStageABatch(limitPerBatch = 5): Promise<{
     let errors = 0;
 
     for (const item of items) {
-        const result = await processStageA(item.id);
-        if (result.success) {
-            processed++;
-            if (result.isAllowed) {
-                allowed++;
+        try {
+            const result = await retryWithBackoff(() => processStageA(item.id));
+            if (result.success) {
+                processed++;
+                if (result.isAllowed) {
+                    allowed++;
+                } else {
+                    rejected++;
+                }
             } else {
-                rejected++;
+                errors++;
             }
-        } else {
+        } catch (error) {
+            if (error instanceof OpenRouterCreditError) {
+                logger.error('[AI Stage A] OpenRouter credit exhausted, stopping batch immediately');
+                break;
+            }
+            if (error instanceof OpenRouterOverloadedError) {
+                logger.warn({ itemId: item.id }, '[AI Stage A] OpenRouter overloaded after 3 retries, skipping item');
+                errors++;
+                continue;
+            }
+            logger.error({ error, itemId: item.id }, '[AI Stage A] Error processing item');
             errors++;
         }
 

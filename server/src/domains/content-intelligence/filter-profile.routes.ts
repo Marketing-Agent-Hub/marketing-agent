@@ -2,7 +2,8 @@ import { Router } from 'express';
 import { getFilterProfile, upsertFilterProfile, ValidationError } from './filter-profile.service.js';
 import { buildVectorProfile } from './vector-profile.builder.js';
 import { cosineSimilarity } from '../../lib/cosine-similarity.js';
-import { openai } from '../../config/ai.config.js';
+import { aiClient } from '../../lib/ai-client.js';
+import { settingService } from '../../lib/setting.service.js';
 import { requireBrandAccess } from '../../middleware/brand-access.js';
 import { asyncHandler } from '../../lib/async-handler.js';
 
@@ -68,12 +69,10 @@ router.post(
 
         if (filterProfile.mode === 'AI_EMBEDDING') {
             try {
+                const model = await settingService.getModel('ai.models.embedding');
                 const embedFn = async (text: string): Promise<number[]> => {
-                    const response = await openai.embeddings.create({
-                        model: 'text-embedding-3-small',
-                        input: text,
-                    });
-                    return response.data[0].embedding;
+                    const { data: result } = await aiClient.embed({ model, input: text });
+                    return result.data[0].embedding;
                 };
 
                 const vectorProfile = await buildVectorProfile(

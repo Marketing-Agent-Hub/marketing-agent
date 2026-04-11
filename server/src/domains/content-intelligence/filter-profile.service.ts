@@ -1,6 +1,7 @@
-import { openai } from '../../config/ai.config.js';
 import { prisma } from '../../db/index.js';
 import { buildVectorProfile, ValidationError } from './vector-profile.builder.js';
+import { aiClient } from '../../lib/ai-client.js';
+import { settingService } from '../../lib/setting.service.js';
 
 export interface FilterProfileData {
     mode: 'PASS_THROUGH' | 'AI_EMBEDDING';
@@ -20,11 +21,9 @@ export interface FilterProfileResponse {
 }
 
 const embedFn = async (text: string): Promise<number[]> => {
-    const response = await openai.embeddings.create({
-        model: 'text-embedding-3-small',
-        input: text,
-    });
-    return response.data[0].embedding;
+    const model = await settingService.getModel('ai.models.embedding');
+    const { data: result } = await aiClient.embed({ model, input: text });
+    return result.data[0].embedding;
 };
 
 const DEFAULT_PROFILE: Omit<FilterProfileResponse, 'brandId'> = {

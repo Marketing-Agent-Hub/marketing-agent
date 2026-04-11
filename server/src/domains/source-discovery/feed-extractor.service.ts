@@ -1,4 +1,5 @@
-import { openai } from '../../config/ai.config.js';
+import { aiClient } from '../../lib/ai-client.js';
+import { settingService } from '../../lib/setting.service.js';
 import { env } from '../../config/env.js';
 import { logger } from '../../lib/logger.js';
 
@@ -59,9 +60,9 @@ async function checkHeuristicUrl(url: string): Promise<boolean> {
  * Call LLM to infer the most likely RSS/Atom feed URL from a webpage URL and snippet.
  */
 async function extractFeedUrlWithLLM(url: string, snippet: string): Promise<FeedExtractionResult> {
-    const model = env.DISCOVERY_MODEL;
+    const model = await settingService.getModel('ai.models.discovery');
 
-    const response = await openai.chat.completions.create({
+    const { data: response } = await aiClient.chat({
         model,
         messages: [
             {

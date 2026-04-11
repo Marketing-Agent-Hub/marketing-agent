@@ -24,14 +24,12 @@ vi.mock('../../db/index.js', () => ({
     },
 }));
 
-vi.mock('../../config/ai.config.js', () => ({
-    openai: {
-        chat: {
-            completions: {
-                create: vi.fn(),
-            },
-        },
+vi.mock('../../lib/ai-client.js', () => ({
+    aiClient: {
+        chat: vi.fn(),
     },
+    OpenRouterCreditError: class OpenRouterCreditError extends Error { },
+    OpenRouterOverloadedError: class OpenRouterOverloadedError extends Error { },
 }));
 
 vi.mock('../../shared/marketing/settings.js', () => ({
@@ -39,7 +37,7 @@ vi.mock('../../shared/marketing/settings.js', () => ({
 }));
 
 import { prisma } from '../../db/index.js';
-import { openai } from '../../config/ai.config.js';
+import { aiClient } from '../../lib/ai-client.js';
 import { BrandAnalysisService } from '../../domains/brand/brand-analysis.service.js';
 
 const mockBrand = { id: 1, workspaceId: 10, name: 'Acme', knowledgeDocs: [] };
@@ -59,10 +57,13 @@ describe('BrandAnalysisService', () => {
     });
 
     it('creates a RUNNING generation run before OpenAI call', async () => {
-        vi.mocked(openai.chat.completions.create).mockResolvedValue({
-            choices: [{ message: { content: JSON.stringify(mockOutput) } }],
-            usage: { prompt_tokens: 100, completion_tokens: 200 },
-        } as any);
+        vi.mocked(aiClient.chat).mockResolvedValue({
+            data: {
+                choices: [{ message: { content: JSON.stringify(mockOutput) } }],
+                usage: { prompt_tokens: 100, completion_tokens: 200 },
+            } as any,
+            actualModel: 'gpt-4o-mini',
+        });
 
         await service.runBusinessAnalysis(1, 1);
 
@@ -72,10 +73,13 @@ describe('BrandAnalysisService', () => {
     });
 
     it('updates generation run to COMPLETED on success', async () => {
-        vi.mocked(openai.chat.completions.create).mockResolvedValue({
-            choices: [{ message: { content: JSON.stringify(mockOutput) } }],
-            usage: { prompt_tokens: 100, completion_tokens: 200 },
-        } as any);
+        vi.mocked(aiClient.chat).mockResolvedValue({
+            data: {
+                choices: [{ message: { content: JSON.stringify(mockOutput) } }],
+                usage: { prompt_tokens: 100, completion_tokens: 200 },
+            } as any,
+            actualModel: 'gpt-4o-mini',
+        });
 
         await service.runBusinessAnalysis(1, 1);
 
@@ -85,7 +89,7 @@ describe('BrandAnalysisService', () => {
     });
 
     it('updates generation run to FAILED on OpenAI error', async () => {
-        vi.mocked(openai.chat.completions.create).mockRejectedValue(new Error('OpenAI error'));
+        vi.mocked(aiClient.chat).mockRejectedValue(new Error('OpenAI error'));
 
         await expect(service.runBusinessAnalysis(1, 1)).rejects.toThrow('OpenAI error');
 

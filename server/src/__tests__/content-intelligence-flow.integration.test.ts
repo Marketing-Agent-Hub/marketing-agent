@@ -200,12 +200,10 @@ vi.mock('../lib/plugins/plugin-registry.js', () => ({
     })),
 }));
 
-vi.mock('../config/ai.config.js', () => ({
-    openai: { chat: { completions: { create: vi.fn() } } },
-    AI_CONFIG: {
-        STAGE_A_MODEL: 'gpt-4o-mini',
-        STAGE_B_MODEL: 'gpt-4o',
-    },
+vi.mock('../lib/ai-client.js', () => ({
+    aiClient: { chat: vi.fn(), embed: vi.fn() },
+    OpenRouterCreditError: class OpenRouterCreditError extends Error { },
+    OpenRouterOverloadedError: class OpenRouterOverloadedError extends Error { },
 }));
 
 vi.mock('../shared/marketing/settings.js', () => ({
@@ -223,7 +221,7 @@ vi.mock('../lib/logger.js', () => ({
     logger: { info: vi.fn(), error: vi.fn(), warn: vi.fn() },
 }));
 
-import { openai } from '../config/ai.config.js';
+import { aiClient } from '../lib/ai-client.js';
 import { prisma } from '../db/index.js';
 
 describe('Unified content intelligence flow', () => {
@@ -236,33 +234,39 @@ describe('Unified content intelligence flow', () => {
     });
 
     it('runs ingest -> trend signal -> content generation with trend context', async () => {
-        vi.mocked(openai.chat.completions.create)
+        vi.mocked(aiClient.chat)
             .mockResolvedValueOnce({
-                choices: [{
-                    message: {
-                        content: JSON.stringify({
-                            title: 'Trend Brief',
-                            objective: 'Build awareness',
-                            keyAngle: 'AI CRM momentum',
-                            callToAction: 'Learn more',
-                        })
-                    }
-                }],
-                usage: { prompt_tokens: 10, completion_tokens: 20 },
-            } as any)
+                data: {
+                    choices: [{
+                        message: {
+                            content: JSON.stringify({
+                                title: 'Trend Brief',
+                                objective: 'Build awareness',
+                                keyAngle: 'AI CRM momentum',
+                                callToAction: 'Learn more',
+                            })
+                        }
+                    }],
+                    usage: { prompt_tokens: 10, completion_tokens: 20 },
+                } as any,
+                actualModel: 'gpt-4o-mini',
+            })
             .mockResolvedValueOnce({
-                choices: [{
-                    message: {
-                        content: JSON.stringify({
-                            hook: 'AI CRM is accelerating',
-                            body: 'Sales teams are adopting copilots faster than expected.',
-                            cta: 'See what this means',
-                            hashtags: ['#AI', '#CRM'],
-                        })
-                    }
-                }],
-                usage: { prompt_tokens: 10, completion_tokens: 20 },
-            } as any);
+                data: {
+                    choices: [{
+                        message: {
+                            content: JSON.stringify({
+                                hook: 'AI CRM is accelerating',
+                                body: 'Sales teams are adopting copilots faster than expected.',
+                                cta: 'See what this means',
+                                hashtags: ['#AI', '#CRM'],
+                            })
+                        }
+                    }],
+                    usage: { prompt_tokens: 10, completion_tokens: 20 },
+                } as any,
+                actualModel: 'gpt-4o-mini',
+            });
 
         const ingestResult = await ingestSource(1);
         expect(ingestResult.success).toBe(true);

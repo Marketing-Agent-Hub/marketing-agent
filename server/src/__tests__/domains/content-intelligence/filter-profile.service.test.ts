@@ -18,12 +18,12 @@ vi.mock('../../../db/index.js', () => ({
     },
 }));
 
-vi.mock('../../../config/ai.config.js', () => ({
-    openai: {
-        embeddings: {
-            create: vi.fn(),
-        },
+vi.mock('../../../lib/ai-client.js', () => ({
+    aiClient: {
+        embed: vi.fn(),
     },
+    OpenRouterCreditError: class OpenRouterCreditError extends Error { },
+    OpenRouterOverloadedError: class OpenRouterOverloadedError extends Error { },
 }));
 
 vi.mock('../../../domains/content-intelligence/vector-profile.builder.js', () => ({

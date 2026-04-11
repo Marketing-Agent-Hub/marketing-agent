@@ -7,7 +7,7 @@ import { getAISettings, updateAISetting } from '../config/ai.config.js';
  */
 export const getAISettingsController = async (req: Request, res: Response) => {
     try {
-        const settings = getAISettings();
+        const settings = await getAISettings();
 
         res.json({
             success: true,

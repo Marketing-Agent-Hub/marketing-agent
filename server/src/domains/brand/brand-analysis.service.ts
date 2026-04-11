@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { prisma } from '../../db/index.js';
-import { openai } from '../../config/ai.config.js';
+import { aiClient } from '../../lib/ai-client.js';
 import { callAIWorkflow } from '../../shared/marketing/ai-workflow.js';
 import { getAIModel } from '../../shared/marketing/settings.js';
 import { PROMPT_VERSIONS } from '../../shared/marketing/prompt-versions.js';
@@ -76,7 +76,7 @@ ${knowledgeText ? `## Additional Brand Documents\n${knowledgeText}` : ''}
                 knowledgeDocsCount: brand.knowledgeDocs.length,
             },
             callFn: async () => {
-                const response = await openai.chat.completions.create({
+                const { data: response, actualModel } = await aiClient.chat({
                     model,
                     messages: [
                         { role: 'system', content: systemPrompt },
@@ -93,6 +93,7 @@ ${knowledgeText ? `## Additional Brand Documents\n${knowledgeText}` : ''}
                     promptTokens: response.usage?.prompt_tokens ?? 0,
                     completionTokens: response.usage?.completion_tokens ?? 0,
                     rawResponse: rawContent,
+                    actualModel,
                 };
             },
         });

@@ -1,7 +1,25 @@
 import { prisma } from '../../db/index.js';
 import { ItemStatus } from '@prisma/client';
 import { runFilterEngine, ArticleInput, FilterProfileInput } from './filter-engine.js';
-import { openai } from '../../config/ai.config.js';
+import { aiClient, OpenRouterCreditError, OpenRouterOverloadedError } from '../../lib/ai-client.js';
+import { settingService } from '../../lib/setting.service.js';
+import { logger } from '../../lib/logger.js';
+
+async function retryWithBackoff<T>(fn: () => Promise<T>, maxRetries = 3): Promise<T> {
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        try {
+            return await fn();
+        } catch (error) {
+            if (error instanceof OpenRouterOverloadedError && attempt < maxRetries) {
+                const delay = Math.pow(2, attempt) * 1000;
+                await new Promise(resolve => setTimeout(resolve, delay));
+                continue;
+            }
+            throw error;
+        }
+    }
+    throw new Error('Max retries exceeded');
+}
 
 // Global deny keywords (English) - from SRS requirements
 const DENY_KEYWORDS_EN = [
@@ -186,15 +204,13 @@ export async function filterItem(itemId: number): Promise<{
 }
 
 /**
- * Creates an embed function using OpenAI text-embedding-3-small
+ * Creates an embed function using the configured embedding model via aiClient
  */
 async function createEmbedFn(): Promise<(text: string) => Promise<number[]>> {
+    const model = await settingService.getModel('ai.models.embedding');
     return async (text: string) => {
-        const response = await openai.embeddings.create({
-            model: 'text-embedding-3-small',
-            input: text,
-        });
-        return response.data[0].embedding;
+        const { data: result } = await aiClient.embed({ model, input: text });
+        return result.data[0].embedding;
     };
 }
 
@@ -229,31 +245,43 @@ export async function filterExtractedItemsForBrand(
     let rejected = 0;
 
     for (const item of items) {
-        const article = await prisma.article.findUnique({ where: { itemId: item.id } });
+        try {
+            const article = await prisma.article.findUnique({ where: { itemId: item.id } });
 
-        const articleInput: ArticleInput = {
-            title: item.title,
-            extractedContent: article?.extractedContent ?? '',
-        };
+            const articleInput: ArticleInput = {
+                title: item.title,
+                extractedContent: article?.extractedContent ?? '',
+            };
 
-        const result = await runFilterEngine(articleInput, filterProfileInput, embedFn);
+            const result = await retryWithBackoff(() => runFilterEngine(articleInput, filterProfileInput, embedFn));
 
-        if (result.reason === 'embedding_error') {
-            console.warn(`[Filter] Embedding error for item ${item.id}, advancing to READY_FOR_AI`);
-        }
+            if (result.reason === 'embedding_error') {
+                console.warn(`[Filter] Embedding error for item ${item.id}, advancing to READY_FOR_AI`);
+            }
 
-        if (result.allowed) {
-            await prisma.item.update({
-                where: { id: item.id },
-                data: { status: ItemStatus.READY_FOR_AI, filterReason: null },
-            });
-            passed++;
-        } else {
-            await prisma.item.update({
-                where: { id: item.id },
-                data: { status: ItemStatus.FILTERED_OUT, filterReason: result.reason },
-            });
-            rejected++;
+            if (result.allowed) {
+                await prisma.item.update({
+                    where: { id: item.id },
+                    data: { status: ItemStatus.READY_FOR_AI, filterReason: null },
+                });
+                passed++;
+            } else {
+                await prisma.item.update({
+                    where: { id: item.id },
+                    data: { status: ItemStatus.FILTERED_OUT, filterReason: result.reason },
+                });
+                rejected++;
+            }
+        } catch (error) {
+            if (error instanceof OpenRouterCreditError) {
+                logger.error('[Filter] OpenRouter credit exhausted, stopping batch immediately');
+                break;
+            }
+            if (error instanceof OpenRouterOverloadedError) {
+                logger.warn({ itemId: item.id }, '[Filter] OpenRouter overloaded after 3 retries, skipping item');
+                continue;
+            }
+            logger.error({ error, itemId: item.id }, '[Filter] Error processing item');
         }
     }
 

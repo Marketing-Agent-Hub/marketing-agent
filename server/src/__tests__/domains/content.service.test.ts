@@ -10,8 +10,10 @@ vi.mock('../../db/index.js', () => ({
     },
 }));
 
-vi.mock('../../config/ai.config.js', () => ({
-    openai: { chat: { completions: { create: vi.fn() } } },
+vi.mock('../../lib/ai-client.js', () => ({
+    aiClient: { chat: vi.fn() },
+    OpenRouterCreditError: class OpenRouterCreditError extends Error { },
+    OpenRouterOverloadedError: class OpenRouterOverloadedError extends Error { },
 }));
 
 vi.mock('../../shared/marketing/settings.js', () => ({
@@ -32,7 +34,7 @@ vi.mock('../../domains/content-intelligence/trend-matching.service.js', () => ({
 }));
 
 import { prisma } from '../../db/index.js';
-import { openai } from '../../config/ai.config.js';
+import { aiClient } from '../../lib/ai-client.js';
 import { ContentService } from '../../domains/content/content.service.js';
 import { trendMatchingService } from '../../domains/content-intelligence/trend-matching.service.js';
 
@@ -56,15 +58,21 @@ describe('ContentService', () => {
 
     it('creates briefs and drafts for planned slots', async () => {
         vi.mocked(prisma.strategySlot.findMany).mockResolvedValue([mockSlot] as any);
-        vi.mocked(openai.chat.completions.create)
+        vi.mocked(aiClient.chat)
             .mockResolvedValueOnce({
-                choices: [{ message: { content: JSON.stringify({ title: 'T', objective: 'O', keyAngle: 'K', callToAction: 'C' }) } }],
-                usage: { prompt_tokens: 10, completion_tokens: 20 },
-            } as any)
+                data: {
+                    choices: [{ message: { content: JSON.stringify({ title: 'T', objective: 'O', keyAngle: 'K', callToAction: 'C' }) } }],
+                    usage: { prompt_tokens: 10, completion_tokens: 20 },
+                } as any,
+                actualModel: 'gpt-4o-mini',
+            })
             .mockResolvedValueOnce({
-                choices: [{ message: { content: JSON.stringify({ hook: 'H', body: 'B', cta: 'C', hashtags: ['#test'] }) } }],
-                usage: { prompt_tokens: 10, completion_tokens: 20 },
-            } as any);
+                data: {
+                    choices: [{ message: { content: JSON.stringify({ hook: 'H', body: 'B', cta: 'C', hashtags: ['#test'] }) } }],
+                    usage: { prompt_tokens: 10, completion_tokens: 20 },
+                } as any,
+                actualModel: 'gpt-4o-mini',
+            });
 
         await service.generateDailyContent(1, 3);
 
@@ -75,12 +83,15 @@ describe('ContentService', () => {
     it('continues processing when a slot fails', async () => {
         const slot2 = { ...mockSlot, id: 2 };
         vi.mocked(prisma.strategySlot.findMany).mockResolvedValue([mockSlot, slot2] as any);
-        vi.mocked(openai.chat.completions.create)
+        vi.mocked(aiClient.chat)
             .mockRejectedValueOnce(new Error('OpenAI error slot 1'))
             .mockResolvedValue({
-                choices: [{ message: { content: JSON.stringify({ title: 'T', objective: 'O', keyAngle: 'K', callToAction: 'C' }) } }],
-                usage: { prompt_tokens: 10, completion_tokens: 20 },
-            } as any);
+                data: {
+                    choices: [{ message: { content: JSON.stringify({ title: 'T', objective: 'O', keyAngle: 'K', callToAction: 'C' }) } }],
+                    usage: { prompt_tokens: 10, completion_tokens: 20 },
+                } as any,
+                actualModel: 'gpt-4o-mini',
+            });
 
         await expect(service.generateDailyContent(1, 3)).resolves.toBeUndefined();
     });
@@ -113,15 +124,21 @@ describe('ContentService', () => {
                 sourceName: 'TechCrunch',
             },
         }] as any);
-        vi.mocked(openai.chat.completions.create)
+        vi.mocked(aiClient.chat)
             .mockResolvedValueOnce({
-                choices: [{ message: { content: JSON.stringify({ title: 'T', objective: 'O', keyAngle: 'K', callToAction: 'C' }) } }],
-                usage: { prompt_tokens: 10, completion_tokens: 20 },
-            } as any)
+                data: {
+                    choices: [{ message: { content: JSON.stringify({ title: 'T', objective: 'O', keyAngle: 'K', callToAction: 'C' }) } }],
+                    usage: { prompt_tokens: 10, completion_tokens: 20 },
+                } as any,
+                actualModel: 'gpt-4o-mini',
+            })
             .mockResolvedValueOnce({
-                choices: [{ message: { content: JSON.stringify({ hook: 'H', body: 'B', cta: 'C', hashtags: ['#test'] }) } }],
-                usage: { prompt_tokens: 10, completion_tokens: 20 },
-            } as any);
+                data: {
+                    choices: [{ message: { content: JSON.stringify({ hook: 'H', body: 'B', cta: 'C', hashtags: ['#test'] }) } }],
+                    usage: { prompt_tokens: 10, completion_tokens: 20 },
+                } as any,
+                actualModel: 'gpt-4o-mini',
+            });
 
         await service.generateDailyContent(1, 3);
 

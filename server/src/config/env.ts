@@ -18,9 +18,11 @@ export const envSchema = z.object({
   // HTTP Client
   USER_AGENT: z.string().default('NewsAggregatorBot/1.0'),
 
+  // OpenRouter AI (one key for all models; model names configured via admin settings in DB)
+  OPENROUTER_API_KEY: z.string().min(1, 'OPENROUTER_API_KEY is required'),
+
   // AI Source Discovery
   TAVILY_API_KEY: z.string().optional(),
-  DISCOVERY_MODEL: z.string().default('gpt-4o-mini'),
 });
 
 export type Env = z.infer<typeof envSchema>;

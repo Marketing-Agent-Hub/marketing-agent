@@ -1,6 +1,25 @@
-import { openai, AI_CONFIG } from '../../config/ai.config.js';
+import { AI_CONFIG } from '../../config/ai.config.js';
 import { prisma } from '../../db/index.js';
 import { ItemStatus } from '@prisma/client';
+import { aiClient, OpenRouterCreditError, OpenRouterOverloadedError } from '../../lib/ai-client.js';
+import { settingService } from '../../lib/setting.service.js';
+import { logger } from '../../lib/logger.js';
+
+async function retryWithBackoff<T>(fn: () => Promise<T>, maxRetries = 3): Promise<T> {
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        try {
+            return await fn();
+        } catch (error) {
+            if (error instanceof OpenRouterOverloadedError && attempt < maxRetries) {
+                const delay = Math.pow(2, attempt) * 1000;
+                await new Promise(resolve => setTimeout(resolve, delay));
+                continue;
+            }
+            throw error;
+        }
+    }
+    throw new Error('Max retries exceeded');
+}
 
 interface StageBOutput {
     fullArticle: string; // Complete Facebook post with all content
@@ -188,11 +207,12 @@ ${hashtags}`;
 }
 
 /**
- * Call OpenAI API for Stage B analysis
+ * Call AI for Stage B analysis
  */
-async function callStageB(prompt: string): Promise<StageBOutput> {
-    const response = await openai.chat.completions.create({
-        model: AI_CONFIG.STAGE_B_MODEL,
+async function callStageB(prompt: string): Promise<{ result: StageBOutput; actualModel: string }> {
+    const model = await settingService.getModel('ai.models.stageB');
+    const { data: response, actualModel } = await aiClient.chat({
+        model,
         messages: [
             {
                 role: 'system',
@@ -221,7 +241,8 @@ async function callStageB(prompt: string): Promise<StageBOutput> {
     }
 
     return {
-        fullArticle: parsed.fullArticle,
+        result: { fullArticle: parsed.fullArticle },
+        actualModel,
     };
 }
 
@@ -311,6 +332,7 @@ export async function processStageB(itemId: number): Promise<{
         console.log(`[AI Stage B] Processing: ${item.title.substring(0, 60)}...`);
 
         let result: StageBOutput;
+        let actualModel: string;
 
         if (!AI_CONFIG.STAGE_B_ENABLED) {
             // Use simple article generation (no AI)
@@ -320,6 +342,7 @@ export async function processStageB(itemId: number): Promise<{
                 sourceName: item.source.name,
                 topicTags: stageAResult.topicTags,
             });
+            actualModel = 'simple-fallback';
             console.log(`[AI Stage B] Generated simple article (AI disabled, ${result.fullArticle.length} chars)`);
         } else {
             // Check cache first
@@ -328,6 +351,7 @@ export async function processStageB(itemId: number): Promise<{
             if (cachedResult) {
                 console.log(`[AI Stage B] Using cached result for content hash: ${item.contentHash.substring(0, 16)}`);
                 result = cachedResult;
+                actualModel = 'cached';
             } else {
                 // Build prompt and call AI
                 const prompt = buildStageBPrompt({
@@ -339,7 +363,9 @@ export async function processStageB(itemId: number): Promise<{
                     oneLineSummary: stageAResult.oneLineSummary || '',
                 });
 
-                result = await callStageB(prompt);
+                const callResult = await callStageB(prompt);
+                result = callResult.result;
+                actualModel = callResult.actualModel;
                 console.log(`[AI Stage B] Generated AI article (${result.fullArticle.length} chars)`);
             }
         }
@@ -350,7 +376,7 @@ export async function processStageB(itemId: number): Promise<{
                 itemId: item.id,
                 stage: 'B',
                 fullArticle: result.fullArticle,
-                model: AI_CONFIG.STAGE_B_ENABLED ? AI_CONFIG.STAGE_B_MODEL : 'simple-fallback',
+                model: actualModel,
             },
         });
 
@@ -394,10 +420,24 @@ export async function processStageBBatch(limitPerBatch = 3): Promise<{
     let errors = 0;
 
     for (const item of items) {
-        const result = await processStageB(item.id);
-        if (result.success) {
-            processed++;
-        } else {
+        try {
+            const result = await retryWithBackoff(() => processStageB(item.id));
+            if (result.success) {
+                processed++;
+            } else {
+                errors++;
+            }
+        } catch (error) {
+            if (error instanceof OpenRouterCreditError) {
+                logger.error('[AI Stage B] OpenRouter credit exhausted, stopping batch immediately');
+                break;
+            }
+            if (error instanceof OpenRouterOverloadedError) {
+                logger.warn({ itemId: item.id }, '[AI Stage B] OpenRouter overloaded after 3 retries, skipping item');
+                errors++;
+                continue;
+            }
+            logger.error({ error, itemId: item.id }, '[AI Stage B] Error processing item');
             errors++;
         }
 

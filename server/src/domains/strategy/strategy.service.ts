@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { SocialPlatform } from '@prisma/client';
 import { prisma } from '../../db/index.js';
-import { openai } from '../../config/ai.config.js';
+import { aiClient } from '../../lib/ai-client.js';
 import { callAIWorkflow } from '../../shared/marketing/ai-workflow.js';
 import { getAIModel, getDefaultPostingCadence } from '../../shared/marketing/settings.js';
 import { PROMPT_VERSIONS } from '../../shared/marketing/prompt-versions.js';
@@ -91,7 +91,7 @@ Generate exactly ${Math.round((durationDays / 7) * postsPerWeek)} slots spread a
             promptVersion: PROMPT_VERSIONS.STRATEGY_GENERATION,
             inputSnapshot: { brandId, durationDays, channels, postsPerWeek },
             callFn: async () => {
-                const response = await openai.chat.completions.create({
+                const { data: response, actualModel } = await aiClient.chat({
                     model,
                     messages: [
                         { role: 'system', content: systemPrompt },
@@ -106,6 +106,7 @@ Generate exactly ${Math.round((durationDays / 7) * postsPerWeek)} slots spread a
                     promptTokens: response.usage?.prompt_tokens ?? 0,
                     completionTokens: response.usage?.completion_tokens ?? 0,
                     rawResponse: raw,
+                    actualModel,
                 };
             },
         });

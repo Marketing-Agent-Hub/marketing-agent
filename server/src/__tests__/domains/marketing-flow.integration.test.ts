@@ -27,8 +27,10 @@ vi.mock('../../db/index.js', () => ({
     },
 }));
 
-vi.mock('../../config/ai.config.js', () => ({
-    openai: { chat: { completions: { create: vi.fn() } } },
+vi.mock('../../lib/ai-client.js', () => ({
+    aiClient: { chat: vi.fn() },
+    OpenRouterCreditError: class OpenRouterCreditError extends Error { },
+    OpenRouterOverloadedError: class OpenRouterOverloadedError extends Error { },
 }));
 
 vi.mock('../../shared/marketing/settings.js', () => ({
@@ -39,7 +41,7 @@ vi.mock('../../shared/marketing/settings.js', () => ({
 vi.mock('../../lib/logger.js', () => ({ logger: { error: vi.fn(), info: vi.fn() } }));
 
 import { prisma } from '../../db/index.js';
-import { openai } from '../../config/ai.config.js';
+import { aiClient } from '../../lib/ai-client.js';
 import { OnboardingService } from '../../domains/onboarding/onboarding.service.js';
 import { StrategyService } from '../../domains/strategy/strategy.service.js';
 import { ApprovalService } from '../../domains/approval/approval.service.js';
@@ -76,18 +78,21 @@ describe('Marketing Flow Integration', () => {
     });
 
     it('generates and activates a strategy', async () => {
-        vi.mocked(openai.chat.completions.create).mockResolvedValue({
-            choices: [{
-                message: {
-                    content: JSON.stringify({
-                        title: 'Strategy', objective: 'Grow', weeklyThemes: [],
-                        cadenceConfig: { postsPerWeek: 5, channels: ['FACEBOOK'] },
-                        slots: [],
-                    }),
-                },
-            }],
-            usage: { prompt_tokens: 100, completion_tokens: 200 },
-        } as any);
+        vi.mocked(aiClient.chat).mockResolvedValue({
+            data: {
+                choices: [{
+                    message: {
+                        content: JSON.stringify({
+                            title: 'Strategy', objective: 'Grow', weeklyThemes: [],
+                            cadenceConfig: { postsPerWeek: 5, channels: ['FACEBOOK'] },
+                            slots: [],
+                        }),
+                    },
+                }],
+                usage: { prompt_tokens: 100, completion_tokens: 200 },
+            } as any,
+            actualModel: 'gpt-4o-mini',
+        });
 
         const plan = await strategyService.generateStrategy(1, { durationDays: 30 });
         expect(plan).toBeDefined();

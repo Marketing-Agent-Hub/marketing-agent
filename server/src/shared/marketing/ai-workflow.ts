@@ -18,6 +18,7 @@ export interface AIWorkflowParams<T> {
         promptTokens: number;
         completionTokens: number;
         rawResponse: string;
+        actualModel?: string;
     }>;
 }
 
@@ -41,6 +42,7 @@ export async function callAIWorkflow<T>(params: AIWorkflowParams<T>): Promise<T>
             where: { id: run.id },
             data: {
                 status: 'COMPLETED',
+                model: result.actualModel ?? params.model,
                 promptTokens: result.promptTokens,
                 completionTokens: result.completionTokens,
                 totalTokens: result.promptTokens + result.completionTokens,

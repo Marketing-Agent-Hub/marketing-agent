@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { SocialPlatform } from '@prisma/client';
 import { prisma } from '../../db/index.js';
-import { openai } from '../../config/ai.config.js';
+import { aiClient, OpenRouterCreditError } from '../../lib/ai-client.js';
 import { callAIWorkflow } from '../../shared/marketing/ai-workflow.js';
 import { getAIModel } from '../../shared/marketing/settings.js';
 import { PROMPT_VERSIONS } from '../../shared/marketing/prompt-versions.js';
@@ -67,7 +67,7 @@ export class ContentService {
                         trendContext,
                     },
                     callFn: async () => {
-                        const response = await openai.chat.completions.create({
+                        const { data: response, actualModel } = await aiClient.chat({
                             model,
                             messages: [{
                                 role: 'user',
@@ -92,6 +92,7 @@ Return JSON: { title, objective, keyAngle, callToAction, assetDirection }`,
                             promptTokens: response.usage?.prompt_tokens ?? 0,
                             completionTokens: response.usage?.completion_tokens ?? 0,
                             rawResponse: raw,
+                            actualModel,
                         };
                     },
                 });
@@ -123,7 +124,7 @@ Return JSON: { title, objective, keyAngle, callToAction, assetDirection }`,
                     promptVersion: PROMPT_VERSIONS.POST_GENERATION,
                     inputSnapshot: { briefId: brief.id, platform: slot.channel, trendContext },
                     callFn: async () => {
-                        const response = await openai.chat.completions.create({
+                        const { data: response, actualModel } = await aiClient.chat({
                             model,
                             messages: [{
                                 role: 'user',
@@ -146,6 +147,7 @@ Return JSON: { hook, body, cta, hashtags }`,
                             promptTokens: response.usage?.prompt_tokens ?? 0,
                             completionTokens: response.usage?.completion_tokens ?? 0,
                             rawResponse: raw,
+                            actualModel,
                         };
                     },
                 });
@@ -168,6 +170,10 @@ Return JSON: { hook, body, cta, hashtags }`,
 
                 await prisma.strategySlot.update({ where: { id: slot.id }, data: { status: 'DRAFT_READY' } });
             } catch (err) {
+                if (err instanceof OpenRouterCreditError) {
+                    logger.error({ slotId: slot.id, brandId }, '[content] OpenRouter credit exhausted, stopping slot batch immediately');
+                    break;
+                }
                 logger.error({ err, slotId: slot.id, brandId }, '[content] Failed to generate content for slot');
             }
         }
@@ -242,7 +248,7 @@ Return JSON: { hook, body, cta, hashtags }`,
             promptVersion: PROMPT_VERSIONS.POST_GENERATION,
             inputSnapshot: { briefId, regenerate: true },
             callFn: async () => {
-                const response = await openai.chat.completions.create({
+                const { data: response, actualModel } = await aiClient.chat({
                     model,
                     messages: [{
                         role: 'user',
@@ -256,6 +262,7 @@ Return JSON: { hook, body, cta, hashtags }`,
                     promptTokens: response.usage?.prompt_tokens ?? 0,
                     completionTokens: response.usage?.completion_tokens ?? 0,
                     rawResponse: raw,
+                    actualModel,
                 };
             },
         });

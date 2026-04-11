@@ -1,5 +1,6 @@
 import { XMLParser } from 'fast-xml-parser';
-import { openai } from '../../config/ai.config.js';
+import { aiClient } from '../../lib/ai-client.js';
+import { settingService } from '../../lib/setting.service.js';
 import { env } from '../../config/env.js';
 import { logger } from '../../lib/logger.js';
 import type { FeedValidationResult } from './feed-validator.service.js';
@@ -114,7 +115,7 @@ export async function scoreFeed(
     feedMetadata: FeedValidationResult['metadata'],
     existingTopics: string[]
 ): Promise<FeedScoringResult> {
-    const model = env.DISCOVERY_MODEL;
+    const model = await settingService.getModel('ai.models.discovery');
 
     // Fetch recent items for context
     const recentItems = await fetchRecentItems(feedUrl);
@@ -157,7 +158,7 @@ Return only valid JSON matching this schema:
   "isDuplicate": boolean
 }`;
 
-    const response = await openai.chat.completions.create({
+    const { data: response } = await aiClient.chat({
         model,
         messages: [{ role: 'user', content: prompt }],
         response_format: { type: 'json_object' },

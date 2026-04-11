@@ -5,6 +5,23 @@ import { logger } from '../../lib/logger.js';
 import { NormalizedItem } from '../../lib/plugins/base.plugin.js';
 import { getPlugin } from '../../lib/plugins/plugin-registry.js';
 import { metricService } from '../../domains/monitoring/metric.service.js';
+import { OpenRouterCreditError, OpenRouterOverloadedError } from '../../lib/ai-client.js';
+
+async function retryWithBackoff<T>(fn: () => Promise<T>, maxRetries = 3): Promise<T> {
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        try {
+            return await fn();
+        } catch (error) {
+            if (error instanceof OpenRouterOverloadedError && attempt < maxRetries) {
+                const delay = Math.pow(2, attempt) * 1000;
+                await new Promise(resolve => setTimeout(resolve, delay));
+                continue;
+            }
+            throw error;
+        }
+    }
+    throw new Error('Max retries exceeded');
+}
 
 export interface IngestResult {
     success: boolean;
@@ -177,10 +194,26 @@ export async function ingestAllBrandSources(): Promise<void> {
         return now - bs.lastFetchedAt.getTime() >= effectiveInterval * 60 * 1000;
     });
 
+    let creditExhausted = false;
     const CONCURRENCY = 5;
-    for (let i = 0; i < due.length; i += CONCURRENCY) {
+    for (let i = 0; i < due.length && !creditExhausted; i += CONCURRENCY) {
         const batch = due.slice(i, i + CONCURRENCY);
-        await Promise.allSettled(batch.map(bs => ingestBrandSource(bs)));
+        for (const bs of batch) {
+            try {
+                await retryWithBackoff(() => ingestBrandSource(bs));
+            } catch (error) {
+                if (error instanceof OpenRouterCreditError) {
+                    logger.error('[Ingest] OpenRouter credit exhausted, stopping batch immediately');
+                    creditExhausted = true;
+                    break;
+                }
+                if (error instanceof OpenRouterOverloadedError) {
+                    logger.warn({ brandSourceId: bs.id }, '[Ingest] OpenRouter overloaded after 3 retries, skipping brand source');
+                    continue;
+                }
+                logger.error({ error, brandSourceId: bs.id }, '[Ingest] Error processing brand source');
+            }
+        }
     }
 
     logger.info('[Ingest] Completed multi-tenant ingestion for all brand sources');
