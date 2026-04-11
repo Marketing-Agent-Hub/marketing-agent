@@ -1,5 +1,6 @@
 import cron, { ScheduledTask } from 'node-cron';
 import { logger } from '../lib/logger.js';
+import { env } from '../config/env.js';
 import { startIngestJob, stopIngestJob } from './ingest.job.js';
 import { startExtractionJob, stopExtractionJob } from './extraction.job.js';
 import { startFilteringJob, stopFilteringJob } from './filtering.job.js';
@@ -8,10 +9,12 @@ import { startAIStageBJob, stopAIStageBJob } from './ai-stage-b.job.js';
 import { runDailyContentGenerationJob } from './marketing/daily-content-generation.job.js';
 import { runPublishSchedulerJob } from './marketing/publish-scheduler.job.js';
 import { runTrendMatchingJob } from './trend-matching.job.js';
+import { runDiscoveryJob } from './source-discovery.job.js';
 
 let dailyContentTask: ScheduledTask | null = null;
 let publishSchedulerTask: ScheduledTask | null = null;
 let trendMatchingTask: ScheduledTask | null = null;
+let sourceDiscoveryTask: ScheduledTask | null = null;
 
 export function startBackgroundJobs(): void {
     logger.info('Starting background jobs...');
@@ -48,6 +51,17 @@ export function startBackgroundJobs(): void {
         });
         logger.info('[Content-Intelligence] trend-matching.job scheduled: 0 * * * *');
     }
+
+    if (env.TAVILY_API_KEY) {
+        if (!sourceDiscoveryTask) {
+            sourceDiscoveryTask = cron.schedule('0 2 * * 1', () => {
+                runDiscoveryJob().catch(err => logger.error({ err }, 'Source discovery job failed'));
+            });
+            logger.info('[SourceDiscovery] source-discovery.job scheduled: 0 2 * * 1');
+        }
+    } else {
+        logger.warn('[SourceDiscovery] TAVILY_API_KEY not configured — source-discovery.job not scheduled');
+    }
 }
 
 export function stopBackgroundJobs(): void {
@@ -70,5 +84,10 @@ export function stopBackgroundJobs(): void {
     if (trendMatchingTask) {
         trendMatchingTask.stop();
         trendMatchingTask = null;
+    }
+
+    if (sourceDiscoveryTask) {
+        sourceDiscoveryTask.stop();
+        sourceDiscoveryTask = null;
     }
 }

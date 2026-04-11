@@ -696,3 +696,35 @@ model BrandTrendMatch {
   @@index([trendSignalId])
   @@map("brand_trend_matches")
 }
+
+// ============ AI SOURCE DISCOVERY MODELS ============
+
+enum PendingSourceStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model PendingSource {
+  id                    Int                  @id @default(autoincrement())
+  feedUrl               String
+  siteUrl               String?
+  suggestedName         String?
+  trustScore            Int
+  topicTags             String[]             @default([])
+  suggestedDenyKeywords String[]             @default([])
+  qualityReason         String?
+  feedType              String?
+  status                PendingSourceStatus  @default(PENDING)
+  rejectionReason       String?
+  discoveredAt          DateTime             @default(now())
+  sourceSearchQuery     String?
+  promptTokens          Int?
+  completionTokens      Int?
+
+  @@unique([feedUrl, status])
+  @@index([status])
+  @@index([trustScore])
+  @@index([discoveredAt])
+  @@map("pending_sources")
+}

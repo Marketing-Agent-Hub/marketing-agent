@@ -8,6 +8,7 @@ import itemRoutes from '../../domains/content-intelligence/item.routes.js';
 import sourceRoutes from '../../domains/content-intelligence/source.routes.js';
 import { requireInternalAuth } from '../../middleware/internal-auth.js';
 import { requireBrandAccess } from '../../middleware/brand-access.js';
+import sourceDiscoveryRoutes from '../../domains/source-discovery/source-discovery.routes.js';
 
 const router = Router();
 
@@ -19,6 +20,7 @@ router.use('/auth', internalAuthRoutes);
 router.use('/admin', adminRoutes);
 router.use('/monitor', monitorRoutes);
 router.use('/sources', sourceRoutes);
+router.use('/source-discovery', sourceDiscoveryRoutes);
 router.use('/items', itemRoutes);
 
 router.post('/content-intelligence/jobs/ingest/run', requireInternalAuth, asyncHandler((req, res, next) =>

@@ -17,6 +17,10 @@ export const envSchema = z.object({
 
   // HTTP Client
   USER_AGENT: z.string().default('NewsAggregatorBot/1.0'),
+
+  // AI Source Discovery
+  TAVILY_API_KEY: z.string().optional(),
+  DISCOVERY_MODEL: z.string().default('gpt-4o-mini'),
 });
 
 export type Env = z.infer<typeof envSchema>;
