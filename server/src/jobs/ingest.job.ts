@@ -1,5 +1,5 @@
 import cron, { ScheduledTask } from 'node-cron';
-import { ingestAllSources } from '../domains/content-intelligence/ingest.service.js';
+import { ingestAllSources, ingestAllBrandSources } from '../domains/content-intelligence/ingest.service.js';
 import { withJobMonitoring } from '../lib/job-monitoring.js';
 import { logger } from '../lib/logger.js';
 
@@ -21,7 +21,11 @@ export function startIngestJob() {
     ingestJobTask = cron.schedule('*/15 * * * *', async () => {
         try {
             await withJobMonitoring('IngestJob', async () => {
+                // TODO: Migration path - once all sources are migrated to BrandSource,
+                // replace ingestAllSources() with ingestAllBrandSources() exclusively.
+                // For now, run both to support legacy sources and multi-tenant sources.
                 await ingestAllSources();
+                await ingestAllBrandSources();
             });
         } catch (error) {
             // Error already logged by withJobMonitoring
@@ -52,6 +56,20 @@ export async function triggerImmediateIngest() {
         console.log('[IngestJob] Manual ingestion completed successfully');
     } catch (error) {
         console.error('[IngestJob] Error during manual ingestion:', error);
+        throw error;
+    }
+}
+
+/**
+ * Trigger immediate multi-tenant brand ingestion (manual trigger)
+ */
+export async function triggerImmediateBrandIngestion() {
+    console.log('[IngestJob] Manual trigger - starting immediate brand ingestion...');
+    try {
+        await ingestAllBrandSources();
+        console.log('[IngestJob] Manual brand ingestion completed successfully');
+    } catch (error) {
+        console.error('[IngestJob] Error during manual brand ingestion:', error);
         throw error;
     }
 }

@@ -8,6 +8,8 @@ import { productContentRouter, productBrandContentRouter } from '../../domains/c
 import { productPublishingRouter, productBrandPublishingRouter } from '../../domains/publishing/publishing.routes.js';
 import { productSocialAccountRouter, productBrandSocialAccountRouter } from '../../domains/social-account/social-account.routes.js';
 import { productBrandTrendRouter } from '../../domains/content-intelligence/content-intelligence.routes.js';
+import brandSourceRoutes from '../../domains/content-intelligence/brand-source.routes.js';
+import filterProfileRoutes from '../../domains/content-intelligence/filter-profile.routes.js';
 
 const router = Router();
 
@@ -25,6 +27,8 @@ router.use('/strategies', productStrategyRouter);
 router.use('/brands/:brandId/content', productBrandContentRouter);
 router.use('/brands/:brandId/briefs', productBrandContentRouter);
 router.use('/brands/:brandId/review-queue', productBrandContentRouter);
+router.use('/brands/:brandId/sources', brandSourceRoutes);
+router.use('/brands/:brandId/filter-profile', filterProfileRoutes);
 router.use('/brands/:brandId', productBrandPublishingRouter);
 router.use('/brands/:brandId', productBrandSocialAccountRouter);
 router.use('/brands/:brandId', productBrandTrendRouter);

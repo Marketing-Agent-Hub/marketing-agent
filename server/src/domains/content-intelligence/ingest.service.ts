@@ -143,3 +143,129 @@ export async function ingestAllSources(): Promise<void> {
 
     logger.info('[Ingest] Completed ingestion for all sources');
 }
+
+// ============ MULTI-TENANT FUNCTIONS ============
+
+export function getEffectiveInterval(brandSourceInterval: number | null, sourceInterval: number): number {
+    return brandSourceInterval !== null ? brandSourceInterval : sourceInterval;
+}
+
+export async function ingestAllBrandSources(): Promise<void> {
+    const brandSources = await prisma.brandSource.findMany({
+        where: { enabled: true },
+        include: {
+            source: {
+                select: {
+                    id: true,
+                    name: true,
+                    type: true,
+                    config: true,
+                    rssUrl: true,
+                    fetchIntervalMinutes: true,
+                    lastFetchedAt: true,
+                },
+            },
+        },
+    });
+
+    logger.info(`[Ingest] Starting multi-tenant ingestion for ${brandSources.length} brand sources`);
+
+    const now = Date.now();
+    const due = brandSources.filter(bs => {
+        if (!bs.lastFetchedAt) return true;
+        const effectiveInterval = getEffectiveInterval(bs.fetchIntervalMinutes, bs.source.fetchIntervalMinutes);
+        return now - bs.lastFetchedAt.getTime() >= effectiveInterval * 60 * 1000;
+    });
+
+    const CONCURRENCY = 5;
+    for (let i = 0; i < due.length; i += CONCURRENCY) {
+        const batch = due.slice(i, i + CONCURRENCY);
+        await Promise.allSettled(batch.map(bs => ingestBrandSource(bs)));
+    }
+
+    logger.info('[Ingest] Completed multi-tenant ingestion for all brand sources');
+}
+
+export async function ingestBrandSource(brandSource: {
+    id: number;
+    brandId: number;
+    sourceId: number;
+    source: {
+        id: number;
+        name: string;
+        type: any;
+        config: any;
+        rssUrl: string | null;
+        fetchIntervalMinutes: number;
+    };
+}): Promise<IngestResult> {
+    try {
+        const plugin = getPlugin(brandSource.source.type);
+
+        logger.info(`[Ingest] Fetching brand source: ${brandSource.source.name} (brandId: ${brandSource.brandId})`);
+        const raw = await plugin.fetch(brandSource.source as any);
+        const items = await plugin.parse(raw, brandSource.source as any);
+        logger.info(`[Ingest] Parsed ${items.length} items from ${brandSource.source.name} for brand ${brandSource.brandId}`);
+
+        const result = await saveBrandItems(items, brandSource.brandId);
+        logger.info(`[Ingest] Saved ${result.created} new, ${result.existing} duplicates for brand ${brandSource.brandId}`);
+
+        await prisma.brandSource.update({
+            where: { id: brandSource.id },
+            data: {
+                lastFetchedAt: new Date(),
+                lastFetchStatus: 'SUCCESS',
+            },
+        });
+
+        return { success: true, itemsCreated: result.created, itemsExisting: result.existing };
+    } catch (error: any) {
+        logger.error(`[Ingest] Error ingesting brand source ${brandSource.source.name} for brand ${brandSource.brandId}: ${error.message}`);
+
+        await prisma.brandSource.update({
+            where: { id: brandSource.id },
+            data: {
+                lastFetchStatus: `ERROR: ${error.message}`,
+            },
+        });
+
+        return { success: false, itemsCreated: 0, itemsExisting: 0, error: error.message };
+    }
+}
+
+export async function saveBrandItems(items: NormalizedItem[], brandId: number): Promise<{ created: number; existing: number }> {
+    let created = 0;
+    let existing = 0;
+
+    for (const item of items) {
+        try {
+            await prisma.item.create({
+                data: {
+                    brandId,
+                    sourceId: item.sourceId,
+                    guid: item.guid,
+                    title: item.title,
+                    link: item.link,
+                    snippet: item.snippet,
+                    contentHash: item.contentHash,
+                    publishedAt: item.publishedAt,
+                    status: ItemStatus.NEW,
+                },
+            });
+            created++;
+        } catch (error: any) {
+            if (error.code === 'P2002') {
+                existing++;
+            } else {
+                await logProcessingError(
+                    'Ingest',
+                    `Error saving brand item: ${item.title}`,
+                    error,
+                    { brandId, sourceId: item.sourceId, link: item.link }
+                );
+            }
+        }
+    }
+
+    return { created, existing };
+}

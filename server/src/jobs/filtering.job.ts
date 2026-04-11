@@ -1,7 +1,8 @@
 import cron, { ScheduledTask } from 'node-cron';
-import { filterExtractedItems } from '../domains/content-intelligence/filtering.service.js';
+import { filterExtractedItems, filterExtractedItemsForBrand } from '../domains/content-intelligence/filtering.service.js';
 import { withJobMonitoring } from '../lib/job-monitoring.js';
 import { logger } from '../lib/logger.js';
+import { prisma } from '../db/index.js';
 
 let filteringJobTask: ScheduledTask | null = null;
 
@@ -21,7 +22,7 @@ export function startFilteringJob() {
     filteringJobTask = cron.schedule('*/3 * * * *', async () => {
         try {
             await withJobMonitoring('FilteringJob', async () => {
-                await filterExtractedItems(20); // Process 20 items per batch
+                await runFilteringForAllBrands();
             });
         } catch (error) {
             // Error already logged
@@ -49,5 +50,27 @@ export async function triggerImmediateFiltering(limit = 20) {
     return await withJobMonitoring('FilteringJob-Manual', async () => {
         return await filterExtractedItems(limit);
     });
+}
+
+/**
+ * Run filtering for all brands that have EXTRACTED items
+ */
+export async function runFilteringForAllBrands(): Promise<void> {
+    logger.info('[FilteringJob] Starting multi-tenant filtering for all brands');
+
+    const brandRows = await prisma.item.findMany({
+        where: { status: 'EXTRACTED' },
+        select: { brandId: true },
+        distinct: ['brandId'],
+    });
+
+    const brandIds = brandRows.map(r => r.brandId).filter((id): id is number => id !== null);
+    logger.info(`[FilteringJob] Found ${brandIds.length} brands with EXTRACTED items`);
+
+    for (const brandId of brandIds) {
+        await filterExtractedItemsForBrand(brandId, 20);
+    }
+
+    logger.info('[FilteringJob] Completed multi-tenant filtering for all brands');
 }
 

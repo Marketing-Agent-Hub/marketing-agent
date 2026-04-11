@@ -1,5 +1,7 @@
 import { prisma } from '../../db/index.js';
 import { ItemStatus } from '@prisma/client';
+import { runFilterEngine, ArticleInput, FilterProfileInput } from './filter-engine.js';
+import { openai } from '../../config/ai.config.js';
 
 // Global deny keywords (English) - from SRS requirements
 const DENY_KEYWORDS_EN = [
@@ -181,6 +183,83 @@ export async function filterItem(itemId: number): Promise<{
         console.error(`[Filter] Error filtering item ${itemId}:`, error);
         return { allowed: false, reason: error.message };
     }
+}
+
+/**
+ * Creates an embed function using OpenAI text-embedding-3-small
+ */
+async function createEmbedFn(): Promise<(text: string) => Promise<number[]>> {
+    return async (text: string) => {
+        const response = await openai.embeddings.create({
+            model: 'text-embedding-3-small',
+            input: text,
+        });
+        return response.data[0].embedding;
+    };
+}
+
+/**
+ * Filter EXTRACTED items for a specific brand using its FilterProfile
+ */
+export async function filterExtractedItemsForBrand(
+    brandId: number,
+    limit = 20,
+): Promise<{ passed: number; rejected: number }> {
+    const items = await prisma.item.findMany({
+        where: { status: ItemStatus.EXTRACTED, brandId },
+        take: limit,
+        select: { id: true, title: true },
+    });
+
+    console.log(`[Filter] Processing ${items.length} extracted items for brand ${brandId}`);
+
+    const dbProfile = await prisma.filterProfile.findUnique({ where: { brandId } });
+
+    const filterProfileInput: FilterProfileInput = dbProfile
+        ? {
+            mode: dbProfile.mode as 'PASS_THROUGH' | 'AI_EMBEDDING',
+            vectorProfile: dbProfile.vectorProfile as number[] | null,
+            similarityThreshold: dbProfile.similarityThreshold,
+        }
+        : { mode: 'PASS_THROUGH', vectorProfile: null, similarityThreshold: 0.7 };
+
+    const embedFn = await createEmbedFn();
+
+    let passed = 0;
+    let rejected = 0;
+
+    for (const item of items) {
+        const article = await prisma.article.findUnique({ where: { itemId: item.id } });
+
+        const articleInput: ArticleInput = {
+            title: item.title,
+            extractedContent: article?.extractedContent ?? '',
+        };
+
+        const result = await runFilterEngine(articleInput, filterProfileInput, embedFn);
+
+        if (result.reason === 'embedding_error') {
+            console.warn(`[Filter] Embedding error for item ${item.id}, advancing to READY_FOR_AI`);
+        }
+
+        if (result.allowed) {
+            await prisma.item.update({
+                where: { id: item.id },
+                data: { status: ItemStatus.READY_FOR_AI, filterReason: null },
+            });
+            passed++;
+        } else {
+            await prisma.item.update({
+                where: { id: item.id },
+                data: { status: ItemStatus.FILTERED_OUT, filterReason: result.reason },
+            });
+            rejected++;
+        }
+    }
+
+    console.log(`[Filter] Brand ${brandId} batch complete: ${passed} passed, ${rejected} rejected`);
+
+    return { passed, rejected };
 }
 
 /**

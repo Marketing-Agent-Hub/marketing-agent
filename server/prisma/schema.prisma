@@ -39,6 +39,11 @@ enum SourceType {
   CUSTOM_API
 }
 
+enum FilterMode {
+  PASS_THROUGH
+  AI_EMBEDDING
+}
+
 model Source {
   id                     Int               @id @default(autoincrement())
   name                   String
@@ -62,6 +67,7 @@ model Source {
   updatedAt              DateTime          @updatedAt
 
   items                  Item[]
+  brandSources           BrandSource[]
 
   @@index([enabled])
   @@index([trustScore])
@@ -74,6 +80,8 @@ model Source {
 
 model Item {
   id                     Int               @id @default(autoincrement())
+  brandId                Int
+  brand                  Brand             @relation(fields: [brandId], references: [id], onDelete: Cascade)
   sourceId               Int
   source                 Source            @relation(fields: [sourceId], references: [id], onDelete: Cascade)
   
@@ -81,7 +89,7 @@ model Item {
   title                  String
   link                   String
   snippet                String?
-  contentHash            String            @unique
+  contentHash            String
   publishedAt            DateTime?
   
   status                 ItemStatus        @default(NEW)
@@ -93,9 +101,10 @@ model Item {
   article                Article?
   aiResults              AiResult[]
 
-  @@unique([sourceId, link])
+  @@unique([brandId, sourceId, link])
   @@index([status])
   @@index([sourceId])
+  @@index([brandId])
   @@index([publishedAt])
   @@index([contentHash])
   @@map("items")
@@ -376,6 +385,9 @@ model Brand {
   socialAccounts  SocialAccount[]
   briefs          ContentBrief[]
   trendMatches    BrandTrendMatch[]
+  brandSources    BrandSource[]
+  filterProfile   FilterProfile?
+  items           Item[]
 
   @@index([workspaceId, status])
   @@map("brands")
@@ -396,6 +408,42 @@ model BrandProfile {
   brand           Brand    @relation(fields: [brandId], references: [id], onDelete: Cascade)
 
   @@map("brand_profiles")
+}
+
+model BrandSource {
+  id                   Int       @id @default(autoincrement())
+  brandId              Int
+  sourceId             Int
+  fetchIntervalMinutes Int?
+  enabled              Boolean   @default(true)
+  lastFetchedAt        DateTime?
+  lastFetchStatus      String?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  brand   Brand  @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  source  Source @relation(fields: [sourceId], references: [id])
+
+  @@unique([brandId, sourceId])
+  @@index([enabled])
+  @@index([brandId])
+  @@map("brand_sources")
+}
+
+model FilterProfile {
+  id                  Int        @id @default(autoincrement())
+  brandId             Int        @unique
+  mode                FilterMode @default(PASS_THROUGH)
+  topicTags           String[]   @default([])
+  description         String?
+  similarityThreshold Float      @default(0.7)
+  vectorProfile       Json?
+  createdAt           DateTime   @default(now())
+  updatedAt           DateTime   @updatedAt
+
+  brand Brand @relation(fields: [brandId], references: [id], onDelete: Cascade)
+
+  @@map("filter_profiles")
 }
 
 model BrandKnowledgeDocument {

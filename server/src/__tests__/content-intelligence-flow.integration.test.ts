@@ -238,30 +238,29 @@ describe('Unified content intelligence flow', () => {
     it('runs ingest -> trend signal -> content generation with trend context', async () => {
         vi.mocked(openai.chat.completions.create)
             .mockResolvedValueOnce({
-                choices: [{ message: { content: JSON.stringify({
-                    isAllowed: true,
-                    topicTags: ['ai', 'crm', 'sales'],
-                    importanceScore: 88,
-                    oneLineSummary: 'AI CRM copilots are becoming a major sales trend',
-                }) } }],
+                choices: [{
+                    message: {
+                        content: JSON.stringify({
+                            title: 'Trend Brief',
+                            objective: 'Build awareness',
+                            keyAngle: 'AI CRM momentum',
+                            callToAction: 'Learn more',
+                        })
+                    }
+                }],
                 usage: { prompt_tokens: 10, completion_tokens: 20 },
             } as any)
             .mockResolvedValueOnce({
-                choices: [{ message: { content: JSON.stringify({
-                    title: 'Trend Brief',
-                    objective: 'Build awareness',
-                    keyAngle: 'AI CRM momentum',
-                    callToAction: 'Learn more',
-                }) } }],
-                usage: { prompt_tokens: 10, completion_tokens: 20 },
-            } as any)
-            .mockResolvedValueOnce({
-                choices: [{ message: { content: JSON.stringify({
-                    hook: 'AI CRM is accelerating',
-                    body: 'Sales teams are adopting copilots faster than expected.',
-                    cta: 'See what this means',
-                    hashtags: ['#AI', '#CRM'],
-                }) } }],
+                choices: [{
+                    message: {
+                        content: JSON.stringify({
+                            hook: 'AI CRM is accelerating',
+                            body: 'Sales teams are adopting copilots faster than expected.',
+                            cta: 'See what this means',
+                            hashtags: ['#AI', '#CRM'],
+                        })
+                    }
+                }],
                 usage: { prompt_tokens: 10, completion_tokens: 20 },
             } as any);
 
