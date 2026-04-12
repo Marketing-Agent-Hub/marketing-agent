@@ -1,219 +1,144 @@
 # Architecture
 
-## Style
+## Architecture Style
 
-**Layered Service-Oriented Architecture** with background job processing and scheduled task execution.
+**Modular Monolith** with Domain-Driven Design (DDD) organization.
 
-## Layers
+All code runs in a single Node.js process. Logic is organized by business domain into `src/domains/`, each domain having its own routes, controller, and service. There are no microservices or network calls between internal components — only direct function imports.
 
-```
-┌─────────────────────────────────────────────┐
-│  Entry Point (index.ts)                     │
-│  Express App + OpenTelemetry Init           │
-└─────────────────────────────────────────────┘
-               ↓
-┌─────────────────────────────────────────────┐
-│  Middleware Layer                           │
-│  - CORS, Body Parsing                       │
-│  - Request Monitoring                       │
-│  - JWT Authentication (requireAuth)         │
-│  - Error Handler (must be last)             │
-└─────────────────────────────────────────────┘
-               ↓
-┌─────────────────────────────────────────────┐
-│  Routes Layer                               │
-│  - auth.routes.ts                           │
-│  - source.routes.ts                         │
-│  - item.routes.ts                           │
-│  - admin.routes.ts                          │
-│  - monitor.routes.ts                        │
-│  - settings.routes.ts                       │
-└─────────────────────────────────────────────┘
-               ↓
-┌─────────────────────────────────────────────┐
-│  Controllers Layer                          │
-│  - Request parsing (Zod schemas)            │
-│  - Response formatting                      │
-│  - Error passing to middleware              │
-└─────────────────────────────────────────────┘
-               ↓
-┌─────────────────────────────────────────────┐
-│  Services Layer (Business Logic)            │
-│  - ingest.service.ts                        │
-│  - extraction.service.ts                    │
-│  - filtering.service.ts                     │
-│  - ai-stage-a.service.ts                    │
-│  - ai-stage-b.service.ts                    │
-│  - source.service.ts                        │
-│  - auth.service.ts                          │
-│  - health.service.ts                        │
-│  - log/metric/trace services                │
-└─────────────────────────────────────────────┘
-               ↓
-┌─────────────────────────────────────────────┐
-│  Data Layer                                 │
-│  - Prisma Client (from db/index.ts)         │
-│  - PostgreSQL Database                      │
-└─────────────────────────────────────────────┘
-```
+**Why this is the right choice here:**
+- The team is small; microservices would add operational overhead without benefit
+- All domains share a single PostgreSQL database and Prisma client
+- Background jobs and API handlers run in the same process, making coordination simple
+- The codebase is still growing; a monolith is easier to refactor as boundaries clarify
 
-## Parallel Processing: Background Jobs
+---
+
+## Component Diagram
 
 ```
-┌─────────────────────────────────────────────┐
-│  Job Schedulers (node-cron)                 │
-│  - ingest.job.ts (*/15 * * * *)             │
-│  - extraction.job.ts (*/5 * * * *)          │
-│  - filtering.job.ts (*/10 * * * *)          │
-│  - ai-stage-a.job.ts (*/10 * * * *)         │
-│  - ai-stage-b.job.ts (*/15 * * * *)         │
-│  - monitoring-cleanup.job.ts (0 2 * * *)    │
-└─────────────────────────────────────────────┘
-               ↓
-┌─────────────────────────────────────────────┐
-│  Job Monitoring Wrapper                     │
-│  - withJobMonitoring() function             │
-│  - Automatic logging, metrics, tracing      │
-│  - Error capture and reporting              │
-└─────────────────────────────────────────────┘
-               ↓
-┌─────────────────────────────────────────────┐
-│  Service Functions                          │
-│  - ingestAllSources()                       │
-│  - extractFullContent()                     │
-│  - processFiltering()                       │
-│  - processAIStageA()                        │
-│  - processAIStageB()                        │
-└─────────────────────────────────────────────┘
+                         ┌─────────────────────────────┐
+                         │       Client / Frontend      │
+                         └─────────────┬───────────────┘
+                                       │ HTTP
+                         ┌─────────────▼───────────────┐
+                         │     Express HTTP Server      │
+                         │   - CORS (configured origin) │
+                         │   - JSON body parser         │
+                         │   - Request monitoring mdw   │
+                         │   - Error handler mdw        │
+                         └──────┬──────────────┬────────┘
+                                │              │
+              ┌─────────────────▼──┐    ┌──────▼──────────────────┐
+              │  Product Router    │    │  Internal Router         │
+              │  /api/*            │    │  /api/internal/*         │
+              │  (JWT user auth)   │    │  (JWT admin auth)        │
+              └────────┬───────────┘    └──────┬───────────────────┘
+                       │                       │
+       ┌───────────────┼───────────────────────┼────────────────┐
+       │               │       Domain Layer     │                │
+       │               │                       │                │
+       ▼               ▼                       ▼                ▼
+  ┌─────────┐   ┌────────────┐   ┌──────────────────┐   ┌────────────┐
+  │  Auth   │   │ Workspace/ │   │Content Intelligence│  │  Monitor   │
+  │ Service │   │   Brand    │   │ Ingest/Extract     │  │  Service   │
+  └────┬────┘   └─────┬──────┘   │ Filter/AI-A/AI-B  │  └─────┬──────┘
+       │              │          └─────────┬──────────┘        │
+       │              │                   │                     │
+       └──────────────┴────────────────┬──┘─────────────────────┘
+                                       │
+                         ┌─────────────▼───────────────┐
+                         │      src/lib/ Utilities      │
+                         │  - AiClient (OpenRouter)     │
+                         │  - SettingService (DB cfg)   │
+                         │  - Logger (Pino)             │
+                         │  - Telemetry (OTel)          │
+                         │  - Plugin Registry (RSS/Web) │
+                         └─────────────┬───────────────┘
+                                       │
+                         ┌─────────────▼───────────────┐
+                         │         Prisma ORM           │
+                         └─────────────┬───────────────┘
+                                       │
+                         ┌─────────────▼───────────────┐
+                         │        PostgreSQL DB         │
+                         └─────────────────────────────┘
+              
+                         ┌─────────────────────────────┐
+                         │     Background Jobs          │
+                         │   (node-cron + function)     │
+                         │  Call same domain services   │
+                         └─────────────────────────────┘
+              
+              ┌────────────────────────────────────────┐
+              │       External Services                │
+              │  - OpenRouter API (AI inference)       │
+              │  - Tavily API (web search)             │
+              │  - Social Platforms (stub only)        │
+              │  - Prometheus (metrics scrape)         │
+              └────────────────────────────────────────┘
 ```
 
-## Request Flow (HTTP)
+---
 
-1. **HTTP Request** → Express app
-2. **CORS + Body Parsing** → Request object populated
-3. **Request Monitoring** → Log request start, generate trace ID
-4. **Authentication** → JWT verification (if route requires auth)
-5. **Route Handler** → asyncHandler wrapper catches errors
-6. **Controller** → Validate with Zod schemas
-7. **Service** → Business logic execution
-8. **Prisma Client** → Database query/mutation
-9. **Response** → JSON formatted response
-10. **Error Monitoring** → Log errors if any
-11. **Error Handler** → Format error response (if error occurred)
+## Tech Stack
 
-## Processing Flow (Background Jobs)
+| Technology | Role | Why Chosen |
+|---|---|---|
+| **Node.js + TypeScript** | Runtime & language | Strong async model for I/O-heavy workloads (feed fetching, AI calls). TypeScript adds type safety for a complex domain. |
+| **Express** | HTTP framework | Minimal, well-understood, easy to compose middleware. Not Fastify because the team was already familiar. |
+| **Prisma ORM** | Database access | Type-safe queries, migration tooling, excellent developer experience with PostgreSQL. |
+| **PostgreSQL** | Primary database | Relational integrity needed for the multi-tenant hierarchy (Workspace → Brand → Strategy → Slot → Brief → Draft). |
+| **OpenRouter** | AI inference gateway | Single API key to access multiple models (gpt-4o, gpt-4o-mini), easy model switching via DB settings. |
+| **node-cron** | Job scheduling | Lightweight, in-process cron. No need for a queue system at current scale. |
+| **Zod** | Validation | Used for both env schema validation (`config/env.ts`) and AI output validation to ensure structured JSON from LLMs. |
+| **Pino** | Logging | Structured JSON logging with minimal performance overhead. `pino-http` integrates with Express. |
+| **OpenTelemetry** | Observability | Vendor-neutral tracing and metrics. Prometheus exporter for metrics; traces stored in DB via `PerformanceTrace` model. |
+| **JSDOM + Readability** | Web scraping | Mozilla Readability (as used in Firefox Reader Mode) for reliable article extraction from complex HTML. |
+| **Tavily API** | Source discovery | AI-powered search API that returns structured web results, ideal for finding RSS feed URLs programmatically. |
 
-1. **Cron Trigger** → Job scheduler executes
-2. **Job Monitoring Wrapper** → Logs start, records metrics
-3. **Service Execution** → Process batch of items
-4. **Prisma Transactions** → Update item status, create related records
-5. **External API Calls** → OpenAI, RSS feeds, article URLs
-6. **Error Handling** → Log to monitoring system, continue processing
-7. **Job Completion** → Log duration, success/failure metrics
+---
 
-## Content Pipeline Flow
+## Dependency Relationships
 
 ```
-[Source (RSS / Web Scraper / YouTube / ...)]
-      ↓
-  IngestJob → Plugin.fetch() → Plugin.parse() → Create Item (status: NEW)
-      ↓
-  ExtractionJob → Fetch URL → Extract content → Create Article (status: EXTRACTED)
-      ↓
-  FilteringJob → Check keywords → Update status (FILTERED_OUT or READY_FOR_AI)
-      ↓
-  AIStageAJob → OpenAI categorization → Create AiResult (status: AI_STAGE_A_DONE)
-      ↓
-  AIStageBJob → OpenAI post generation → Update AiResult (status: AI_STAGE_B_DONE)
-      ↓
-  [Ready for consumption] (status: USED when consumed)
+src/index.ts
+└─► src/routes/                   (HTTP entry points)
+    ├─► src/domains/*/             (business logic)
+    │   ├─► src/lib/               (shared utilities)
+    │   │   ├─► AiClient           (OpenRouter)
+    │   │   ├─► SettingService     (DB-driven config)
+    │   │   ├─► Logger             (Pino)
+    │   │   └─► PluginRegistry     (RSS/Web parsers)
+    │   └─► src/db/index.ts        (Prisma client singleton)
+    └─► src/middleware/            (auth, monitoring, error)
+
+src/jobs/bootstrap.ts
+└─► src/jobs/*.job.ts              (scheduler wrappers)
+    └─► src/domains/               (same domain services)
+
+src/shared/marketing/
+└─► Schemas, AIWorkflow helper, Connector interface
+    (used by: content, strategy, publishing domains)
 ```
 
-## Module Boundaries
+**Key Rule:** Domains do NOT import from each other's `*.routes.ts` or `*.controller.ts`. Controllers only import their own service. Services may import from `src/lib/` and `src/db/`. Cross-domain imports happen at the service level only (e.g., `content.service` imports from `trend-signal.service`).
 
-### Controllers
-- **Responsibility**: HTTP layer, request/response handling
-- **Depends On**: Services, Schemas (Zod)
-- **Rules**: No direct database access, no business logic
+---
 
-### Services
-- **Responsibility**: Core business logic
-- **Depends On**: Prisma Client, External APIs, Lib utilities
-- **Rules**: No HTTP concerns (req/res objects), service-to-service calls allowed
-
-### Jobs
-- **Responsibility**: Scheduled task orchestration
-- **Depends On**: Services, Job monitoring wrapper
-- **Rules**: Thin wrappers around service functions
-
-### Middleware
-- **Responsibility**: Cross-cutting concerns (auth, logging, errors)
-- **Depends On**: Lib utilities, Types
-- **Rules**: Must call next() or send response
-
-### Lib
-- **Responsibility**: Reusable utilities and plugin implementations
-- **Depends On**: Nothing (leaf nodes)
-- **Rules**: Pure functions or standalone utilities; plugins live in `src/lib/plugins/`
-
-## Dependency Direction
+## Layered Architecture (within each domain)
 
 ```
-Controllers → Services → Prisma Client
-     ↓            ↓
-  Schemas      Lib Utilities
-     ↓
-  Types
+routes.ts        ← Defines HTTP paths and applies middleware
+    │
+    ▼
+controller.ts    ← Handles req/res, calls service, formats responses
+    │
+    ▼
+service.ts       ← All business logic; no HTTP concerns
+    │
+    ▼
+db/prisma        ← Data access only
 ```
 
-**Rule**: Dependencies flow downward/inward. Lower layers never import from upper layers.
-
-## Configuration Management
-
-- **Environment Variables** (env.ts) → Validated with Zod at startup
-- **Database Settings** (Setting model) → Runtime configuration loaded from DB
-- **Monitor Config** (monitor.config.ts) → Static configuration object
-
-## Observability Architecture
-
-### Three Data Stores
-1. **Prometheus** (pull-based) - Metrics exposed on /metrics endpoint
-2. **Pino Logs** (push-based) - Written to files and console
-3. **Database** (push-based) - SystemLog, SystemMetric, HealthCheck, PerformanceTrace tables
-
-### Instrumentation Points
-- **HTTP Requests** → Request monitoring middleware
-- **Background Jobs** → withJobMonitoring wrapper
-- **Service Operations** → withSpan for distributed tracing
-- **Health Checks** → Periodic checks stored in database
-
-## Error Handling Architecture
-
-```
-Error Thrown
-    ↓
-asyncHandler catches Promise rejection
-    ↓
-Passes to Express error middleware (next(error))
-    ↓
-errorHandler middleware
-    ↓
-- ZodError → 400 VALIDATION_ERROR
-- Custom statusCode → Use provided code
-- Unknown → 500 INTERNAL
-    ↓
-JSON error response sent to client
-```
-
-## State Machine (Item Status)
-
-```
-NEW → EXTRACTED → READY_FOR_AI → AI_STAGE_A_DONE → AI_STAGE_B_DONE → USED
-  ↘                    ↓
-     FILTERED_OUT  (terminal state)
-```
-
-**Rules**:
-- Status transitions are unidirectional
-- Each job processes items in specific status
-- Jobs update status atomically with business logic
+This strict layering keeps business logic testable and HTTP concerns isolated.
