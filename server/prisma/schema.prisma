@@ -327,12 +327,29 @@ model User {
   email        String            @unique
   name         String?
   passwordHash String?
+  googleId     String?           @unique
   createdAt    DateTime          @default(now())
   updatedAt    DateTime          @updatedAt
 
   memberships  WorkspaceMember[]
+  magicTokens  MagicLinkToken[]
 
   @@map("users")
+}
+
+model MagicLinkToken {
+  id        Int       @id @default(autoincrement())
+  tokenHash String    @unique
+  userId    Int
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("magic_link_tokens")
 }
 
 model Workspace {

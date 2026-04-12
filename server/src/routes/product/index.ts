@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import authRoutes from '../../domains/auth/auth.routes.js';
+import hybridAuthRoutes from '../../domains/auth/hybrid-auth.routes.js';
 import workspaceRoutes from '../../domains/workspace/workspace.routes.js';
 import { workspaceBrandRouter, directBrandRouter } from '../../domains/brand/brand.routes.js';
 import onboardingRoutes from '../../domains/onboarding/onboarding.routes.js';
@@ -19,6 +20,7 @@ router.get('/product-health', (_req, res) => {
 });
 
 router.use('/accounts', authRoutes);
+router.use('/accounts', hybridAuthRoutes);
 router.use('/workspaces', workspaceRoutes);
 router.use('/workspaces/:workspaceId/brands', workspaceBrandRouter);
 router.use('/brands', directBrandRouter);

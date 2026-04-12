@@ -21,6 +21,14 @@ export interface ProductJwtPayload {
 }
 
 export class AuthService {
+    issueToken(userId: number, email: string): string {
+        return jwt.sign(
+            { userId, email } satisfies ProductJwtPayload,
+            env.JWT_SECRET,
+            { expiresIn: '7d' }
+        );
+    }
+
     async register(data: RegisterInput): Promise<AuthResult> {
         const existing = await prisma.user.findUnique({ where: { email: data.email } });
         if (existing) {
@@ -39,19 +47,21 @@ export class AuthService {
             },
         });
 
-        const token = jwt.sign(
-            { userId: user.id, email: user.email } satisfies ProductJwtPayload,
-            env.JWT_SECRET,
-            { expiresIn: '7d' }
-        );
-
+        const token = this.issueToken(user.id, user.email);
         return { token, user: { id: user.id, email: user.email, name: user.name } };
     }
 
     async login(data: LoginInput): Promise<AuthResult> {
         const user = await prisma.user.findUnique({ where: { email: data.email } });
-        if (!user || !user.passwordHash) {
+        if (!user) {
             const error = new Error('Email hoặc mật khẩu không đúng') as any;
+            error.statusCode = 401;
+            error.code = 'UNAUTHORIZED';
+            throw error;
+        }
+
+        if (user.passwordHash === null) {
+            const error = new Error('Tài khoản này không có mật khẩu. Vui lòng đăng nhập bằng Google hoặc Magic Link.') as any;
             error.statusCode = 401;
             error.code = 'UNAUTHORIZED';
             throw error;
@@ -65,12 +75,7 @@ export class AuthService {
             throw error;
         }
 
-        const token = jwt.sign(
-            { userId: user.id, email: user.email } satisfies ProductJwtPayload,
-            env.JWT_SECRET,
-            { expiresIn: '7d' }
-        );
-
+        const token = this.issueToken(user.id, user.email);
         return { token, user: { id: user.id, email: user.email, name: user.name } };
     }
 

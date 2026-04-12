@@ -107,6 +107,25 @@ describe('AuthService', () => {
                 service.login({ email: 'notfound@example.com', password: 'password123' })
             ).rejects.toMatchObject({ statusCode: 401 });
         });
+
+        it('throws 401 with hint message when user has no password (Google/magic link account)', async () => {
+            vi.mocked(prisma.user.findUnique).mockResolvedValue({
+                id: 2,
+                email: 'google@example.com',
+                name: 'Google User',
+                passwordHash: null,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            } as any);
+
+            await expect(
+                service.login({ email: 'google@example.com', password: 'anypassword' })
+            ).rejects.toMatchObject({
+                statusCode: 401,
+                code: 'UNAUTHORIZED',
+                message: 'Tài khoản này không có mật khẩu. Vui lòng đăng nhập bằng Google hoặc Magic Link.',
+            });
+        });
     });
 
     describe('verifyToken', () => {
