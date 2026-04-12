@@ -79,7 +79,7 @@ vi.mock('../db/index.js', () => ({
                             .filter(ai => ai.itemId === item.id && (!include.aiResults?.where?.stage || ai.stage === include.aiResults.where.stage))
                             .slice(0, include.aiResults?.take ?? aiResults.length),
                     }));
-                } else if (where?.status === 'READY_FOR_AI' || where?.status === 'AI_STAGE_A_DONE') {
+                } else if (where?.status === 'READY_FOR_AI' || where?.status === 'CURATOR_DONE') {
                     result = result.map(item => ({ id: item.id }));
                 }
                 return typeof take === 'number' ? result.slice(0, take) : result;

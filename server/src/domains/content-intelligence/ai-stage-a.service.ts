@@ -272,7 +272,7 @@ export async function processStageA(itemId: number): Promise<{
         await prisma.item.update({
             where: { id: itemId },
             data: {
-                status: ItemStatus.AI_STAGE_A_DONE,
+                status: ItemStatus.CURATOR_DONE,
                 filterReason: result.isAllowed ? null : `AI rejected: ${result.reason}`,
             },
         });

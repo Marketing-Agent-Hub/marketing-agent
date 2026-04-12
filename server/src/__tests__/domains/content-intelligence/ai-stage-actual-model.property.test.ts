@@ -82,7 +82,7 @@ function makeStageBItem(itemId: number) {
         title: 'Test article title for stage B processing',
         snippet: 'A short snippet',
         publishedAt: new Date('2024-01-01'),
-        status: 'AI_STAGE_A_DONE',
+        status: 'CURATOR_DONE',
         contentHash: 'hash-def',
         source: { name: 'Test Source' },
         article: { truncatedContent: 'Full article content here for stage B processing.' },

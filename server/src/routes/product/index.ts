@@ -12,6 +12,7 @@ import { productBrandTrendRouter } from '../../domains/content-intelligence/cont
 import brandSourceRoutes from '../../domains/content-intelligence/brand-source.routes.js';
 import filterProfileRoutes from '../../domains/content-intelligence/filter-profile.routes.js';
 import jobScheduleRoutes from '../../domains/job-scheduling/job-schedule.routes.js';
+import pipelineRoutes from '../../domains/content/routes/pipeline.routes.js';
 
 const router = Router();
 
@@ -39,5 +40,6 @@ router.use('/brands/:brandId', productBrandTrendRouter);
 router.use('/', productContentRouter);
 router.use('/', productPublishingRouter);
 router.use('/', productSocialAccountRouter);
+router.use('/', pipelineRoutes);
 
 export default router;

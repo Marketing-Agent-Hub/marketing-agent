@@ -26,9 +26,28 @@ enum ItemStatus {
   EXTRACTED
   FILTERED_OUT
   READY_FOR_AI
-  AI_STAGE_A_DONE
-  AI_STAGE_B_DONE
+  CURATOR_DONE
+  WRITER_DONE
   USED
+}
+
+enum AgentType {
+  SOCIAL_POST
+  VIDEO
+  LONGFORM
+}
+
+enum AgentFormat {
+  FACEBOOK_POST
+  TIKTOK_SCRIPT
+  MEDIUM_ARTICLE
+}
+
+enum AgentDraftStatus {
+  PENDING
+  APPROVED
+  PUBLISHED
+  REJECTED
 }
 
 enum SourceType {
@@ -100,6 +119,7 @@ model Item {
 
   article                Article?
   aiResults              AiResult[]
+  contentScript          ContentScript?
 
   @@unique([brandId, sourceId, link])
   @@index([status])
@@ -406,6 +426,9 @@ model Brand {
   filterProfile   FilterProfile?
   jobSchedules    JobSchedule[]
   items           Item[]
+  contentScripts  ContentScript[]
+  agentDrafts     AgentDraft[]
+  agentConfig     ContentAgentConfig?
 
   @@index([workspaceId, status])
   @@map("brands")
@@ -810,4 +833,80 @@ model JobSchedule {
   @@index([enabled])
   @@index([jobType])
   @@map("job_schedules")
+}
+
+// ============ MULTI-AGENT CONTENT PIPELINE MODELS ============
+
+model ContentScript {
+  id           String   @id @default(uuid())
+  brandId      Int
+  brand        Brand    @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  itemId       Int      @unique
+  item         Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  headline     String
+  storyArc     String
+  keyPoints    Json
+  tone         String
+  callToAction String?
+  contentHash  String   @unique
+  aiModel      String
+  tokenUsage   Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  drafts       AgentDraft[]
+  @@index([brandId])
+  @@map("content_scripts")
+}
+
+model AgentDraft {
+  id           String           @id @default(uuid())
+  brandId      Int
+  brand        Brand            @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  scriptId     String
+  script       ContentScript    @relation(fields: [scriptId], references: [id], onDelete: Cascade)
+  agent        AgentType
+  format       AgentFormat
+  content      String           @db.Text
+  imageUrl     String?
+  status       AgentDraftStatus @default(PENDING)
+  reviewedAt   DateTime?
+  reviewedBy   String?
+  publishedAt  DateTime?
+  publishedUrl String?
+  aiModel      String
+  tokenUsage   Int
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  @@unique([scriptId, agent])
+  @@index([brandId, status])
+  @@index([scriptId])
+  @@map("agent_drafts")
+}
+
+model ContentAgentConfig {
+  id                        String   @id @default(uuid())
+  brandId                   Int      @unique
+  brand                     Brand    @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  enableSocialPostAgent     Boolean  @default(true)
+  enableVideoAgent          Boolean  @default(false)
+  enableLongformAgent       Boolean  @default(false)
+  curatorModel              String?
+  screenwriterModel         String?
+  socialPostModel           String?
+  videoModel                String?
+  longformModel             String?
+  socialPostMaxChars        Int      @default(500)
+  socialPostIncludeHashtags Boolean  @default(true)
+  socialPostIncludeEmoji    Boolean  @default(false)
+  videoScriptMinSeconds     Int      @default(15)
+  videoScriptMaxSeconds     Int      @default(60)
+  videoScriptIncludeCTA     Boolean  @default(true)
+  longformMinWords          Int      @default(1500)
+  longformIncludeImages     Boolean  @default(false)
+  enableImageForSocialPost  Boolean  @default(false)
+  enableImageForLongform    Boolean  @default(false)
+  imageModel                String   @default("openai/dall-e-3")
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
+  @@map("content_agent_configs")
 }

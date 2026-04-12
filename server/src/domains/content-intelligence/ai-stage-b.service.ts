@@ -302,8 +302,8 @@ export async function processStageB(itemId: number): Promise<{
             return { success: false, error: 'Item not found' };
         }
 
-        // Skip if not in AI_STAGE_A_DONE status
-        if (item.status !== ItemStatus.AI_STAGE_A_DONE) {
+        // Skip if not in CURATOR_DONE status (formerly AI_STAGE_A_DONE)
+        if (item.status !== ItemStatus.CURATOR_DONE) {
             console.log(`[AI Stage B] Item ${itemId} not ready (status: ${item.status})`);
             return { success: false, error: 'Item not ready for Stage B' };
         }
@@ -383,7 +383,7 @@ export async function processStageB(itemId: number): Promise<{
         // Update item status
         await prisma.item.update({
             where: { id: itemId },
-            data: { status: ItemStatus.AI_STAGE_B_DONE },
+            data: { status: ItemStatus.WRITER_DONE },
         });
 
         return { success: true };
@@ -402,7 +402,7 @@ export async function processStageBBatch(limitPerBatch = 3): Promise<{
 }> {
     const items = await prisma.item.findMany({
         where: {
-            status: ItemStatus.AI_STAGE_A_DONE,
+            status: ItemStatus.CURATOR_DONE,
             aiResults: {
                 some: {
                     stage: 'A',

@@ -65,7 +65,7 @@ export class ItemService {
     }) {
         const { limit, offset, sortBy, sourceId, topicTag, fromDate, toDate } = params;
         const where: any = {
-            status: 'AI_STAGE_B_DONE',
+            status: 'WRITER_DONE',
             ...(sourceId && { sourceId }),
         };
 
@@ -185,7 +185,7 @@ export class ItemService {
     async deleteAllItems() {
         return db.item.deleteMany({
             where: {
-                status: { not: 'AI_STAGE_B_DONE' },
+                status: { not: 'WRITER_DONE' },
             },
         });
     }
@@ -193,7 +193,7 @@ export class ItemService {
     async deleteAllReadyItems() {
         return db.item.deleteMany({
             where: {
-                status: 'AI_STAGE_B_DONE',
+                status: 'WRITER_DONE',
             },
         });
     }

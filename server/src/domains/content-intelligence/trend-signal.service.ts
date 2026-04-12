@@ -6,7 +6,7 @@ export class TrendSignalService {
         const prismaDynamic = prisma as any;
         const items = await prisma.item.findMany({
             where: {
-                status: { in: [ItemStatus.AI_STAGE_A_DONE, ItemStatus.AI_STAGE_B_DONE] },
+                status: { in: [ItemStatus.CURATOR_DONE, ItemStatus.WRITER_DONE] },
                 aiResults: {
                     some: {
                         stage: 'A',
