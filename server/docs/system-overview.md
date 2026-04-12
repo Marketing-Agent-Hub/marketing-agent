@@ -43,9 +43,9 @@ It handles all of this autonomously, using AI at each step, while preserving hum
 │  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────────┐  │
 │  │   Auth   │  │ Workspace│  │  Brand   │  │  Onboarding  │  │
 │  └──────────┘  └──────────┘  └──────────┘  └──────────────┘  │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────────┐  │
-│  │ Strategy │  │ Content  │  │Publishing│  │Social Account│  │
-│  └──────────┘  └──────────┘  └──────────┘  └──────────────┘  │
+│  ┌──────────┐  ┌────────────────────────┐  ┌──────────────┐  │
+│  │ Strategy │  │ Content Pipeline (Agents) │  │Social Account│  │
+│  └──────────┘  └────────────────────────┘  └──────────────┘  │
 │  ┌─────────────────────────┐  ┌──────────┐  ┌──────────────┐  │
 │  │  Content Intelligence   │  │  Source  │  │  Monitoring  │  │
 │  │ (Ingest/Extract/AI/Flt) │  │Discovery │  │   / Health   │  │
@@ -54,8 +54,8 @@ It handles all of this autonomously, using AI at each step, while preserving hum
                      │
                      ▼
           ┌─────────────────────┐
-          │  Background Jobs    │   (node-cron)
-          │  source: src/jobs/  │
+          │ Tenant Job Scheduler│   (Multi-tenant cron)
+          │ source: src/jobs/   │
           └──────────┬──────────┘
                      │
                      ▼
@@ -91,27 +91,35 @@ RSS/Web Source
  AI Stage B ──► Generate complete Vietnamese Facebook post (status: AI_STAGE_B_DONE)
 ```
 
-### Workflow 2: Marketing Content Generation (Scheduled, Daily)
+### Workflow 2: Multi-Agent Content Pipeline (Continuous)
 
-This workflow produces brand-aligned social posts based on a content strategy.
+This workflow produces brand-aligned social posts from news items.
 
 ```
-Strategy Plan (pre-defined slots)
-     │
-     ▼  [Daily at 6am]
- DailyContentJob
-     │
-     ├──► Refresh TrendSignals from DB
-     ├──► Match trends to brand interests (BrandTrendMatch)
-     ├──► For each PLANNED slot due today:
-     │       ├──► AI generates ContentBrief
-     │       └──► AI generates ContentDraft (status: IN_REVIEW)
+Filtered Item (READY_FOR_AI)
      │
      ▼
- Human review in dashboard (APPROVE or REJECT)
+ Screenwriter ──► Content Script (Story arc, Points, Tone)
      │
-     ▼  [Every 5 min]
- PublishSchedulerJob ──► Publish APPROVED, scheduled drafts
+     ├───────────────────┬───────────────────┐
+     ▼                   ▼                   ▼
+Social Post Agent   Video Script Agent   Long-form Agent
+(Draft: PENDING)    (Draft: PENDING)    (Draft: PENDING)
+     │                   │                   │
+     └───────────────────┴───────────────────┘
+                         │
+                         ▼
+             Human review in dashboard
+             (APPROVE or REJECT)
+```
+
+### Workflow 3: Tenant-specific Job Scheduling
+
+Jobs run on custom intervals per brand.
+
+```
+Brand A (Cron: Every 15m) ──► Ingest / Extract / Pipeline
+Brand B (Cron: Daily at 8am) ──► Ingest / Extract / Pipeline
 ```
 
 ### Workflow 3: Source Discovery (Weekly)

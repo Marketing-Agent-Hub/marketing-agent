@@ -139,23 +139,29 @@ export function asyncHandler(fn) {
 
 This prevents unhandled promise rejections from crashing the server.
 
-### 8. Job Management Patterns
+### 8. Tenant-Specific Job Scheduling
 
-**Continuous-loop jobs** (Extraction, Filtering, AI Stage A/B):
-- Run on an interval using `setInterval`
-- Process a fixed batch size per tick (e.g., 10 items for extraction, 5 for Stage A, 3 for Stage B)
-- Batch size protects against rate limits and timeouts
+The system has moved from global cron jobs to a per-tenant (per-brand) scheduling model:
 
-**Cron jobs** (Ingest, Daily Content, Publish Scheduler, Trend Matching, Source Discovery):
-- Scheduled using `node-cron` patterns
-- All tasks catch their own errors and log them without crashing the process
-- Graceful shutdown calls `task.stop()` on each, then `process.exit(0)` after telemetry flush
+- **Job Types**: `ingest`, `extract`, `filter`, `pipeline`, `source_discovery`, etc.
+- **Scheduler**: `TenantJobScheduler` manages a fleet of `node-cron` tasks in-memory.
+- **Customization**: Brands can override the global default cron expression via the `JobSchedule` table.
+- **Concurrency Guard**: A `Map<TaskKey, boolean>` ensures that if a job tick is already running for a specific (brand + jobType), the new tick is skipped to prevent overlapping executions.
+- **Fault Isolation**: Each job execution is wrapped in a try/catch; failure in one brand's ingestion does not affect others.
 
-**Job Monitoring wrapper** (`withJobMonitoring`):
-- Wraps a job execution to record start time, duration, and success/failure
-- Writes metrics to `SystemMetric` and logs to `SystemLog` in the database
+### 9. Multi-Agent Content Production
 
-### 9. State Management
+The content pipeline follows a two-stage generative process:
+
+1. **Screenwriter Service**: Distills raw news and brand context into a structured `ContentScript`. This is the single source of truth for the story.
+2. **Specialized Agents**: 
+   - `SocialPostAgent`: Facebook/Twitter style posts.
+   - `VideoAgent`: Script for short-form video (TikTok/Reels).
+   - `LongformAgent`: Detailed blog articles.
+   
+Agents run in parallel using `Promise.allSettled`. If the brand config disables an agent, it is not executed.
+
+### 10. State Management
 
 There is no in-memory application state beyond:
 - `isRunning` boolean in `source-discovery.job.ts` — a naive concurrency guard
