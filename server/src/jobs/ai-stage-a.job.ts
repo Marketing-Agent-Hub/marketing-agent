@@ -55,3 +55,11 @@ export async function triggerImmediateAIStageA(limit = 5) {
     }
 }
 
+
+/**
+ * Per-brand AI Stage A runner for TenantJobScheduler
+ */
+export async function aiStageAForBrand(_brandId: number): Promise<void> {
+    // Stage A processes items by status globally; brand scoping handled by item.brandId
+    await processStageABatch(5);
+}

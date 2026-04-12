@@ -10,6 +10,7 @@ import { requireInternalAuth } from '../../middleware/internal-auth.js';
 import { requireBrandAccess } from '../../middleware/brand-access.js';
 import sourceDiscoveryRoutes from '../../domains/source-discovery/source-discovery.routes.js';
 import aiSettingsRoutes from '../../domains/content-intelligence/ai-settings.routes.js';
+import jobScheduleAdminRoutes from '../../domains/job-scheduling/job-schedule.admin.routes.js';
 
 const router = Router();
 
@@ -20,6 +21,7 @@ router.get('/health', (_req, res) => {
 router.use('/auth', internalAuthRoutes);
 router.use('/admin', adminRoutes);
 router.use('/admin/ai/settings', aiSettingsRoutes);
+router.use('/admin/job-schedules', jobScheduleAdminRoutes);
 router.use('/monitor', monitorRoutes);
 router.use('/sources', sourceRoutes);
 router.use('/source-discovery', sourceDiscoveryRoutes);

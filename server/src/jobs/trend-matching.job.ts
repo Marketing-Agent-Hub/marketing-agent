@@ -22,3 +22,14 @@ export async function runTrendMatchingJob(): Promise<void> {
         }
     });
 }
+
+/**
+ * Per-brand trend matching runner for TenantJobScheduler
+ */
+export async function trendMatchingForBrand(brandId: number): Promise<void> {
+    try {
+        await trendMatchingService.matchBrandToRecentSignals(brandId);
+    } catch (error) {
+        logger.error({ error, brandId }, '[trend-matching] Per-brand run failed');
+    }
+}

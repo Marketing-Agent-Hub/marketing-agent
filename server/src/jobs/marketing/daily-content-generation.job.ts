@@ -22,3 +22,14 @@ export async function runDailyContentGenerationJob(): Promise<void> {
         }
     });
 }
+
+/**
+ * Per-brand daily content generation runner for TenantJobScheduler
+ */
+export async function dailyContentForBrand(brandId: number): Promise<void> {
+    try {
+        await contentService.generateDailyContent(brandId, 3);
+    } catch (err) {
+        logger.error({ err, brandId }, '[daily-content-generation] Per-brand run failed');
+    }
+}

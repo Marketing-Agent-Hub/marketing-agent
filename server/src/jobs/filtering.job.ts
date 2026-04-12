@@ -74,3 +74,10 @@ export async function runFilteringForAllBrands(): Promise<void> {
     logger.info('[FilteringJob] Completed multi-tenant filtering for all brands');
 }
 
+
+/**
+ * Per-brand filtering runner for TenantJobScheduler
+ */
+export async function filteringForBrand(brandId: number): Promise<void> {
+    await filterExtractedItemsForBrand(brandId, 20);
+}

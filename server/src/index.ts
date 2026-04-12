@@ -38,7 +38,7 @@ app.listen(PORT, () => {
     healthService.startHealthChecks();
 
     logger.info('Starting background jobs...');
-    startBackgroundJobs();
+    startBackgroundJobs().catch(err => logger.error({ err }, 'Failed to start background jobs'));
 
     startMonitoringCleanupJob();
 });

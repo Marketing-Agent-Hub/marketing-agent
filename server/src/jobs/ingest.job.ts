@@ -74,3 +74,26 @@ export async function triggerImmediateBrandIngestion() {
     }
 }
 
+
+/**
+ * Per-brand ingest runner for TenantJobScheduler
+ */
+export async function ingestForBrand(brandId: number): Promise<void> {
+    const brandSources = await (await import('../db/index.js')).prisma.brandSource.findMany({
+        where: { enabled: true, brandId },
+        include: {
+            source: {
+                select: { id: true, name: true, type: true, config: true, rssUrl: true, fetchIntervalMinutes: true, lastFetchedAt: true },
+            },
+        },
+    });
+
+    logger.info(`[IngestJob] Per-brand ingest for brand ${brandId}: ${brandSources.length} sources`);
+    for (const bs of brandSources) {
+        try {
+            await ingestBrandSource(bs);
+        } catch (err) {
+            logger.error({ err, brandId, sourceId: bs.sourceId }, '[IngestJob] Per-brand source ingest failed');
+        }
+    }
+}

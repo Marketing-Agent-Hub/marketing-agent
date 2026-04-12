@@ -387,6 +387,7 @@ model Brand {
   trendMatches    BrandTrendMatch[]
   brandSources    BrandSource[]
   filterProfile   FilterProfile?
+  jobSchedules    JobSchedule[]
   items           Item[]
 
   @@index([workspaceId, status])
@@ -775,4 +776,21 @@ model PendingSource {
   @@index([trustScore])
   @@index([discoveredAt])
   @@map("pending_sources")
+}
+
+model JobSchedule {
+  id             Int      @id @default(autoincrement())
+  brandId        Int
+  jobType        String
+  cronExpression String
+  enabled        Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  brand          Brand    @relation(fields: [brandId], references: [id], onDelete: Cascade)
+
+  @@unique([brandId, jobType])
+  @@index([enabled])
+  @@index([jobType])
+  @@map("job_schedules")
 }

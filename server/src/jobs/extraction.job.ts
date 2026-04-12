@@ -51,3 +51,12 @@ export async function triggerImmediateExtraction(limit = 10) {
     });
 }
 
+
+/**
+ * Per-brand extraction runner for TenantJobScheduler
+ */
+export async function extractionForBrand(brandId: number): Promise<void> {
+    await withJobMonitoring(`ExtractionJob-brand-${brandId}`, async () => {
+        await processNewItems(10);
+    });
+}

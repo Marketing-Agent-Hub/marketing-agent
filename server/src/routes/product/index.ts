@@ -10,6 +10,7 @@ import { productSocialAccountRouter, productBrandSocialAccountRouter } from '../
 import { productBrandTrendRouter } from '../../domains/content-intelligence/content-intelligence.routes.js';
 import brandSourceRoutes from '../../domains/content-intelligence/brand-source.routes.js';
 import filterProfileRoutes from '../../domains/content-intelligence/filter-profile.routes.js';
+import jobScheduleRoutes from '../../domains/job-scheduling/job-schedule.routes.js';
 
 const router = Router();
 
@@ -29,6 +30,7 @@ router.use('/brands/:brandId/briefs', productBrandContentRouter);
 router.use('/brands/:brandId/review-queue', productBrandContentRouter);
 router.use('/brands/:brandId/sources', brandSourceRoutes);
 router.use('/brands/:brandId/filter-profile', filterProfileRoutes);
+router.use('/brands/:brandId/job-schedules', jobScheduleRoutes);
 router.use('/brands/:brandId', productBrandPublishingRouter);
 router.use('/brands/:brandId', productBrandSocialAccountRouter);
 router.use('/brands/:brandId', productBrandTrendRouter);

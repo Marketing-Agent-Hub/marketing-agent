@@ -176,3 +176,11 @@ export async function runDiscoveryJob(): Promise<void> {
         isRunning = false;
     }
 }
+
+/**
+ * Per-brand source discovery runner for TenantJobScheduler
+ * Source discovery is global (not brand-scoped), so brandId is ignored.
+ */
+export async function sourceDiscoveryForBrand(_brandId: number): Promise<void> {
+    await runDiscoveryJob();
+}
