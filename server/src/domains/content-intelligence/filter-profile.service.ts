@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client';
 import { prisma } from '../../db/index.js';
 import { buildVectorProfile, ValidationError } from './vector-profile.builder.js';
 import { aiClient } from '../../lib/ai-client.js';
@@ -78,14 +79,14 @@ export async function upsertFilterProfile(
             topicTags,
             description,
             similarityThreshold,
-            vectorProfile: vectorProfile ?? undefined,
+            vectorProfile: vectorProfile ?? Prisma.DbNull,
         },
         update: {
             mode: data.mode,
             topicTags,
             description,
             similarityThreshold,
-            vectorProfile: vectorProfile ?? null,
+            vectorProfile: vectorProfile ?? Prisma.DbNull,
         },
     });
 

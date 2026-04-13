@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { getFilterProfile, upsertFilterProfile, ValidationError } from './filter-profile.service.js';
-import { buildVectorProfile } from './vector-profile.builder.js';
+import { getFilterProfile, upsertFilterProfile } from './filter-profile.service.js';
+import { buildVectorProfile, ValidationError } from './vector-profile.builder.js';
 import { cosineSimilarity } from '../../lib/cosine-similarity.js';
 import { aiClient } from '../../lib/ai-client.js';
 import { settingService } from '../../lib/setting.service.js';
