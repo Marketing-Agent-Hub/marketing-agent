@@ -1,5 +1,6 @@
 import { Router } from 'express';
-import { requireInternalAuth } from '../../middleware/internal-auth.js';
+import { requireAdminAuth } from '../../middleware/admin-auth.js';
+import { logger } from '../../lib/logger.js';
 import { asyncHandler } from '../../lib/async-handler.js';
 import { triggerImmediateIngest } from '../../jobs/ingest.job.js';
 import { triggerImmediateExtraction } from '../../jobs/extraction.job.js';
@@ -11,12 +12,12 @@ const router = Router();
 
 router.post(
     '/ingest/trigger',
-    requireInternalAuth,
+    requireAdminAuth,
     asyncHandler(async (req, res) => {
-        console.log('[Admin] Manual ingest triggered by:', req.user?.email);
+        logger.info({ email: req.v2User?.email }, '[Admin] Manual ingest triggered by');
 
         triggerImmediateIngest().catch(error => {
-            console.error('[Admin] Ingest trigger error:', error);
+            logger.error({ error }, '[Admin] Ingest trigger error');
         });
 
         res.json({
@@ -28,13 +29,13 @@ router.post(
 
 router.post(
     '/extraction/trigger',
-    requireInternalAuth,
+    requireAdminAuth,
     asyncHandler(async (req, res) => {
-        console.log('[Admin] Manual extraction triggered by:', req.user?.email);
+        logger.info({ email: req.v2User?.email }, '[Admin] Manual extraction triggered by');
         const limit = Number(req.body?.limit) || 10;
 
         triggerImmediateExtraction(limit).catch(error => {
-            console.error('[Admin] Extraction trigger error:', error);
+            logger.error({ error }, '[Admin] Extraction trigger error');
         });
 
         res.json({
@@ -46,13 +47,13 @@ router.post(
 
 router.post(
     '/filtering/trigger',
-    requireInternalAuth,
+    requireAdminAuth,
     asyncHandler(async (req, res) => {
-        console.log('[Admin] Manual filtering triggered by:', req.user?.email);
+        logger.info({ email: req.v2User?.email }, '[Admin] Manual filtering triggered by');
         const limit = Number(req.body?.limit) || 20;
 
         triggerImmediateFiltering(limit).catch(error => {
-            console.error('[Admin] Filtering trigger error:', error);
+            logger.error({ error }, '[Admin] Filtering trigger error');
         });
 
         res.json({
@@ -64,13 +65,13 @@ router.post(
 
 router.post(
     '/ai/stage-a/trigger',
-    requireInternalAuth,
+    requireAdminAuth,
     asyncHandler(async (req, res) => {
-        console.log('[Admin] Manual AI Stage A triggered by:', req.user?.email);
+        logger.info({ email: req.v2User?.email }, '[Admin] Manual AI Stage A triggered by');
         const limit = Number(req.body?.limit) || 5;
 
         triggerImmediateAIStageA(limit).catch(error => {
-            console.error('[Admin] AI Stage A trigger error:', error);
+            logger.error({ error }, '[Admin] AI Stage A trigger error');
         });
 
         res.json({
@@ -82,13 +83,13 @@ router.post(
 
 router.post(
     '/ai/stage-b/trigger',
-    requireInternalAuth,
+    requireAdminAuth,
     asyncHandler(async (req, res) => {
-        console.log('[Admin] Manual AI Stage B triggered by:', req.user?.email);
+        logger.info({ email: req.v2User?.email }, '[Admin] Manual AI Stage B triggered by');
         const limit = Number(req.body?.limit) || 3;
 
         triggerImmediateAIStageB(limit).catch(error => {
-            console.error('[Admin] AI Stage B trigger error:', error);
+            logger.error({ error }, '[Admin] AI Stage B trigger error');
         });
 
         res.json({

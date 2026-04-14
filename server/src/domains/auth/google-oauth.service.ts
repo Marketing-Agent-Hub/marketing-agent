@@ -1,4 +1,5 @@
 import fetch from 'node-fetch';
+import { SystemRole } from '@prisma/client';
 import { prisma } from '../../db/index.js';
 import { env } from '../../config/env.js';
 import { logger } from '../../lib/logger.js';
@@ -76,10 +77,22 @@ export class GoogleOAuthService {
             }
         }
 
-        // Step 4: Issue JWT
-        const token = authService.issueToken(user.id, user.email);
+        // Step 4: Determine systemRole and promote to ADMIN if email matches
+        let systemRole = user.systemRole;
+        if (user.email === env.ADMIN_EMAIL) {
+            systemRole = SystemRole.ADMIN;
+            if (user.systemRole !== SystemRole.ADMIN) {
+                user = await prisma.user.update({
+                    where: { id: user.id },
+                    data: { systemRole: SystemRole.ADMIN },
+                });
+            }
+        }
 
-        // Step 5: Log auth event
+        // Step 5: Issue JWT
+        const token = authService.issueToken(user.id, user.email, systemRole);
+
+        // Step 6: Log auth event
         logger.info({
             method: 'google',
             userId: user.id,

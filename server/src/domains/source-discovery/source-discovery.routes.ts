@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { requireInternalAuth } from '../../middleware/internal-auth.js';
+import { requireAdminAuth } from '../../middleware/admin-auth.js';
 import { asyncHandler } from '../../lib/async-handler.js';
 import {
     listPendingHandler,
@@ -10,9 +10,9 @@ import {
 
 const router = Router();
 
-router.get('/pending', requireInternalAuth, asyncHandler(listPendingHandler));
-router.post('/pending/:id/approve', requireInternalAuth, asyncHandler(approvePendingHandler));
-router.post('/pending/:id/reject', requireInternalAuth, asyncHandler(rejectPendingHandler));
-router.post('/jobs/run', requireInternalAuth, asyncHandler(triggerDiscoveryJobHandler));
+router.get('/pending', requireAdminAuth, asyncHandler(listPendingHandler));
+router.post('/pending/:id/approve', requireAdminAuth, asyncHandler(approvePendingHandler));
+router.post('/pending/:id/reject', requireAdminAuth, asyncHandler(rejectPendingHandler));
+router.post('/jobs/run', requireAdminAuth, asyncHandler(triggerDiscoveryJobHandler));
 
 export default router;

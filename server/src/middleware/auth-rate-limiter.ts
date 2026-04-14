@@ -27,3 +27,11 @@ export const magicLinkRateLimiter = rateLimit({
     legacyHeaders: false,
     handler: rateLimitHandler,
 });
+
+export const adminMagicLinkRateLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    limit: 5,
+    standardHeaders: true,
+    legacyHeaders: false,
+    handler: rateLimitHandler,
+});

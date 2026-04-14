@@ -4,7 +4,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vites
 // Mock auth service
 const verifyTokenMock = vi.fn();
 
-vi.mock('../domains/auth/internal-auth.service.js', () => ({
+vi.mock('../domains/auth/auth.service.js', () => ({
     authService: {
         verifyToken: verifyTokenMock,
     },
@@ -130,7 +130,7 @@ describe('Monitoring API endpoints', () => {
         vi.clearAllMocks();
 
         // Default: valid token
-        verifyTokenMock.mockReturnValue({ email: 'admin@example.com' });
+        verifyTokenMock.mockReturnValue({ userId: 1, email: 'admin@example.com', systemRole: 'ADMIN' });
 
         // Default service responses
         getLogsMock.mockResolvedValue({ logs: [], total: 0, limit: 100, offset: 0 });

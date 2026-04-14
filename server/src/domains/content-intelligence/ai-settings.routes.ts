@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import { requireInternalAuth } from '../../middleware/internal-auth.js';
+import { requireAdminAuth } from '../../middleware/admin-auth.js';
 import { asyncHandler } from '../../lib/async-handler.js';
 import { settingService } from '../../lib/setting.service.js';
 
@@ -28,7 +28,7 @@ const patchSchema = z.object({
 
 router.get(
     '/',
-    requireInternalAuth,
+    requireAdminAuth,
     asyncHandler(async (_req, res) => {
         const settings = await settingService.getAllAiSettings();
         res.status(200).json(settings);
@@ -37,7 +37,7 @@ router.get(
 
 router.patch(
     '/',
-    requireInternalAuth,
+    requireAdminAuth,
     asyncHandler(async (req, res) => {
         const result = patchSchema.safeParse(req.body);
         if (!result.success) {

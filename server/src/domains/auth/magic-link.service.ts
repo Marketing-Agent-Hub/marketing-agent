@@ -1,4 +1,5 @@
 import crypto from 'node:crypto';
+import { SystemRole } from '@prisma/client';
 import { prisma } from '../../db/index.js';
 import { env } from '../../config/env.js';
 import { logger } from '../../lib/logger.js';
@@ -89,8 +90,18 @@ export class MagicLinkService {
             data: { usedAt: new Date() },
         });
 
-        // Issue JWT
-        const jwtToken = authService.issueToken(record.user.id, record.user.email);
+        // Assign ADMIN role if email matches ADMIN_EMAIL (idempotent)
+        let systemRole = record.user.systemRole;
+        if (record.user.email === env.ADMIN_EMAIL && record.user.systemRole !== SystemRole.ADMIN) {
+            await prisma.user.update({
+                where: { id: record.user.id },
+                data: { systemRole: SystemRole.ADMIN },
+            });
+            systemRole = SystemRole.ADMIN;
+        }
+
+        // Issue JWT with systemRole
+        const jwtToken = authService.issueToken(record.user.id, record.user.email, systemRole);
 
         // Log auth event
         logger.info({

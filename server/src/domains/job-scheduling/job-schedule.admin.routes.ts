@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { requireInternalAuth } from '../../middleware/internal-auth.js';
+import { requireAdminAuth } from '../../middleware/admin-auth.js';
 import { asyncHandler } from '../../lib/async-handler.js';
 import { jobScheduleService } from '../../jobs/job-schedule.service.js';
 import { JOB_TYPES, JobType } from '../../jobs/job-schedule.types.js';
@@ -10,7 +10,7 @@ const router = Router();
 // GET /admin/job-schedules/defaults
 router.get(
     '/defaults',
-    requireInternalAuth,
+    requireAdminAuth,
     asyncHandler(async (_req, res) => {
         const defaults = await jobScheduleService.getDefaults();
         res.status(200).json({ defaults });
@@ -20,7 +20,7 @@ router.get(
 // PUT /admin/job-schedules/defaults/:jobType
 router.put(
     '/defaults/:jobType',
-    requireInternalAuth,
+    requireAdminAuth,
     asyncHandler(async (req, res) => {
         const { jobType } = req.params;
 

@@ -1,11 +1,11 @@
 import { Router } from 'express';
-import { requireInternalAuth } from '../../middleware/internal-auth.js';
+import { requireAdminAuth } from '../../middleware/admin-auth.js';
 import * as monitorController from './monitoring.controller.js';
 
 const router = Router();
 
 // All monitoring routes require authentication
-router.use(requireInternalAuth);
+router.use(requireAdminAuth);
 
 // Overview/Dashboard
 router.get('/overview', monitorController.getMonitoringOverview);

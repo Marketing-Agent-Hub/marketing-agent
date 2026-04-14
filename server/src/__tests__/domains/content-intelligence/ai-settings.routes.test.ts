@@ -16,8 +16,8 @@ vi.mock('../../../lib/setting.service.js', () => ({
     },
 }));
 
-vi.mock('../../../middleware/internal-auth.js', () => ({
-    requireInternalAuth: vi.fn((req: Request, res: Response, next: any) => next()),
+vi.mock('../../../middleware/admin-auth.js', () => ({
+    requireAdminAuth: vi.fn((req: Request, res: Response, next: any) => next()),
 }));
 
 vi.mock('../../../lib/async-handler.js', () => ({
@@ -25,7 +25,7 @@ vi.mock('../../../lib/async-handler.js', () => ({
 }));
 
 import { settingService } from '../../../lib/setting.service.js';
-import { requireInternalAuth } from '../../../middleware/internal-auth.js';
+import { requireAdminAuth } from '../../../middleware/admin-auth.js';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -110,9 +110,9 @@ describe('Admin AI Settings Routes', () => {
             expect(typeof body.stages.stageB.enabled).toBe('boolean');
         });
 
-        it('returns 401 when requireInternalAuth rejects the request', async () => {
+        it('returns 401 when requireAdminAuth rejects the request', async () => {
             // Override mock to simulate auth rejection
-            vi.mocked(requireInternalAuth).mockImplementationOnce(
+            vi.mocked(requireAdminAuth).mockImplementationOnce(
                 (_req: Request, res: Response, _next: any) => {
                     res.status(401).json({ error: { code: 'UNAUTHORIZED' } });
                 },

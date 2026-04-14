@@ -1,5 +1,6 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import { SystemRole } from '@prisma/client';
 import { prisma } from '../../db/index.js';
 import { env } from '../../config/env.js';
 import { LoginInput, RegisterInput } from '../../shared/marketing/schemas/auth.schema.js';
@@ -16,14 +17,15 @@ export interface AuthResult {
 export interface ProductJwtPayload {
     userId: number;
     email: string;
+    systemRole?: SystemRole;
     iat?: number;
     exp?: number;
 }
 
 export class AuthService {
-    issueToken(userId: number, email: string): string {
+    issueToken(userId: number, email: string, systemRole: SystemRole = SystemRole.USER): string {
         return jwt.sign(
-            { userId, email } satisfies ProductJwtPayload,
+            { userId, email, systemRole } satisfies Omit<ProductJwtPayload, 'iat' | 'exp'>,
             env.JWT_SECRET,
             { expiresIn: '7d' }
         );
