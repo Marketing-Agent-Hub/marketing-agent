@@ -56,7 +56,7 @@ export default function OnboardingPage() {
     useEffect(() => {
         apiClient
             .post<{ id: string; messages?: Array<{ role: string; content: string }> }>(
-                `/api/v2/brands/${bid}/onboarding/sessions`
+                `/api/brands/${bid}/onboarding/sessions`
             )
             .then((res) => {
                 setSessionId(res.data.id);
@@ -79,7 +79,7 @@ export default function OnboardingPage() {
     // Polling for BrandProfile
     usePolling<Brand>({
         queryKey: ['brand-polling', bid],
-        queryFn: () => apiClient.get(`/api/v2/brands/${bid}`).then((r) => r.data),
+        queryFn: () => apiClient.get(`/api/brands/${bid}`).then((r) => r.data),
         shouldStop: (data) => !!data.profile,
         enabled: polling,
         intervalMs: 3000,
@@ -107,7 +107,7 @@ export default function OnboardingPage() {
 
         try {
             const res = await apiClient.post<{ role: string; content: string }>(
-                `/api/v2/brands/${bid}/onboarding/sessions/${sessionId}/messages`,
+                `/api/brands/${bid}/onboarding/sessions/${sessionId}/messages`,
                 { role: 'user', content: userMsg }
             );
             setMessages((prev) => [...prev, { role: 'assistant', content: res.data.content }]);
@@ -122,7 +122,7 @@ export default function OnboardingPage() {
         if (!sessionId) return;
         setCompleting(true);
         try {
-            await apiClient.post(`/api/v2/brands/${bid}/onboarding/sessions/${sessionId}/complete`);
+            await apiClient.post(`/api/brands/${bid}/onboarding/sessions/${sessionId}/complete`);
             toast.info('Đang xử lý Brand Profile... Bạn có thể tiếp tục làm việc.');
             setPolling(true);
         } catch {

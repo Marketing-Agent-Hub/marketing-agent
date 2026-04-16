@@ -30,12 +30,12 @@ export default function PublishingDashboardPage() {
 
     const { data: jobs, isLoading } = useQuery<PublishJob[]>({
         queryKey: ['publish-jobs', bid, page],
-        queryFn: () => apiClient.get(`/api/v2/brands/${bid}/publish-jobs?page=${page}`).then((r) => r.data),
+        queryFn: () => apiClient.get(`/api/brands/${bid}/publish-jobs?page=${page}`).then((r) => r.data),
         enabled: !!bid,
     });
 
     const retryMutation = useMutation({
-        mutationFn: (jobId: string) => apiClient.post(`/api/v2/publish-jobs/${jobId}/retry`),
+        mutationFn: (jobId: string) => apiClient.post(`/api/publish-jobs/${jobId}/retry`),
         onSuccess: () => {
             qc.invalidateQueries({ queryKey: ['publish-jobs', bid] });
             toast.success('Đã yêu cầu đăng lại!');

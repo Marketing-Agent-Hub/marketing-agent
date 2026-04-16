@@ -20,13 +20,13 @@ export default function SourcesPage() {
 
     const { data: sources, isLoading } = useQuery<BrandSource[]>({
         queryKey: ['sources', bid],
-        queryFn: () => apiClient.get(`/api/v2/brands/${bid}/sources`).then((r) => r.data),
+        queryFn: () => apiClient.get(`/api/brands/${bid}/sources`).then((r) => r.data),
         enabled: !!bid,
     });
 
     const { data: filterProfile } = useQuery<FilterProfile>({
         queryKey: ['filter-profile', bid],
-        queryFn: () => apiClient.get(`/api/v2/brands/${bid}/filter-profile`).then((r) => r.data),
+        queryFn: () => apiClient.get(`/api/brands/${bid}/filter-profile`).then((r) => r.data),
         enabled: !!bid,
     });
 
@@ -39,7 +39,7 @@ export default function SourcesPage() {
     }, [filterProfile]);
 
     const updateFilterMutation = useMutation({
-        mutationFn: (data: FilterProfile) => apiClient.patch(`/api/v2/brands/${bid}/filter-profile`, data),
+        mutationFn: (data: FilterProfile) => apiClient.patch(`/api/brands/${bid}/filter-profile`, data),
         onSuccess: () => {
             qc.invalidateQueries({ queryKey: ['filter-profile', bid] });
             toast.success('Filter Profile đã được cập nhật!');

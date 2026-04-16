@@ -8,7 +8,6 @@ import { decodeAppToken } from '@/lib/jwt';
 
 // Lazy-loaded pages (placeholders until feature tasks are implemented)
 const LoginPage = lazy(() => import('@/features/auth/LoginPage'));
-const RegisterPage = lazy(() => import('@/features/auth/RegisterPage'));
 const MagicLinkCallbackPage = lazy(() => import('@/features/auth/MagicLinkCallbackPage'));
 const WorkspaceListPage = lazy(() => import('@/features/workspace/WorkspaceListPage'));
 const BrandListPage = lazy(() => import('@/features/brand/BrandListPage'));
@@ -64,7 +63,6 @@ export default function AppRouter() {
 
                 {/* Public routes */}
                 <Route path="/login" element={<LoginPage />} />
-                <Route path="/register" element={<RegisterPage />} />
                 <Route path="/auth/callback" element={<MagicLinkCallbackPage />} />
 
                 {/* Product routes — protected by AuthGuard + ProductLayout */}

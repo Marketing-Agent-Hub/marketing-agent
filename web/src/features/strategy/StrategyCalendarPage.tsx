@@ -26,7 +26,7 @@ export default function StrategyCalendarPage() {
 
     const { data: brand } = useQuery<Brand>({
         queryKey: ['brand', bid],
-        queryFn: () => apiClient.get(`/api/v2/brands/${bid}`).then((r) => r.data),
+        queryFn: () => apiClient.get(`/api/brands/${bid}`).then((r) => r.data),
         enabled: !!bid,
     });
 
@@ -39,7 +39,7 @@ export default function StrategyCalendarPage() {
     // Poll while generating
     usePolling<StrategyPlan[]>({
         queryKey: ['strategy', bid],
-        queryFn: () => apiClient.get(`/api/v2/brands/${bid}/strategies`).then((r) => r.data),
+        queryFn: () => apiClient.get(`/api/brands/${bid}/strategies`).then((r) => r.data),
         shouldStop: (data) => data.some((s) => s.status === 'ACTIVE' || (s.slots?.length ?? 0) > 0),
         enabled: generating,
         intervalMs: 3000,

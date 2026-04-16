@@ -228,20 +228,21 @@ describe('Property 5: Brand-scoped query keys include brandId', () => {
             fc.property(
                 fc.integer({ min: 1, max: 99999 }),
                 (brandId) => {
-                    const qc = new QueryClient();
+                    const qc = new QueryClient({
+                        defaultOptions: { queries: { enabled: false, retry: false } },
+                    });
                     const wrapper = ({ children }: { children: React.ReactNode }) =>
                         React.createElement(QueryClientProvider, { client: qc }, children);
 
-                    const { result } = renderHook(() => useReviewQueue(brandId), { wrapper });
+                    renderHook(() => useReviewQueue(brandId), { wrapper });
                     // The query key is set in the hook definition as ['review-queue', brandId]
-                    // We verify by checking the query cache
+                    // We verify by checking the query cache — enabled:false prevents real API calls
                     const queries = qc.getQueryCache().getAll();
                     const hasCorrectKey = queries.some(
                         (q) => Array.isArray(q.queryKey) && q.queryKey.includes(brandId)
                     );
                     qc.clear();
-                    // If no queries yet (not fetched), verify the hook was called with correct brandId
-                    return hasCorrectKey || result.current !== undefined;
+                    return hasCorrectKey;
                 }
             ),
             { numRuns: 100 }
