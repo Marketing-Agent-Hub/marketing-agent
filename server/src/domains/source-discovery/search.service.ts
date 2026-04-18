@@ -14,31 +14,41 @@ export interface SearchServiceResult {
 
 const TAVILY_API_URL = 'https://api.tavily.com/search';
 
+/**
+ * Universal RSS discovery queries — topic-agnostic.
+ * Goal: find as many RSS/Atom feeds as possible across all domains and languages.
+ * The feed-scorer LLM will evaluate quality and relevance per feed.
+ */
 const SEARCH_QUERIES = [
-    // English queries — Education & EdTech
-    'best EdTech blogs RSS feed 2024',
-    'education technology blog atom feed',
-    'online learning platform news RSS',
-    'e-learning industry blog feed',
-    'educational technology newsletter RSS',
-    // English queries — Blockchain & Web3
-    'blockchain news site:medium.com RSS',
-    'web3 developer newsletter feed',
-    'crypto education blog RSS feed',
-    'DeFi news and analysis RSS',
-    'NFT and blockchain technology blog feed',
-    // Vietnamese queries — Education & EdTech
-    'blog giáo dục công nghệ RSS feed',
-    'tin tức EdTech Việt Nam RSS',
-    'học trực tuyến e-learning blog feed',
-    // Vietnamese queries — Blockchain & Web3
-    'blockchain web3 tin tức Việt Nam RSS',
-    'tiền điện tử crypto blog feed Việt Nam',
-    // Mixed / broader
-    'decentralized education blockchain RSS',
-    'learn to earn web3 education blog',
-    'metaverse education technology feed',
-    'open source education platform blog RSS',
+    // —— Universal RSS discovery ————————————————————————————————————————————————————————————————
+    'site:feedburner.com RSS feed',
+    'inurl:feed OR inurl:rss OR inurl:atom news blog',
+    'best RSS feeds to follow 2024',
+    'top news blogs with RSS feed',
+    'RSS feed directory list 2024',
+    'OPML subscription list RSS feeds',
+    'feedly popular sources RSS',
+    'newsblur popular feeds RSS',
+    // —— By content type ——————————————————————————————————————————————————————————————————————
+    'industry news blog RSS feed',
+    'professional newsletter RSS atom feed',
+    'research journal RSS feed',
+    'government news RSS feed',
+    'startup blog RSS feed',
+    'company blog RSS feed site:medium.com',
+    'podcast RSS feed directory',
+    'YouTube channel RSS feed',
+    // —— Vietnamese sources ————————————————————————————————————————————————————————————————
+    'tin tức RSS feed Việt Nam',
+    'blog chuyên ngành RSS feed tiếng Việt',
+    'báo điện tử RSS feed Việt Nam',
+    'trang tin tức RSS atom feed',
+    // —— By platform ———————————————————————————————————————————————————————————————————————
+    'wordpress blog RSS feed',
+    'substack newsletter RSS feed',
+    'ghost blog RSS feed',
+    'blogger RSS feed',
+    'tumblr RSS feed',
 ];
 
 /**
@@ -60,12 +70,16 @@ export function deduplicateUrls(urls: string[]): string[] {
  * Filter out URLs that already exist in the sources table.
  */
 export function filterExistingUrls(urls: string[], existing: Set<string>): string[] {
-    return urls.filter((url) => !existing.has(url));
+    return urls.filter(url => !existing.has(url));
 }
 
 /**
- * Execute 10–20 diverse search queries via Tavily API, deduplicate results,
- * and filter out URLs already present in the sources table.
+ * Execute diverse search queries via Tavily API to discover RSS/Atom feeds
+ * across all topics and languages. Deduplicates results and filters out
+ * URLs already present in the sources table.
+ *
+ * Topic filtering is intentionally absent here — the feed-scorer LLM
+ * evaluates each feed's quality and assigns topicTags dynamically.
  */
 export async function searchForSources(existingUrls: Set<string>): Promise<SearchServiceResult> {
     const apiKey = env.TAVILY_API_KEY;
@@ -112,30 +126,21 @@ export async function searchForSources(existingUrls: Set<string>): Promise<Searc
 
             queriesExecuted++;
         } catch (err) {
-            logger.error(
-                { service: 'search.service', query, err },
-                'Error executing Tavily query — skipping'
-            );
+            logger.error({ service: 'search.service', query, err }, 'Error executing Tavily query — skipping');
         }
     }
 
-    // Deduplicate by URL
-    const uniqueUrls = deduplicateUrls(allResults.map((r) => r.url));
-
-    // Filter URLs already in sources
+    const uniqueUrls = deduplicateUrls(allResults.map(r => r.url));
     const filteredUrls = filterExistingUrls(uniqueUrls, existingUrls);
     const filteredSet = new Set(filteredUrls);
 
-    // Rebuild result list preserving snippet/title, keeping only filtered URLs
     const urlToResult = new Map<string, TavilySearchResult>();
     for (const r of allResults) {
-        if (!urlToResult.has(r.url)) {
-            urlToResult.set(r.url, r);
-        }
+        if (!urlToResult.has(r.url)) urlToResult.set(r.url, r);
     }
 
     const results = filteredUrls
-        .map((url) => urlToResult.get(url))
+        .map(url => urlToResult.get(url))
         .filter((r): r is TavilySearchResult => r !== undefined && filteredSet.has(r.url));
 
     logger.info(

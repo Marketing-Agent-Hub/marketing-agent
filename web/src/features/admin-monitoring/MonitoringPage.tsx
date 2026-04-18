@@ -6,12 +6,12 @@ import type { LogEntry } from '@/types';
 import { cn } from '@/lib/utils';
 
 const levelColors: Record<string, string> = {
-    INFO: 'text-blue-400',
-    DEBUG: 'text-white/40',
-    WARN: 'text-yellow-400',
-    ERROR: 'text-red-400',
+    INFO: 'text-blue-500',
+    DEBUG: 'text-[var(--color-text-muted)] opacity-60',
+    WARN: 'text-yellow-500',
+    ERROR: 'text-red-500',
     FATAL: 'text-red-600',
-    TRACE: 'text-white/20',
+    TRACE: 'text-[var(--color-text-muted)] opacity-40',
 };
 
 export default function MonitoringPage() {
@@ -71,36 +71,36 @@ export default function MonitoringPage() {
             <div className="mb-3 flex flex-wrap items-center gap-2">
                 <input ref={searchRef} value={search} onChange={(e) => setSearch(e.target.value)}
                     placeholder="Search (/ to focus, regex ok)"
-                    className="flex-1 rounded border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white outline-none placeholder:text-white/30 focus:border-[#4FACFE]" />
+                    className="flex-1 rounded border border-[var(--color-border)] bg-[var(--color-bg-card)] px-3 py-1.5 text-xs text-[var(--color-text)] outline-none placeholder:text-[var(--color-text-muted)] opacity-80 focus:border-[#4FACFE]" />
 
                 {(['INFO', 'DEBUG', 'WARN', 'ERROR', 'FATAL'] as const).map((level) => (
                     <button key={level} onClick={() => toggleLevel(level)}
                         className={cn('rounded border px-2 py-1 text-[10px] transition-colors',
                             levels.has(level)
                                 ? level === 'ERROR' && hasErrors
-                                    ? 'border-red-500 bg-red-500/20 text-red-400'
-                                    : 'border-white/20 bg-white/10 text-white'
-                                : 'border-white/10 text-white/30')}>
+                                    ? 'border-red-500 bg-red-500/20 text-red-600'
+                                    : 'border-[var(--color-border)] bg-[var(--color-bg-card)] text-[var(--color-text)]'
+                                : 'border-[var(--color-border)] text-[var(--color-text-muted)] opacity-50')}>
                         {level}
                     </button>
                 ))}
 
                 <button onClick={() => setAutoTail(!autoTail)}
                     className={cn('rounded border px-2 py-1 text-[10px] transition-colors',
-                        autoTail ? 'border-[#4FACFE] bg-[#4FACFE]/10 text-[#4FACFE]' : 'border-white/10 text-white/30')}>
+                        autoTail ? 'border-[#4FACFE] bg-[#4FACFE]/10 text-[#4FACFE]' : 'border-[var(--color-border)] text-[var(--color-text-muted)] opacity-50')}>
                     Auto-tail
                 </button>
             </div>
 
             {/* Log table */}
-            <div className="flex-1 overflow-y-auto rounded border border-white/10 bg-black/40">
+            <div className="flex-1 overflow-y-auto rounded border border-[var(--color-border)] bg-[var(--color-bg-card)]">
                 <table className="w-full">
-                    <thead className="sticky top-0 bg-[#111111]">
-                        <tr className="border-b border-white/10">
-                            <th className="px-3 py-2 text-left text-[10px] text-white/30">TIMESTAMP</th>
-                            <th className="px-3 py-2 text-left text-[10px] text-white/30">LEVEL</th>
-                            <th className="px-3 py-2 text-left text-[10px] text-white/30">SERVICE</th>
-                            <th className="px-3 py-2 text-left text-[10px] text-white/30">MESSAGE</th>
+                    <thead className="sticky top-0 bg-[var(--color-bg-secondary)]">
+                        <tr className="border-b border-[var(--color-border)]">
+                            <th className="px-3 py-2 text-left text-[10px] text-[var(--color-text-muted)] opacity-50">TIMESTAMP</th>
+                            <th className="px-3 py-2 text-left text-[10px] text-[var(--color-text-muted)] opacity-50">LEVEL</th>
+                            <th className="px-3 py-2 text-left text-[10px] text-[var(--color-text-muted)] opacity-50">SERVICE</th>
+                            <th className="px-3 py-2 text-left text-[10px] text-[var(--color-text-muted)] opacity-50">MESSAGE</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -108,14 +108,14 @@ export default function MonitoringPage() {
                             <>
                                 <tr key={log.id}
                                     onClick={() => log.metadata && setExpandedId(expandedId === String(log.id) ? null : String(log.id))}
-                                    className={cn('border-b border-white/5 transition-colors',
-                                        log.metadata ? 'cursor-pointer hover:bg-white/5' : '')}>
-                                    <td className="px-3 py-1.5 text-white/40 whitespace-nowrap">
+                                    className={cn('border-b border-[var(--color-border)] transition-colors',
+                                        log.metadata ? 'cursor-pointer hover:bg-[var(--color-bg-secondary)]' : '')}>
+                                    <td className="px-3 py-1.5 text-[var(--color-text-muted)] opacity-60 whitespace-nowrap">
                                         {new Date(log.createdAt).toISOString().replace('T', ' ').slice(0, 23)}
                                     </td>
-                                    <td className={cn('px-3 py-1.5 font-bold', levelColors[log.level] ?? 'text-white/60')}>{log.level}</td>
-                                    <td className="px-3 py-1.5 text-[#4FACFE]">{log.service ?? '—'}</td>
-                                    <td className="px-3 py-1.5 text-white/80">{log.message}</td>
+                                    <td className={cn('px-3 py-1.5 font-bold', levelColors[log.level] ?? 'text-[var(--color-text-muted)]')}>{log.level}</td>
+                                    <td className="px-3 py-1.5 text-[#4FACFE] font-bold">{log.service ?? '—'}</td>
+                                    <td className="px-3 py-1.5 text-[var(--color-text)]">{log.message}</td>
                                 </tr>
                                 {expandedId === String(log.id) && log.metadata && (
                                     <tr key={`${log.id}-payload`}>

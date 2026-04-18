@@ -46,11 +46,11 @@ export default function AdminLayout() {
     };
 
     return (
-        <div className="flex h-screen bg-[#000000] text-[#e2e8f0] font-mono text-sm">
+        <div className="flex h-screen bg-[var(--color-bg)] text-[var(--color-text)] font-mono text-sm transition-colors duration-200">
             {/* Sidebar */}
-            <aside className="flex w-48 flex-col border-r border-white/10 bg-[#111111]">
+            <aside className="flex w-48 flex-col border-r border-[var(--color-border)] bg-[var(--color-bg-secondary)]">
                 {/* Logo */}
-                <div className="flex h-10 items-center border-b border-white/10 px-3">
+                <div className="flex h-10 items-center border-b border-[var(--color-border)] px-3">
                     <span className="text-xs font-bold text-[#4FACFE]">ADMIN</span>
                 </div>
 
@@ -58,7 +58,7 @@ export default function AdminLayout() {
                 <nav className="flex-1 overflow-y-auto py-2">
                     {sidebarSections.map((section) => (
                         <div key={section.label} className="mb-3">
-                            <div className="px-3 py-1 text-[10px] uppercase tracking-widest text-white/30">
+                            <div className="px-3 py-1 text-[10px] uppercase tracking-widest text-[var(--color-text-muted)] opacity-50">
                                 {section.label}
                             </div>
                             {section.items.map((item) => (
@@ -70,7 +70,7 @@ export default function AdminLayout() {
                                             'flex items-center gap-2 px-3 py-1.5 text-xs transition-colors',
                                             isActive
                                                 ? 'bg-[#4FACFE]/10 text-[#4FACFE]'
-                                                : 'text-white/50 hover:bg-white/5 hover:text-white/80'
+                                                : 'text-[var(--color-text-muted)] hover:bg-[var(--color-bg-card)] hover:text-[var(--color-text)]'
                                         )
                                     }
                                 >
@@ -83,11 +83,11 @@ export default function AdminLayout() {
                 </nav>
 
                 {/* User */}
-                <div className="border-t border-white/10 p-2">
-                    <div className="mb-1 truncate px-1 text-[10px] text-white/30">{user?.email}</div>
+                <div className="border-t border-[var(--color-border)] p-2">
+                    <div className="mb-1 truncate px-1 text-[10px] text-[var(--color-text-muted)] opacity-50">{user?.email}</div>
                     <button
                         onClick={handleLogout}
-                        className="w-full px-2 py-1 text-left text-xs text-red-400/70 hover:text-red-400 transition-colors"
+                        className="w-full px-2 py-1 text-left text-xs text-red-500/70 hover:text-red-500 transition-colors"
                     >
                         logout
                     </button>
@@ -97,8 +97,8 @@ export default function AdminLayout() {
             {/* Main area */}
             <div className="flex flex-1 flex-col overflow-hidden">
                 {/* Header with Live Health Bar */}
-                <header className="flex h-10 items-center justify-between border-b border-white/10 bg-[#0a0a0a] px-4">
-                    <span className="text-xs text-white/30">admin panel</span>
+                <header className="flex h-10 items-center justify-between border-b border-[var(--color-border)] bg-[var(--color-bg)] px-4">
+                    <span className="text-xs text-[var(--color-text-muted)] opacity-50">admin panel</span>
                     <div className="flex items-center gap-4 font-mono text-xs">
                         {health ? (
                             <>
@@ -107,7 +107,7 @@ export default function AdminLayout() {
                                 <span>Server: <HealthDot status={health.overall} /></span>
                             </>
                         ) : (
-                            <span className="text-white/30">connecting...</span>
+                            <span className="text-[var(--color-text-muted)] opacity-50">connecting...</span>
                         )}
                         <ThemeSwitcher variant="icon" compact />
                     </div>

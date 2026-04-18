@@ -9,7 +9,7 @@ interface ModalProps {
     title: string;
     children: ReactNode;
     variant?: 'default' | 'destructive';
-    confirmLabel?: string;
+    confirmLabel?: string | null;
     onConfirm?: () => void;
     confirmLoading?: boolean;
 }
@@ -45,13 +45,13 @@ export default function Modal({
                 <div className="mb-6 text-sm text-[var(--color-text-muted)]">{children}</div>
                 <div className="flex justify-end gap-3">
                     <Button variant="ghost" onClick={onClose}>Hủy</Button>
-                    {onConfirm && (
+                    {onConfirm && confirmLabel !== null && (
                         <Button
                             variant={variant === 'destructive' ? 'destructive' : 'primary'}
                             onClick={onConfirm}
                             loading={confirmLoading}
                         >
-                            {confirmLabel}
+                            {confirmLabel ?? 'Xác nhận'}
                         </Button>
                     )}
                 </div>

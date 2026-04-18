@@ -20,6 +20,7 @@ const AdminDashboardPage = lazy(() => import('@/features/admin-dashboard/AdminDa
 const MonitoringPage = lazy(() => import('@/features/admin-monitoring/MonitoringPage'));
 const SourceDiscoveryPage = lazy(() => import('@/features/admin-discovery/SourceDiscoveryPage'));
 const AISettingsPage = lazy(() => import('@/features/admin-ai-settings/AISettingsPage'));
+const AdminSourcesPage = lazy(() => import('@/features/admin-sources/AdminSourcesPage'));
 
 // Root redirect with 500ms logo loader
 function RootRedirect() {
@@ -83,6 +84,7 @@ export default function AppRouter() {
                     <Route element={<AdminLayout />}>
                         <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
                         <Route path="/admin/monitoring" element={<MonitoringPage />} />
+                        <Route path="/admin/sources" element={<AdminSourcesPage />} />
                         <Route path="/admin/source-discovery" element={<SourceDiscoveryPage />} />
                         <Route path="/admin/ai-settings" element={<AISettingsPage />} />
                     </Route>

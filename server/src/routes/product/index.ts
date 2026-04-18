@@ -28,9 +28,8 @@ router.use('/brands', directBrandRouter);
 router.use('/brands/:brandId/onboarding/sessions', onboardingRoutes);
 router.use('/brands/:brandId/strategies', productBrandStrategyRouter);
 router.use('/strategies', productStrategyRouter);
-router.use('/brands/:brandId/content', productBrandContentRouter);
-router.use('/brands/:brandId/briefs', productBrandContentRouter);
-router.use('/brands/:brandId/review-queue', productBrandContentRouter);
+// Brand-scoped content endpoints (briefs, review-queue, generate-daily, ...)
+router.use('/brands/:brandId', productBrandContentRouter);
 router.use('/brands/:brandId/sources', brandSourceRoutes);
 router.use('/brands/:brandId/filter-profile', filterProfileRoutes);
 router.use('/brands/:brandId/job-schedules', jobScheduleRoutes);

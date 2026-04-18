@@ -111,7 +111,7 @@ export default function AISettingsPage() {
                 {[0, 1, 2].map((i) => (
                     <div
                         key={i}
-                        className="h-24 rounded-lg border border-white/10 bg-white/5 animate-pulse"
+                        className="h-24 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-card)] animate-pulse"
                     />
                 ))}
             </div>
@@ -121,8 +121,8 @@ export default function AISettingsPage() {
     return (
         <div className="max-w-2xl font-mono">
             <div className="mb-6">
-                <h1 className="text-sm font-bold text-white">AI Pipeline Settings</h1>
-                <p className="text-xs text-white/40">
+                <h1 className="text-sm font-bold text-[var(--color-text)]">AI Pipeline Settings</h1>
+                <p className="text-xs text-[var(--color-text-muted)] opacity-50">
                     Configure model and parameters per pipeline stage
                 </p>
             </div>
@@ -131,11 +131,11 @@ export default function AISettingsPage() {
                 {stages.map((stage, i) => (
                     <div
                         key={stage.id}
-                        className="rounded-lg border border-white/10 bg-white/5 p-4 space-y-3"
+                        className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-card)] p-4 space-y-3 transition-colors"
                     >
                         {/* Stage header: label + toggle */}
                         <div className="flex items-center justify-between">
-                            <span className="text-xs font-semibold text-white">
+                            <span className="text-xs font-semibold text-[var(--color-text)]">
                                 {stage.label}
                             </span>
                             <button
@@ -146,7 +146,7 @@ export default function AISettingsPage() {
                                         shouldDirty: true,
                                     })
                                 }
-                                className={`relative h-5 w-9 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#4FACFE]/50 ${stage.enabled ? 'bg-[#4FACFE]' : 'bg-white/20'
+                                className={`relative h-5 w-9 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#4FACFE]/50 ${stage.enabled ? 'bg-[#4FACFE]' : 'bg-[var(--color-border)]'
                                     }`}
                             >
                                 <span
@@ -161,12 +161,12 @@ export default function AISettingsPage() {
                             <>
                                 {/* Model dropdown */}
                                 <div>
-                                    <label className="mb-1 block text-[10px] uppercase tracking-wider text-white/40">
+                                    <label className="mb-1 block text-[10px] uppercase tracking-wider text-[var(--color-text-muted)] opacity-50">
                                         Model
                                     </label>
                                     <select
                                         {...register(`stages.${i}.model`)}
-                                        className="w-full rounded border border-white/10 bg-black/40 px-3 py-1.5 text-xs text-white outline-none focus:border-[#4FACFE] transition-colors"
+                                        className="w-full rounded border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-3 py-1.5 text-xs text-[var(--color-text)] outline-none focus:border-[#4FACFE] transition-colors"
                                     >
                                         {AI_MODELS.map((m) => (
                                             <option key={m} value={m}>
@@ -175,7 +175,7 @@ export default function AISettingsPage() {
                                         ))}
                                     </select>
                                     {errors.stages?.[i]?.model && (
-                                        <p className="mt-1 text-[10px] text-red-400">
+                                        <p className="mt-1 text-[10px] text-red-500">
                                             {errors.stages[i]?.model?.message}
                                         </p>
                                     )}
@@ -184,7 +184,7 @@ export default function AISettingsPage() {
                                 {/* Similarity threshold — only for stages that have it */}
                                 {stage.similarityThreshold !== undefined && (
                                     <div>
-                                        <label className="mb-1 block text-[10px] uppercase tracking-wider text-white/40">
+                                        <label className="mb-1 block text-[10px] uppercase tracking-wider text-[var(--color-text-muted)] opacity-50">
                                             Similarity Threshold
                                         </label>
                                         <input
@@ -196,10 +196,10 @@ export default function AISettingsPage() {
                                                 `stages.${i}.similarityThreshold`,
                                                 { valueAsNumber: true }
                                             )}
-                                            className="w-full rounded border border-white/10 bg-black/40 px-3 py-1.5 text-xs text-white outline-none focus:border-[#4FACFE] transition-colors"
+                                            className="w-full rounded border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-3 py-1.5 text-xs text-[var(--color-text)] outline-none focus:border-[#4FACFE] transition-colors"
                                         />
                                         {errors.stages?.[i]?.similarityThreshold && (
-                                            <p className="mt-1 text-[10px] text-red-400">
+                                            <p className="mt-1 text-[10px] text-red-500">
                                                 {
                                                     errors.stages[i]?.similarityThreshold
                                                         ?.message
