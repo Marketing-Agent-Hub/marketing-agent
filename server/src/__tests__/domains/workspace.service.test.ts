@@ -1,16 +1,22 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+const { mockCreate, mockTransaction } = vi.hoisted(() => ({
+    mockCreate: vi.fn(),
+    mockTransaction: vi.fn(),
+}));
+
 vi.mock('../../db/index.js', () => ({
     prisma: {
         workspace: {
             findUnique: vi.fn(),
-            create: vi.fn(),
+            create: mockCreate,
         },
         workspaceMember: {
             findMany: vi.fn(),
             findUnique: vi.fn(),
             create: vi.fn(),
         },
+        $transaction: mockTransaction,
     },
 }));
 
@@ -20,7 +26,7 @@ import { WorkspaceService } from '../../domains/workspace/workspace.service.js';
 const mockWorkspace = (id = 1) => ({
     id,
     name: `Workspace ${id}`,
-    slug: `workspace-${id}`,
+    slug: `workspace-${id}-abc1234`,
     createdAt: new Date(),
     updatedAt: new Date(),
     members: [],
@@ -34,30 +40,50 @@ describe('WorkspaceService', () => {
         vi.clearAllMocks();
     });
 
-    it('creates workspace and owner membership', async () => {
-        vi.mocked(prisma.workspace.findUnique).mockResolvedValue(null);
-        vi.mocked(prisma.workspace.create).mockResolvedValue({
+    it('creates workspace and owner membership with auto-generated slug', async () => {
+        const created = {
             id: 1,
             name: 'My Workspace',
-            slug: 'my-workspace',
+            slug: 'my-workspace-x8b9qzr',
             createdAt: new Date(),
             updatedAt: new Date(),
             members: [{ id: 1, workspaceId: 1, userId: 10, role: 'OWNER', createdAt: new Date() }],
-        } as any);
+        };
 
-        const result = await service.create(10, { name: 'My Workspace', slug: 'my-workspace' });
+        // $transaction executes the callback with a tx object
+        mockTransaction.mockImplementation(async (fn: any) => fn({ workspace: { create: vi.fn().mockResolvedValue(created) } }));
 
-        expect(result.slug).toBe('my-workspace');
+        const result = await service.create(10, { name: 'My Workspace' });
+
+        expect(result.name).toBe('My Workspace');
+        // slug should be auto-generated: starts with base slug
+        expect(result.slug).toMatch(/^my-workspace-/);
         expect(result.members[0].role).toBe('OWNER');
         expect(result.members[0].userId).toBe(10);
     });
 
-    it('throws 409 when slug already exists', async () => {
-        vi.mocked(prisma.workspace.findUnique).mockResolvedValue(mockWorkspace(1) as any);
+    it('retries on P2002 slug collision and succeeds on second attempt', async () => {
+        const p2002Error = Object.assign(new Error('Unique constraint'), { code: 'P2002' });
+        const created = {
+            id: 2,
+            name: 'Collision Test',
+            slug: 'collision-test-zzz9999',
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            members: [{ id: 1, workspaceId: 2, userId: 5, role: 'OWNER', createdAt: new Date() }],
+        };
 
-        await expect(
-            service.create(10, { name: 'Duplicate', slug: 'existing-slug' })
-        ).rejects.toMatchObject({ statusCode: 409 });
+        let callCount = 0;
+        mockTransaction.mockImplementation(async (fn: any) => {
+            callCount++;
+            if (callCount === 1) throw p2002Error;
+            return fn({ workspace: { create: vi.fn().mockResolvedValue(created) } });
+        });
+
+        const result = await service.create(5, { name: 'Collision Test' });
+
+        expect(result.name).toBe('Collision Test');
+        expect(mockTransaction).toHaveBeenCalledTimes(2);
     });
 
     it('lists user workspaces', async () => {

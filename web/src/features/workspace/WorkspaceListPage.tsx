@@ -12,10 +12,6 @@ import type { Workspace } from '@/types';
 
 const schema = z.object({
     name: z.string().min(1, 'Tên workspace là bắt buộc'),
-    slug: z
-        .string()
-        .min(1, 'Slug là bắt buộc')
-        .regex(/^[a-z0-9-]+$/, 'Slug chỉ gồm chữ thường, số và dấu gạch ngang'),
 });
 type FormData = z.infer<typeof schema>;
 
@@ -97,8 +93,11 @@ export default function WorkspaceListPage() {
                 confirmLoading={createMutation.isPending}
             >
                 <div className="space-y-4">
-                    <Input label="Tên Workspace" error={errors.name?.message} {...register('name')} />
-                    <Input label="Slug (vd: my-company)" error={errors.slug?.message} {...register('slug')} />
+                    <Input
+                        label="Tên Workspace"
+                        error={errors.name?.message}
+                        {...register('name')}
+                    />
                 </div>
             </Modal>
         </div>

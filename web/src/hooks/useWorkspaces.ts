@@ -12,7 +12,7 @@ export function useWorkspaces() {
 export function useCreateWorkspace() {
     const qc = useQueryClient();
     return useMutation({
-        mutationFn: (data: { name: string; slug: string }) =>
+        mutationFn: (data: { name: string }) =>
             apiClient.post<Workspace>('/api/workspaces', data).then((r) => r.data),
         onSuccess: () => qc.invalidateQueries({ queryKey: ['workspaces'] }),
     });

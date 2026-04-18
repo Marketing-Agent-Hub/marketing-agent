@@ -49,7 +49,7 @@ function RootRedirect() {
     // Logo loader placeholder
     return (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
-            <div style={{ fontSize: 24, color: '#4FACFE' }}>OC News Bot</div>
+            <div style={{ fontSize: 24, color: '#4FACFE' }}>Marketing Agent</div>
         </div>
     );
 }

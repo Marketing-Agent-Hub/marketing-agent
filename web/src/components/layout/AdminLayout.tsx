@@ -50,7 +50,7 @@ export default function AdminLayout() {
             <aside className="flex w-48 flex-col border-r border-white/10 bg-[#111111]">
                 {/* Logo */}
                 <div className="flex h-10 items-center border-b border-white/10 px-3">
-                    <span className="text-xs font-bold text-[#4FACFE]">OC_ADMIN</span>
+                    <span className="text-xs font-bold text-[#4FACFE]">ADMIN</span>
                 </div>
 
                 {/* Navigation sections */}

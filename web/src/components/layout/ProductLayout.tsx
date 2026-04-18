@@ -53,7 +53,7 @@ export default function ProductLayout() {
                 <div className="flex h-14 items-center justify-between px-4 border-b border-[var(--color-border)]">
                     {!sidebarCollapsed && (
                         <span className="font-['Outfit',sans-serif] font-semibold text-sm bg-gradient-to-r from-[#00F2FE] to-[#4FACFE] bg-clip-text text-transparent">
-                            OC News Bot
+                            Marketing Agent
                         </span>
                     )}
                     <button
