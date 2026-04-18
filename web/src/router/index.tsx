@@ -11,7 +11,8 @@ const LoginPage = lazy(() => import('@/features/auth/LoginPage'));
 const MagicLinkCallbackPage = lazy(() => import('@/features/auth/MagicLinkCallbackPage'));
 const WorkspaceListPage = lazy(() => import('@/features/workspace/WorkspaceListPage'));
 const BrandListPage = lazy(() => import('@/features/brand/BrandListPage'));
-const OnboardingPage = lazy(() => import('@/features/onboarding/OnboardingPage'));
+const OnboardingFormPage = lazy(() => import('@/features/onboarding/OnboardingFormPage'));
+const ProfilePreviewPage = lazy(() => import('@/features/onboarding/ProfilePreviewPage'));
 const StrategyCalendarPage = lazy(() => import('@/features/strategy/StrategyCalendarPage'));
 const ReviewQueuePage = lazy(() => import('@/features/review-queue/ReviewQueuePage'));
 const PublishingDashboardPage = lazy(() => import('@/features/publishing/PublishingDashboardPage'));
@@ -71,7 +72,8 @@ export default function AppRouter() {
                     <Route element={<ProductLayout />}>
                         <Route path="/workspaces" element={<WorkspaceListPage />} />
                         <Route path="/w/:workspaceId/brands" element={<BrandListPage />} />
-                        <Route path="/b/:brandId/onboarding" element={<OnboardingPage />} />
+                        <Route path="/b/:brandId/onboarding" element={<OnboardingFormPage />} />
+                        <Route path="/b/:brandId/onboarding/preview" element={<ProfilePreviewPage />} />
                         <Route path="/b/:brandId/strategy" element={<StrategyCalendarPage />} />
                         <Route path="/b/:brandId/review-queue" element={<ReviewQueuePage />} />
                         <Route path="/b/:brandId/publishing" element={<PublishingDashboardPage />} />
