@@ -1,4 +1,4 @@
-import OpenAI from 'openai';
+import OpenAI, { APIError } from 'openai';
 import { logger } from './logger.js';
 
 // ─── Return types ────────────────────────────────────────────────────────────
@@ -68,7 +68,7 @@ export class AiClient {
 
             return { data, actualModel };
         } catch (error) {
-            if (error instanceof OpenAI.APIStatusError) {
+            if (error instanceof APIError) {
                 if (error.status === 402) throw new OpenRouterCreditError();
                 if (error.status === 529) throw new OpenRouterOverloadedError();
             }
@@ -92,7 +92,7 @@ export class AiClient {
 
             return { data, actualModel };
         } catch (error) {
-            if (error instanceof OpenAI.APIStatusError) {
+            if (error instanceof APIError) {
                 if (error.status === 402) throw new OpenRouterCreditError();
                 if (error.status === 529) throw new OpenRouterOverloadedError();
             }

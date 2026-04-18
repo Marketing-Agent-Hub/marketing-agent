@@ -7,9 +7,10 @@ const router = Router({ mergeParams: true });
 
 router.post('/generate', requireBrandAccess('VIEWER'), asyncHandler((req, res, next) => onboardingController.generateProfile(req, res, next)));
 router.post('/save', requireBrandAccess('EDITOR'), asyncHandler((req, res, next) => onboardingController.saveProfile(req, res, next)));
-router.post('/', requireBrandAccess('EDITOR'), asyncHandler((req, res, next) => onboardingController.createSession(req, res, next)));
-router.get('/:sessionId', requireBrandAccess('VIEWER'), asyncHandler((req, res, next) => onboardingController.getSession(req, res, next)));
-router.post('/:sessionId/messages', requireBrandAccess('EDITOR'), asyncHandler((req, res, next) => onboardingController.addMessage(req, res, next)));
-router.post('/:sessionId/complete', requireBrandAccess('EDITOR'), asyncHandler((req, res, next) => onboardingController.completeSession(req, res, next)));
+// Session routes — kept for backward compatibility
+router.post('/sessions', requireBrandAccess('EDITOR'), asyncHandler((req, res, next) => onboardingController.createSession(req, res, next)));
+router.get('/sessions/:sessionId', requireBrandAccess('VIEWER'), asyncHandler((req, res, next) => onboardingController.getSession(req, res, next)));
+router.post('/sessions/:sessionId/messages', requireBrandAccess('EDITOR'), asyncHandler((req, res, next) => onboardingController.addMessage(req, res, next)));
+router.post('/sessions/:sessionId/complete', requireBrandAccess('EDITOR'), asyncHandler((req, res, next) => onboardingController.completeSession(req, res, next)));
 
 export default router;

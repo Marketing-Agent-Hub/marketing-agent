@@ -131,31 +131,31 @@ export class HealthService {
     }
 
     /**
-     * Check OpenAI API availability
+     * Check OpenRouter API availability
      */
     private async checkOpenAI(startTime: number): Promise<HealthCheckResult> {
         try {
-            if (!process.env.OPENAI_API_KEY) {
+            if (!process.env.OPENROUTER_API_KEY) {
                 return {
                     service: 'openai',
                     status: 'DEGRADED',
-                    message: 'OpenAI API key not configured',
+                    message: 'OpenRouter API key not configured',
                 };
             }
 
-            // OpenAI is configured
+            // OpenRouter is configured
             return {
                 service: 'openai',
                 status: 'HEALTHY',
                 responseTime: Date.now() - startTime,
-                message: 'OpenAI API configured',
+                message: 'OpenRouter API configured',
             };
         } catch (error) {
             return {
                 service: 'openai',
                 status: 'UNHEALTHY',
                 responseTime: Date.now() - startTime,
-                message: error instanceof Error ? error.message : 'OpenAI check failed',
+                message: error instanceof Error ? error.message : 'OpenRouter check failed',
             };
         }
     }

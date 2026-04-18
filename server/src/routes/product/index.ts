@@ -25,7 +25,7 @@ router.use('/accounts', hybridAuthRoutes);
 router.use('/workspaces', workspaceRoutes);
 router.use('/workspaces/:workspaceId/brands', workspaceBrandRouter);
 router.use('/brands', directBrandRouter);
-router.use('/brands/:brandId/onboarding/sessions', onboardingRoutes);
+router.use('/brands/:brandId/onboarding', onboardingRoutes);
 router.use('/brands/:brandId/strategies', productBrandStrategyRouter);
 router.use('/strategies', productStrategyRouter);
 // Brand-scoped content endpoints (briefs, review-queue, generate-daily, ...)

@@ -84,14 +84,13 @@ export class OnboardingController {
                 throw err;
             }
 
-            const workspaceId = (req as any).brand?.workspaceId as number;
             const { formData, prompt, fieldKey } = body;
 
             if (fieldKey) {
-                const result = await onboardingFormService.generateFieldSuggestion(brandId, workspaceId, formData, fieldKey);
+                const result = await onboardingFormService.generateFieldSuggestion(brandId, formData, fieldKey);
                 res.json({ fieldKey: result.fieldKey, suggestion: result.suggestion });
             } else {
-                const result = await onboardingFormService.generateProfile(brandId, workspaceId, formData, prompt);
+                const result = await onboardingFormService.generateProfile(brandId, formData, prompt);
                 res.json({ profile: result.profile, pillars: result.pillars });
             }
         } catch (error) {

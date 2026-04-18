@@ -29,15 +29,17 @@ export class OnboardingFormService {
      */
     async generateProfile(
         brandId: number,
-        workspaceId: number,
         formData: OnboardingFormDataInput,
         prompt?: string,
     ): Promise<{ profile: Omit<GeneratedBrandProfileInput, 'contentPillarCandidates'>; pillars: GeneratedContentPillarInput[] }> {
-        // Verify brand exists
+        // Verify brand exists and get workspaceId
         const brand = await prisma.brand.findUnique({ where: { id: brandId } });
         if (!brand) {
             throw makeError('Brand không tồn tại', 404, 'NOT_FOUND');
         }
+
+        // Use workspaceId from brand record — don't rely on caller passing it correctly
+        const resolvedWorkspaceId = brand.workspaceId;
 
         const model = await getAIModel('businessAnalysis');
 
@@ -72,7 +74,7 @@ ${prompt ? `\n## Additional Context\n${prompt}` : ''}
         let output: GeneratedBrandProfileInput;
         try {
             output = await callAIWorkflow<GeneratedBrandProfileInput>({
-                workspaceId,
+                workspaceId: resolvedWorkspaceId,
                 brandId,
                 workflow: 'business-analysis',
                 model,
@@ -136,7 +138,6 @@ ${prompt ? `\n## Additional Context\n${prompt}` : ''}
      */
     async generateFieldSuggestion(
         brandId: number,
-        workspaceId: number,
         formData: OnboardingFormDataInput,
         fieldKey: string,
     ): Promise<{ fieldKey: string; suggestion: string }> {
