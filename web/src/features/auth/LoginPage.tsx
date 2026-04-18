@@ -1,9 +1,8 @@
-import { useState, useCallback } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useAuthStore } from '@/store/authStore';
 import apiClient from '@/api/client';
 import { toast } from '@/components/ui/Toast';
 import Input from '@/components/ui/Input';
@@ -11,62 +10,6 @@ import Button from '@/components/ui/Button';
 import { cn } from '@/lib/utils';
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined;
-
-/**
- * Open Google OAuth2 implicit flow in a popup window.
- * Uses postMessage to receive the id_token from the callback page
- * — avoids polling popup.location which is blocked by COOP headers
- * set by Google's servers.
- */
-function openGoogleOAuthPopup(
-    clientId: string,
-    onIdToken: (idToken: string) => void,
-    onError: () => void,
-) {
-    const redirectUri = `${window.location.origin}/auth/callback`;
-    const params = new URLSearchParams({
-        client_id: clientId,
-        redirect_uri: redirectUri,
-        response_type: 'token id_token',
-        scope: 'openid email profile',
-        nonce: Math.random().toString(36).slice(2),
-    });
-
-    const popup = window.open(
-        `https://accounts.google.com/o/oauth2/v2/auth?${params}`,
-        'google-oauth',
-        'width=500,height=600,left=200,top=100',
-    );
-
-    if (!popup) {
-        toast.error('Popup bị chặn. Vui lòng cho phép popup cho trang này.');
-        onError();
-        return;
-    }
-
-    const onMessage = (event: MessageEvent) => {
-        if (event.origin !== window.location.origin) return;
-        if (event.data?.type === 'GOOGLE_ID_TOKEN' && event.data?.idToken) {
-            window.removeEventListener('message', onMessage);
-            onIdToken(event.data.idToken as string);
-        }
-    };
-
-    window.addEventListener('message', onMessage);
-
-    // Cleanup if popup is closed without completing auth
-    const checkClosed = setInterval(() => {
-        try {
-            if (popup.closed) {
-                clearInterval(checkClosed);
-                window.removeEventListener('message', onMessage);
-                onError();
-            }
-        } catch {
-            // COOP may block this — ignore, postMessage will handle success case
-        }
-    }, 1000);
-}
 
 const schema = z.object({
     email: z.string().email('Email không hợp lệ'),
@@ -83,39 +26,36 @@ const benefits = [
 export default function LoginPage() {
     const [magicSent, setMagicSent] = useState(false);
     const [carouselIdx, setCarouselIdx] = useState(0);
-    const [googleLoading, setGoogleLoading] = useState(false);
-    const { setToken } = useAuthStore();
-    const navigate = useNavigate();
     const location = useLocation();
-    const from = (location.state as { from?: { pathname: string } })?.from?.pathname ?? '/workspaces';
 
     const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
         resolver: zodResolver(schema),
     });
 
-    const handleGoogleLogin = useCallback(() => {
+    /**
+     * Google OAuth — full redirect flow (no popup).
+     * Saves the intent URL in sessionStorage so the callback page
+     * can redirect back after exchanging the token.
+     */
+    const handleGoogleLogin = () => {
         if (!GOOGLE_CLIENT_ID) {
             toast.error('Google OAuth chưa được cấu hình (thiếu VITE_GOOGLE_CLIENT_ID)');
             return;
         }
-        setGoogleLoading(true);
-        openGoogleOAuthPopup(
-            GOOGLE_CLIENT_ID,
-            async (idToken) => {
-                try {
-                    const res = await apiClient.post<{ token: string }>('/api/accounts/auth/google', { idToken });
-                    setToken(res.data.token);
-                    const role = useAuthStore.getState().user?.systemRole;
-                    navigate(role === 'ADMIN' ? '/admin/dashboard' : from, { replace: true });
-                } catch {
-                    // error handled by interceptor
-                } finally {
-                    setGoogleLoading(false);
-                }
-            },
-            () => setGoogleLoading(false),
-        );
-    }, [setToken, navigate, from]);
+        // Persist intent URL across the redirect
+        const from = (location.state as { from?: { pathname: string } })?.from?.pathname ?? '/workspaces';
+        sessionStorage.setItem('auth_redirect', from);
+
+        const redirectUri = `${window.location.origin}/auth/callback`;
+        const params = new URLSearchParams({
+            client_id: GOOGLE_CLIENT_ID,
+            redirect_uri: redirectUri,
+            response_type: 'token id_token',
+            scope: 'openid email profile',
+            nonce: Math.random().toString(36).slice(2),
+        });
+        window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?${params}`;
+    };
 
     const onSubmit = async (data: FormData) => {
         try {
@@ -226,7 +166,6 @@ export default function LoginPage() {
                             <Button
                                 type="button"
                                 variant="ghost"
-                                loading={googleLoading}
                                 onClick={handleGoogleLogin}
                                 className="w-full border border-[var(--color-border)]"
                             >

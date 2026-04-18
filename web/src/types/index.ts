@@ -134,17 +134,24 @@ export interface MonitorOverview {
     pipelineItemsProcessed: number;
 }
 
+export type ServiceHealthStatus = 'UP' | 'DOWN' | 'DEGRADED';
+
 export interface HealthStatus {
-    db: 'HEALTHY' | 'DEGRADED' | 'UNHEALTHY';
-    aiApi: 'HEALTHY' | 'DEGRADED' | 'UNHEALTHY';
-    server: 'HEALTHY' | 'DEGRADED' | 'UNHEALTHY';
+    overall: ServiceHealthStatus;
+    services: Array<{
+        service: string;
+        status: ServiceHealthStatus;
+        lastCheck: string;
+        responseTime?: number;
+    }>;
 }
 
 export interface LogEntry {
-    id: string;
-    timestamp: string;
-    level: 'INFO' | 'DEBUG' | 'WARN' | 'ERROR';
-    service: string;
+    id: number;
+    createdAt: string;
+    level: 'TRACE' | 'DEBUG' | 'INFO' | 'WARN' | 'ERROR' | 'FATAL';
     message: string;
-    payload?: unknown;
+    service?: string | null;
+    context?: string | null;
+    metadata?: unknown;
 }

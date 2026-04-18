@@ -1,15 +1,25 @@
 import { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
+import { decodeAppToken } from '@/lib/jwt';
+import apiClient from '@/api/client';
+
+function getRedirectTarget(token: string): string {
+    const payload = decodeAppToken(token);
+    const role = payload?.systemRole;
+    const saved = sessionStorage.getItem('auth_redirect');
+    sessionStorage.removeItem('auth_redirect');
+    if (role === 'ADMIN') return '/admin/dashboard';
+    return saved ?? '/workspaces';
+}
 
 /**
  * Handles two callback scenarios:
  *
  * 1. Magic link: backend redirects to /auth/callback?token=<jwt>
- *    → set token and navigate to app
  *
- * 2. Google OAuth popup: Google redirects to /auth/callback#id_token=...
- *    → send id_token to parent window via postMessage, then close self
+ * 2. Google OAuth redirect: Google redirects to /auth/callback#id_token=...
+ *    → exchange id_token with backend → get app JWT → navigate
  */
 export default function MagicLinkCallbackPage() {
     const [searchParams] = useSearchParams();
@@ -17,30 +27,34 @@ export default function MagicLinkCallbackPage() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        // Case 2: Google OAuth popup — id_token in URL fragment
+        // Case 2: Google OAuth redirect — id_token in URL fragment
         const fragment = new URLSearchParams(window.location.hash.slice(1));
         const idToken = fragment.get('id_token');
         if (idToken) {
-            // Send to parent window and close popup
-            if (window.opener) {
-                window.opener.postMessage({ type: 'GOOGLE_ID_TOKEN', idToken }, window.location.origin);
-            }
-            window.close();
+            apiClient
+                .post<{ token: string }>('/api/accounts/auth/google', { idToken })
+                .then((res) => {
+                    const jwt = res.data.token;
+                    setToken(jwt);
+                    navigate(getRedirectTarget(jwt), { replace: true });
+                })
+                .catch(() => {
+                    navigate('/login', { replace: true });
+                });
             return;
         }
 
-        // Case 1: Magic link — token in query string
+        // Case 1: Magic link — app JWT in query string
         const token = searchParams.get('token');
         if (token) {
             setToken(token);
-            const role = useAuthStore.getState().user?.systemRole;
-            navigate(role === 'ADMIN' ? '/admin/dashboard' : '/workspaces', { replace: true });
+            navigate(getRedirectTarget(token), { replace: true });
             return;
         }
 
         // No token found
         navigate('/login', { replace: true });
-    }, [searchParams, setToken, navigate]);
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     return (
         <div className="flex h-screen items-center justify-center bg-[var(--color-bg)]">

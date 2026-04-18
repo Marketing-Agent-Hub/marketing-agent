@@ -39,7 +39,7 @@ export default function StrategyCalendarPage() {
     // Poll while generating
     usePolling<StrategyPlan[]>({
         queryKey: ['strategy', bid],
-        queryFn: () => apiClient.get(`/api/brands/${bid}/strategies`).then((r) => r.data),
+        queryFn: () => apiClient.get(`/api/brands/${bid}/strategies`).then((r) => r.data.strategies ?? r.data),
         shouldStop: (data) => data.some((s) => s.status === 'ACTIVE' || (s.slots?.length ?? 0) > 0),
         enabled: generating,
         intervalMs: 3000,
@@ -204,8 +204,8 @@ export default function StrategyCalendarPage() {
                                     key={p}
                                     onClick={() => toggleChannel(p)}
                                     className={`rounded-full border px-3 py-1 text-xs transition-colors ${selectedChannels.includes(p)
-                                            ? 'border-[#4FACFE] bg-[#4FACFE]/10 text-[#4FACFE]'
-                                            : 'border-[var(--color-border)] text-[var(--color-text-muted)] hover:bg-white/5'
+                                        ? 'border-[#4FACFE] bg-[#4FACFE]/10 text-[#4FACFE]'
+                                        : 'border-[var(--color-border)] text-[var(--color-text-muted)] hover:bg-white/5'
                                         }`}
                                 >
                                     {p}

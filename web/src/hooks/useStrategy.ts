@@ -5,7 +5,7 @@ import type { StrategyPlan } from '@/types';
 export function useStrategy(brandId: number) {
     return useQuery<StrategyPlan[]>({
         queryKey: ['strategy', brandId],
-        queryFn: () => apiClient.get(`/api/brands/${brandId}/strategies`).then((r) => r.data),
+        queryFn: () => apiClient.get(`/api/brands/${brandId}/strategies`).then((r) => r.data.strategies ?? r.data),
         enabled: !!brandId,
     });
 }

@@ -5,7 +5,7 @@ import type { ContentDraft } from '@/types';
 export function useReviewQueue(brandId: number) {
     return useQuery<ContentDraft[]>({
         queryKey: ['review-queue', brandId],
-        queryFn: () => apiClient.get(`/api/brands/${brandId}/review-queue`).then((r) => r.data),
+        queryFn: () => apiClient.get(`/api/brands/${brandId}/review-queue`).then((r) => r.data.queue ?? r.data),
         enabled: !!brandId,
     });
 }

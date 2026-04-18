@@ -35,7 +35,7 @@ export default function AdminLayout() {
 
     const { data: health } = useQuery<HealthStatus>({
         queryKey: ['admin-health'],
-        queryFn: () => apiClient.get('/api/internal/monitor/health').then((r) => r.data),
+        queryFn: () => apiClient.get('/api/internal/monitor/health').then((r) => r.data.data),
         refetchInterval: 10_000,
     });
 
@@ -101,9 +101,9 @@ export default function AdminLayout() {
                     <div className="flex items-center gap-4 font-mono text-xs">
                         {health ? (
                             <>
-                                <span>DB: <HealthDot status={health.db} /></span>
-                                <span>AI API: <HealthDot status={health.aiApi} /></span>
-                                <span>Server: <HealthDot status={health.server} /></span>
+                                <span>DB: <HealthDot status={health.services.find(s => s.service === 'database')?.status ?? 'DOWN'} /></span>
+                                <span>AI API: <HealthDot status={health.services.find(s => s.service === 'openai')?.status ?? 'DOWN'} /></span>
+                                <span>Server: <HealthDot status={health.overall} /></span>
                             </>
                         ) : (
                             <span className="text-white/30">connecting...</span>

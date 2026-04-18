@@ -1,20 +1,19 @@
 import { useQuery } from '@tanstack/react-query';
 import apiClient from '@/api/client';
 import Skeleton from '@/components/ui/Skeleton';
-import type { MonitorOverview } from '@/types';
 
 export default function AdminDashboardPage() {
-    const { data, isLoading } = useQuery<MonitorOverview>({
+    const { data, isLoading } = useQuery({
         queryKey: ['monitor-overview'],
-        queryFn: () => apiClient.get('/api/internal/monitor/overview').then((r) => r.data),
+        queryFn: () => apiClient.get('/api/internal/monitor/overview').then((r) => r.data.data),
         refetchInterval: 30_000,
     });
 
     const stats = [
-        { label: 'Total API Calls', value: data?.totalApiCalls?.toLocaleString() ?? '—', icon: '📡' },
-        { label: 'Error Rate', value: data?.errorRate != null ? `${data.errorRate.toFixed(2)}%` : '—', icon: '⚠️' },
-        { label: 'Ingestion Runs', value: data?.ingestionRunCount?.toLocaleString() ?? '—', icon: '🔄' },
-        { label: 'Pipeline Items', value: data?.pipelineItemsProcessed?.toLocaleString() ?? '—', icon: '⚙️' },
+        { label: 'Total Logs (24h)', value: data?.logs?.total?.toLocaleString() ?? '—', icon: '📡' },
+        { label: 'Recent Errors', value: data?.logs?.recentErrors?.toLocaleString() ?? '—', icon: '⚠️' },
+        { label: 'Total Metrics', value: data?.metrics?.total?.toLocaleString() ?? '—', icon: '🔄' },
+        { label: 'Slow Traces', value: data?.traces?.slowCount?.toLocaleString() ?? '—', icon: '⚙️' },
     ];
 
     return (

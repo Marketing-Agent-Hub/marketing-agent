@@ -5,7 +5,7 @@ import type { Brand } from '@/types';
 export function useBrands(workspaceId: number) {
     return useQuery<Brand[]>({
         queryKey: ['brands', workspaceId],
-        queryFn: () => apiClient.get(`/api/workspaces/${workspaceId}/brands`).then((r) => r.data),
+        queryFn: () => apiClient.get(`/api/workspaces/${workspaceId}/brands`).then((r) => r.data.brands ?? r.data),
         enabled: !!workspaceId,
     });
 }

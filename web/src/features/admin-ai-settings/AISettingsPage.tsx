@@ -71,7 +71,7 @@ export default function AISettingsPage() {
     const { data: settings, isLoading } = useQuery<AISettings>({
         queryKey: ['ai-settings'],
         queryFn: () =>
-            apiClient.get('/api/internal/ai-settings').then((r) => r.data),
+            apiClient.get('/api/internal/admin/ai/settings').then((r) => r.data.data),
     });
 
     const {
@@ -91,7 +91,7 @@ export default function AISettingsPage() {
 
     const saveMutation = useMutation({
         mutationFn: (data: FormData) =>
-            apiClient.patch('/api/internal/ai-settings', data),
+            apiClient.patch('/api/internal/admin/ai/settings', data),
         onSuccess: () => {
             qc.invalidateQueries({ queryKey: ['ai-settings'] });
             toast.success('AI settings updated successfully');

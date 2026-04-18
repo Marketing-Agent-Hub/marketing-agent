@@ -5,7 +5,7 @@ import type { Workspace } from '@/types';
 export function useWorkspaces() {
     return useQuery<Workspace[]>({
         queryKey: ['workspaces'],
-        queryFn: () => apiClient.get('/api/workspaces').then((r) => r.data),
+        queryFn: () => apiClient.get('/api/workspaces').then((r) => r.data.workspaces ?? r.data),
     });
 }
 

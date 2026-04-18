@@ -12,7 +12,7 @@ export default function SourceDiscoveryPage() {
 
     const { data: sources, isLoading } = useQuery<PendingSource[]>({
         queryKey: ['pending-sources'],
-        queryFn: () => apiClient.get('/api/internal/source-discovery/pending').then((r) => r.data),
+        queryFn: () => apiClient.get('/api/internal/source-discovery/pending').then((r) => r.data.data ?? r.data),
     });
 
     const approveMutation = useMutation({

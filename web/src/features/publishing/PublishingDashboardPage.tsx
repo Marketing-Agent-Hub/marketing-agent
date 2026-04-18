@@ -30,7 +30,7 @@ export default function PublishingDashboardPage() {
 
     const { data: jobs, isLoading } = useQuery<PublishJob[]>({
         queryKey: ['publish-jobs', bid, page],
-        queryFn: () => apiClient.get(`/api/brands/${bid}/publish-jobs?page=${page}`).then((r) => r.data),
+        queryFn: () => apiClient.get(`/api/brands/${bid}/publish-jobs?page=${page}`).then((r) => r.data.jobs ?? r.data),
         enabled: !!bid,
     });
 
@@ -76,7 +76,7 @@ export default function PublishingDashboardPage() {
                                     <td className="px-4 py-3 text-[var(--color-text-muted)]">{platformLabel[job.channel]}</td>
                                     <td className="px-4 py-3">
                                         <span className={`inline-flex items-center gap-1 text-xs ${job.status === 'PUBLISHED' ? 'text-green-400' :
-                                                job.status === 'SCHEDULED' ? 'text-yellow-400' : 'text-red-400'
+                                            job.status === 'SCHEDULED' ? 'text-yellow-400' : 'text-red-400'
                                             }`}>
                                             {statusIcon[job.status]} {job.status}
                                         </span>

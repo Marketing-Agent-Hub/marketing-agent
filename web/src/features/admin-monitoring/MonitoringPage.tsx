@@ -10,11 +10,13 @@ const levelColors: Record<string, string> = {
     DEBUG: 'text-white/40',
     WARN: 'text-yellow-400',
     ERROR: 'text-red-400',
+    FATAL: 'text-red-600',
+    TRACE: 'text-white/20',
 };
 
 export default function MonitoringPage() {
     const [search, setSearch] = useState('');
-    const [levels, setLevels] = useState<Set<string>>(new Set(['INFO', 'DEBUG', 'WARN', 'ERROR']));
+    const [levels, setLevels] = useState<Set<string>>(new Set(['INFO', 'DEBUG', 'WARN', 'ERROR', 'FATAL', 'TRACE']));
     const [autoTail, setAutoTail] = useState(true);
     const [expandedId, setExpandedId] = useState<string | null>(null);
     const searchRef = useRef<HTMLInputElement>(null);
@@ -22,17 +24,17 @@ export default function MonitoringPage() {
 
     const { data: logs } = useQuery<LogEntry[]>({
         queryKey: ['monitor-logs'],
-        queryFn: () => apiClient.get('/api/internal/monitor/logs').then((r) => r.data),
+        queryFn: () => apiClient.get('/api/internal/monitor/logs').then((r) => r.data.data?.logs ?? []),
         refetchInterval: 5000,
     });
 
-    const hasErrors = logs?.some((l) => l.level === 'ERROR');
+    const hasErrors = logs?.some((l) => l.level === 'ERROR' || l.level === 'FATAL');
 
     const filtered = logs?.filter((log) => {
         if (!levels.has(log.level)) return false;
         if (!search) return true;
         try {
-            return new RegExp(search, 'i').test(log.message) || new RegExp(search, 'i').test(log.service);
+            return new RegExp(search, 'i').test(log.message) || new RegExp(search, 'i').test(log.service ?? '');
         } catch {
             return log.message.toLowerCase().includes(search.toLowerCase());
         }
@@ -71,7 +73,7 @@ export default function MonitoringPage() {
                     placeholder="Search (/ to focus, regex ok)"
                     className="flex-1 rounded border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white outline-none placeholder:text-white/30 focus:border-[#4FACFE]" />
 
-                {(['INFO', 'DEBUG', 'WARN', 'ERROR'] as const).map((level) => (
+                {(['INFO', 'DEBUG', 'WARN', 'ERROR', 'FATAL'] as const).map((level) => (
                     <button key={level} onClick={() => toggleLevel(level)}
                         className={cn('rounded border px-2 py-1 text-[10px] transition-colors',
                             levels.has(level)
@@ -105,18 +107,20 @@ export default function MonitoringPage() {
                         {filtered?.map((log) => (
                             <>
                                 <tr key={log.id}
-                                    onClick={() => log.payload && setExpandedId(expandedId === log.id ? null : log.id)}
+                                    onClick={() => log.metadata && setExpandedId(expandedId === String(log.id) ? null : String(log.id))}
                                     className={cn('border-b border-white/5 transition-colors',
-                                        log.payload ? 'cursor-pointer hover:bg-white/5' : '')}>
-                                    <td className="px-3 py-1.5 text-white/40 whitespace-nowrap">{log.timestamp}</td>
-                                    <td className={cn('px-3 py-1.5 font-bold', levelColors[log.level])}>{log.level}</td>
-                                    <td className="px-3 py-1.5 text-[#4FACFE]">{log.service}</td>
+                                        log.metadata ? 'cursor-pointer hover:bg-white/5' : '')}>
+                                    <td className="px-3 py-1.5 text-white/40 whitespace-nowrap">
+                                        {new Date(log.createdAt).toISOString().replace('T', ' ').slice(0, 23)}
+                                    </td>
+                                    <td className={cn('px-3 py-1.5 font-bold', levelColors[log.level] ?? 'text-white/60')}>{log.level}</td>
+                                    <td className="px-3 py-1.5 text-[#4FACFE]">{log.service ?? '—'}</td>
                                     <td className="px-3 py-1.5 text-white/80">{log.message}</td>
                                 </tr>
-                                {expandedId === log.id && log.payload && (
+                                {expandedId === String(log.id) && log.metadata && (
                                     <tr key={`${log.id}-payload`}>
                                         <td colSpan={4} className="px-3 py-2">
-                                            <JsonViewer data={log.payload} />
+                                            <JsonViewer data={log.metadata} />
                                         </td>
                                     </tr>
                                 )}

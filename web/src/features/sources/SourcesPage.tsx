@@ -20,7 +20,7 @@ export default function SourcesPage() {
 
     const { data: sources, isLoading } = useQuery<BrandSource[]>({
         queryKey: ['sources', bid],
-        queryFn: () => apiClient.get(`/api/brands/${bid}/sources`).then((r) => r.data),
+        queryFn: () => apiClient.get(`/api/brands/${bid}/sources`).then((r) => r.data.data ?? r.data),
         enabled: !!bid,
     });
 

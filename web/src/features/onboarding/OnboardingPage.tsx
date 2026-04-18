@@ -12,27 +12,28 @@ interface Message {
     typing?: boolean;
 }
 
-function useTypewriter(text: string, active: boolean, intervalMs = 20) {
+function useTypewriter(text: string | undefined, active: boolean, intervalMs = 20) {
+    const safeText = text ?? '';
     const [displayed, setDisplayed] = useState('');
     const [done, setDone] = useState(false);
 
     useEffect(() => {
-        if (!active) { setDisplayed(text); setDone(true); return; }
+        if (!active) { setDisplayed(safeText); setDone(true); return; }
         setDisplayed('');
         setDone(false);
         let i = 0;
         const timer = setInterval(() => {
             i++;
-            setDisplayed(text.slice(0, i));
-            if (i >= text.length) { clearInterval(timer); setDone(true); }
+            setDisplayed(safeText.slice(0, i));
+            if (i >= safeText.length) { clearInterval(timer); setDone(true); }
         }, intervalMs);
         return () => clearInterval(timer);
-    }, [text, active, intervalMs]);
+    }, [safeText, active, intervalMs]);
 
     return { displayed, done };
 }
 
-function TypewriterMessage({ content }: { content: string }) {
+function TypewriterMessage({ content }: { content: string | undefined }) {
     const { displayed } = useTypewriter(content, true);
     return <span>{displayed}</span>;
 }
@@ -144,8 +145,8 @@ export default function OnboardingPage() {
                     {messages.map((msg, i) => (
                         <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                             <div className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${msg.role === 'user'
-                                    ? 'bg-gradient-to-r from-[#00F2FE] to-[#4FACFE] text-black'
-                                    : 'glass text-[var(--color-text)]'
+                                ? 'bg-gradient-to-r from-[#00F2FE] to-[#4FACFE] text-black'
+                                : 'glass text-[var(--color-text)]'
                                 }`}>
                                 {msg.role === 'assistant' && i === messages.length - 1 && !generating ? (
                                     <TypewriterMessage content={msg.content} />

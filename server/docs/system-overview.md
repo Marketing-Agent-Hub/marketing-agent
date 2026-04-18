@@ -2,7 +2,7 @@
 
 ## What Problem This System Solves
 
-OC News Bot is a **B2B marketing automation backend** that solves a specific, high-effort problem for content teams: turning a stream of raw news articles into polished, brand-aligned social media posts — fully automatically.
+Marketing Agent is a **B2B marketing automation backend** that solves a specific, high-effort problem for content teams: turning a stream of raw news articles into polished, brand-aligned social media posts — fully automatically.
 
 The system replaces the manual workflow of:
 1. Browsing news sources for relevant content

@@ -58,11 +58,14 @@ export class GoogleOAuthService {
 
         const { sub: googleId, email, name } = tokenInfo;
 
-        // Step 3: Upsert user
+        // Step 3: Upsert user — handle all cases atomically
+        // Case A: user exists with this googleId → found directly
+        // Case B: user exists with this email (magic link / password) → merge googleId
+        // Case C: new user → create
         let user = await prisma.user.findUnique({ where: { googleId } });
 
         if (!user) {
-            // Try to find by email (account merging)
+            // Try to find by email and merge googleId
             const existingByEmail = await prisma.user.findUnique({ where: { email } });
             if (existingByEmail) {
                 user = await prisma.user.update({
@@ -70,9 +73,11 @@ export class GoogleOAuthService {
                     data: { googleId },
                 });
             } else {
-                // Create new user
-                user = await prisma.user.create({
-                    data: { email, name: name ?? null, googleId, passwordHash: null },
+                // Create new user — use upsert to handle race conditions
+                user = await prisma.user.upsert({
+                    where: { email },
+                    update: { googleId },
+                    create: { email, name: name ?? null, googleId, passwordHash: null },
                 });
             }
         }
