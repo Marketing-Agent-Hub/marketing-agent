@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useAuthStore } from '@/store/authStore';
 import { cn } from '@/lib/utils';
 import HealthDot from '@/components/ui/HealthDot';
+import ThemeSwitcher from '@/components/ui/ThemeSwitcher';
 import apiClient from '@/api/client';
 import type { HealthStatus } from '@/types';
 
@@ -108,6 +109,7 @@ export default function AdminLayout() {
                         ) : (
                             <span className="text-white/30">connecting...</span>
                         )}
+                        <ThemeSwitcher variant="icon" compact />
                     </div>
                 </header>
 

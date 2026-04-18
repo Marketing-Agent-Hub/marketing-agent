@@ -1,33 +1,137 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
-:root {
-  /* Primary gradient */
+/* ─── Default (Dark) ─────────────────────────────────────────────────────── */
+:root,
+[data-theme="dark"] {
   --color-primary-start: #00F2FE;
   --color-primary-end: #4FACFE;
 
-  /* Dark backgrounds */
   --color-bg: #0a0a0f;
   --color-bg-secondary: #111118;
   --color-bg-card: rgba(255, 255, 255, 0.05);
 
-  /* Text */
   --color-text: #e2e8f0;
   --color-text-muted: #94a3b8;
 
-  /* Border */
   --color-border: rgba(255, 255, 255, 0.1);
 
-  /* Glassmorphism */
   --glass-bg: rgba(255, 255, 255, 0.05);
   --glass-border: rgba(255, 255, 255, 0.1);
   --glass-blur: blur(12px);
 
-  /* Sidebar */
   --sidebar-width: 240px;
   --sidebar-collapsed-width: 64px;
+
+  color-scheme: dark;
 }
 
+/* ─── Light ──────────────────────────────────────────────────────────────── */
+[data-theme="light"] {
+  --color-primary-start: #0ea5e9;
+  --color-primary-end: #6366f1;
+
+  --color-bg: #f8fafc;
+  --color-bg-secondary: #f1f5f9;
+  --color-bg-card: rgba(0, 0, 0, 0.03);
+
+  --color-text: #0f172a;
+  --color-text-muted: #64748b;
+
+  --color-border: rgba(0, 0, 0, 0.1);
+
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(0, 0, 0, 0.08);
+  --glass-blur: blur(12px);
+
+  color-scheme: light;
+}
+
+/* ─── Sepia ──────────────────────────────────────────────────────────────── */
+[data-theme="sepia"] {
+  --color-primary-start: #b45309;
+  --color-primary-end: #d97706;
+
+  --color-bg: #f5f0e8;
+  --color-bg-secondary: #ede8dc;
+  --color-bg-card: rgba(139, 90, 43, 0.06);
+
+  --color-text: #292118;
+  --color-text-muted: #78614a;
+
+  --color-border: rgba(139, 90, 43, 0.15);
+
+  --glass-bg: rgba(245, 240, 232, 0.8);
+  --glass-border: rgba(139, 90, 43, 0.12);
+  --glass-blur: blur(12px);
+
+  color-scheme: light;
+}
+
+/* ─── Midnight ───────────────────────────────────────────────────────────── */
+[data-theme="midnight"] {
+  --color-primary-start: #818cf8;
+  --color-primary-end: #c084fc;
+
+  --color-bg: #0d0d2b;
+  --color-bg-secondary: #13133a;
+  --color-bg-card: rgba(129, 140, 248, 0.06);
+
+  --color-text: #e0e7ff;
+  --color-text-muted: #818cf8;
+
+  --color-border: rgba(129, 140, 248, 0.15);
+
+  --glass-bg: rgba(129, 140, 248, 0.06);
+  --glass-border: rgba(129, 140, 248, 0.15);
+  --glass-blur: blur(12px);
+
+  color-scheme: dark;
+}
+
+/* ─── Forest ─────────────────────────────────────────────────────────────── */
+[data-theme="forest"] {
+  --color-primary-start: #4ade80;
+  --color-primary-end: #22d3ee;
+
+  --color-bg: #0d1f0d;
+  --color-bg-secondary: #122012;
+  --color-bg-card: rgba(74, 222, 128, 0.05);
+
+  --color-text: #dcfce7;
+  --color-text-muted: #86efac;
+
+  --color-border: rgba(74, 222, 128, 0.12);
+
+  --glass-bg: rgba(74, 222, 128, 0.05);
+  --glass-border: rgba(74, 222, 128, 0.12);
+  --glass-blur: blur(12px);
+
+  color-scheme: dark;
+}
+
+/* ─── Rose ───────────────────────────────────────────────────────────────── */
+[data-theme="rose"] {
+  --color-primary-start: #fb7185;
+  --color-primary-end: #f472b6;
+
+  --color-bg: #1a0d12;
+  --color-bg-secondary: #22101a;
+  --color-bg-card: rgba(251, 113, 133, 0.06);
+
+  --color-text: #ffe4e6;
+  --color-text-muted: #fda4af;
+
+  --color-border: rgba(251, 113, 133, 0.15);
+
+  --glass-bg: rgba(251, 113, 133, 0.06);
+  --glass-border: rgba(251, 113, 133, 0.15);
+  --glass-blur: blur(12px);
+
+  color-scheme: dark;
+}
+
+/* ─── Base styles ────────────────────────────────────────────────────────── */
 *,
 *::before,
 *::after {
@@ -41,6 +145,7 @@ body {
   font-family: 'Inter', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 #root {

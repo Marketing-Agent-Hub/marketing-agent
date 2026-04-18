@@ -4,6 +4,7 @@ import { useAuthStore } from '@/store/authStore';
 import { cn } from '@/lib/utils';
 import ContextSwitcher from '@/components/layout/ContextSwitcher';
 import { useReviewQueue } from '@/hooks/useReviewQueue';
+import ThemeSwitcher from '@/components/ui/ThemeSwitcher';
 
 function ReviewQueueBadge({ brandId }: { brandId: number }) {
     const { data } = useReviewQueue(brandId);
@@ -124,6 +125,7 @@ export default function ProductLayout() {
                 >
                     <Breadcrumbs />
                     <div className="flex items-center gap-3">
+                        <ThemeSwitcher variant="icon" />
                         <button
                             className="rounded-lg p-2 hover:bg-white/5 transition-colors text-[var(--color-text-muted)]"
                             aria-label="Notifications"
