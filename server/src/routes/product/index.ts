@@ -13,6 +13,8 @@ import brandSourceRoutes from '../../domains/content-intelligence/brand-source.r
 import filterProfileRoutes from '../../domains/content-intelligence/filter-profile.routes.js';
 import jobScheduleRoutes from '../../domains/job-scheduling/job-schedule.routes.js';
 import pipelineRoutes from '../../domains/content/routes/pipeline.routes.js';
+import brandModelRoutes from '../../domains/ai-model-configuration/brand-model.routes.js';
+import mediaConfigRoutes from '../../domains/ai-model-configuration/media-config.routes.js';
 
 const router = Router();
 
@@ -40,5 +42,7 @@ router.use('/', productContentRouter);
 router.use('/', productPublishingRouter);
 router.use('/', productSocialAccountRouter);
 router.use('/', pipelineRoutes);
+router.use('/brands/:brandId/ai/models', brandModelRoutes);
+router.use('/brands/:brandId/media-config', mediaConfigRoutes);
 
 export default router;

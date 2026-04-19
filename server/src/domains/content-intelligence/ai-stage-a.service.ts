@@ -153,8 +153,8 @@ function applyHeuristicFilter(item: {
 /**
  * Call AI for Stage A analysis
  */
-async function callStageA(prompt: string): Promise<{ result: StageAOutput; actualModel: string }> {
-    const model = await settingService.getModel('ai.models.stageA');
+async function callStageA(prompt: string, brandId?: number): Promise<{ result: StageAOutput; actualModel: string }> {
+    const model = await settingService.resolveModel('ai.models.stageA', brandId);
     const { data: response, actualModel } = await aiClient.chat({
         model,
         messages: [
@@ -240,7 +240,7 @@ export async function processStageA(itemId: number): Promise<{
                 publishedAt: item.publishedAt,
             });
 
-            const callResult = await callStageA(prompt);
+            const callResult = await callStageA(prompt, item.brandId);
             result = callResult.result;
             actualModel = callResult.actualModel;
             console.log(`[AI Stage A] AI Result: ${result.isAllowed ? 'ALLOWED' : 'REJECTED'} (importance: ${result.importanceScore})`);

@@ -46,6 +46,11 @@ export const UpsertAgentConfigSchema = z.object({
     enableImageForSocialPost: z.boolean().optional(),
     enableImageForLongform: z.boolean().optional(),
     imageModel: z.string().min(1).optional(),
+
+    // AI model overrides (null = use global setting)
+    stageAModel: z.string().min(1).nullable().optional(),
+    stageBModel: z.string().min(1).nullable().optional(),
+    embeddingModel: z.string().min(1).nullable().optional(),
 });
 
 export type ScreenwriterOutput = z.infer<typeof ScreenwriterOutputSchema>;

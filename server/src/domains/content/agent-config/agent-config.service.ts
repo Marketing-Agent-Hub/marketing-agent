@@ -33,6 +33,9 @@ class AgentConfigService {
             enableImageForSocialPost: false,
             enableImageForLongform: false,
             imageModel: 'openai/dall-e-3',
+            stageAModel: null,
+            stageBModel: null,
+            embeddingModel: null,
             createdAt: new Date(),
             updatedAt: new Date(),
         };

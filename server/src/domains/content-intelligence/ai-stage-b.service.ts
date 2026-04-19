@@ -209,8 +209,8 @@ ${hashtags}`;
 /**
  * Call AI for Stage B analysis
  */
-async function callStageB(prompt: string): Promise<{ result: StageBOutput; actualModel: string }> {
-    const model = await settingService.getModel('ai.models.stageB');
+async function callStageB(prompt: string, brandId?: number): Promise<{ result: StageBOutput; actualModel: string }> {
+    const model = await settingService.resolveModel('ai.models.stageB', brandId);
     const { data: response, actualModel } = await aiClient.chat({
         model,
         messages: [
@@ -363,7 +363,7 @@ export async function processStageB(itemId: number): Promise<{
                     oneLineSummary: stageAResult.oneLineSummary || '',
                 });
 
-                const callResult = await callStageB(prompt);
+                const callResult = await callStageB(prompt, item.brandId);
                 result = callResult.result;
                 actualModel = callResult.actualModel;
                 console.log(`[AI Stage B] Generated AI article (${result.fullArticle.length} chars)`);

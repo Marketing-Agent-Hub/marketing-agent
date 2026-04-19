@@ -4,10 +4,10 @@ const MODEL_DEFAULTS: Record<string, string> = {
     'ai.models.stageA': 'openai/gpt-4o-mini',
     'ai.models.stageB': 'openai/gpt-4o',
     'ai.models.embedding': 'openai/text-embedding-3-small',
+    'ai.models.discovery': 'openai/gpt-4o-mini',
     'marketing.models.businessAnalysis': 'openai/gpt-4o',
     'marketing.models.strategyGeneration': 'openai/gpt-4o',
-    'marketing.models.postGeneration': 'openai/gpt-4o-mini',
-    'ai.models.discovery': 'openai/gpt-4o-mini',
+    'marketing.models.postGeneration': 'openai/gpt-4o',
 };
 
 export interface AiSettingsResponse {
@@ -77,6 +77,36 @@ class SettingService {
                 stageB: { enabled: map.get('ai_stage_b_enabled') === 'true' },
             },
         };
+    }
+
+    async resolveModel(key: string, brandId?: number): Promise<string> {
+        // 1. Brand override (nếu brandId được cung cấp)
+        if (brandId !== undefined) {
+            const config = await prisma.contentAgentConfig.findUnique({
+                where: { brandId },
+                select: { stageAModel: true, stageBModel: true, embeddingModel: true },
+            });
+            const override = this.getBrandOverride(config, key);
+            if (override) return override;
+        }
+        // 2. Global setting từ DB
+        const record = await prisma.setting.findUnique({ where: { key } });
+        if (record?.value) return record.value;
+        // 3. Hardcoded default
+        return MODEL_DEFAULTS[key] ?? (() => { throw new Error(`Unknown model key: "${key}"`); })();
+    }
+
+    private getBrandOverride(
+        config: { stageAModel: string | null; stageBModel: string | null; embeddingModel: string | null } | null,
+        key: string,
+    ): string | null {
+        if (!config) return null;
+        const map: Record<string, string | null> = {
+            'ai.models.stageA': config.stageAModel,
+            'ai.models.stageB': config.stageBModel,
+            'ai.models.embedding': config.embeddingModel,
+        };
+        return map[key] ?? null;
     }
 
     async updateAiSettings(patch: Partial<AiSettingsPatch>): Promise<AiSettingsResponse> {

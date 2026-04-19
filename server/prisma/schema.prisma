@@ -434,7 +434,8 @@ model Brand {
   items           Item[]
   contentScripts  ContentScript[]
   agentDrafts     AgentDraft[]
-  agentConfig     ContentAgentConfig?
+  agentConfig           ContentAgentConfig?
+  mediaGenerationConfig MediaGenerationConfig?
 
   @@index([workspaceId, status])
   @@map("brands")
@@ -912,7 +913,25 @@ model ContentAgentConfig {
   enableImageForSocialPost  Boolean  @default(false)
   enableImageForLongform    Boolean  @default(false)
   imageModel                String   @default("openai/dall-e-3")
+  stageAModel               String?  // null = use global setting for Stage A
+  stageBModel               String?  // null = use global setting for Stage B
+  embeddingModel            String?  // null = use global setting for embedding
   createdAt                 DateTime @default(now())
   updatedAt                 DateTime @updatedAt
   @@map("content_agent_configs")
+}
+
+model MediaGenerationConfig {
+  id          String   @id @default(uuid())
+  brandId     Int      @unique
+  brand       Brand    @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  imageModel  String   @default("openai/dall-e-3")
+  videoModel  String?
+  audioModel  String?
+  imageSize   String   @default("1024x1024")
+  imageStyle  String   @default("natural")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("media_generation_configs")
 }

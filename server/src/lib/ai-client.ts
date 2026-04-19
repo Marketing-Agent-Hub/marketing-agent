@@ -71,6 +71,21 @@ export class AiClient {
             if (error instanceof APIError) {
                 if (error.status === 402) throw new OpenRouterCreditError();
                 if (error.status === 529) throw new OpenRouterOverloadedError();
+                // Log all other provider errors with full context
+                logger.error({
+                    provider: 'openrouter',
+                    httpStatus: error.status,
+                    requestedModel: params.model,
+                    errorCode: error.code,
+                    errorMessage: error.message,
+                    errorBody: error.error,
+                }, '[AiClient] Provider API error during chat');
+            } else {
+                logger.error({
+                    provider: 'openrouter',
+                    requestedModel: params.model,
+                    error: error instanceof Error ? error.message : String(error),
+                }, '[AiClient] Unexpected error during chat (network/timeout?)');
             }
             throw error;
         }
@@ -95,6 +110,20 @@ export class AiClient {
             if (error instanceof APIError) {
                 if (error.status === 402) throw new OpenRouterCreditError();
                 if (error.status === 529) throw new OpenRouterOverloadedError();
+                logger.error({
+                    provider: 'openrouter',
+                    httpStatus: error.status,
+                    requestedModel: params.model,
+                    errorCode: error.code,
+                    errorMessage: error.message,
+                    errorBody: error.error,
+                }, '[AiClient] Provider API error during embed');
+            } else {
+                logger.error({
+                    provider: 'openrouter',
+                    requestedModel: params.model,
+                    error: error instanceof Error ? error.message : String(error),
+                }, '[AiClient] Unexpected error during embed (network/timeout?)');
             }
             throw error;
         }

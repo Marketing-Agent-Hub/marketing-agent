@@ -10,6 +10,7 @@ import { requireBrandAccess } from '../../middleware/brand-access.js';
 import sourceDiscoveryRoutes from '../../domains/source-discovery/source-discovery.routes.js';
 import aiSettingsRoutes from '../../domains/content-intelligence/ai-settings.routes.js';
 import jobScheduleAdminRoutes from '../../domains/job-scheduling/job-schedule.admin.routes.js';
+import modelRegistryAdminRoutes from '../../domains/ai-model-configuration/model-registry.routes.js';
 
 const router = Router();
 
@@ -19,6 +20,7 @@ router.get('/health', (_req, res) => {
 
 router.use('/admin', adminRoutes);
 router.use('/admin/ai/settings', aiSettingsRoutes);
+router.use('/admin/ai/models', modelRegistryAdminRoutes);
 router.use('/admin/job-schedules', jobScheduleAdminRoutes);
 router.use('/monitor', monitorRoutes);
 router.use('/sources', sourceRoutes);

@@ -1,6 +1,7 @@
 import { BrandProfile } from '@prisma/client';
 import { prisma } from '../../db/index.js';
-import { aiClient } from '../../lib/ai-client.js';
+import { aiClient, OpenRouterCreditError, OpenRouterOverloadedError } from '../../lib/ai-client.js';
+import { logger } from '../../lib/logger.js';
 import { callAIWorkflow } from '../../shared/marketing/ai-workflow.js';
 import { getAIModel } from '../../shared/marketing/settings.js';
 import { PROMPT_VERSIONS } from '../../shared/marketing/prompt-versions.js';
@@ -123,7 +124,18 @@ ${prompt ? `\n## Additional Context\n${prompt}` : ''}
             // Re-throw errors that already have our custom codes
             const e = err as { code?: string; statusCode?: number };
             if (e.code === 'AI_INVALID_RESPONSE') throw err;
-            // Wrap any other AI/network error as upstream error
+
+            // Surface provider-specific errors with proper status codes
+            if (err instanceof OpenRouterCreditError) throw err;
+            if (err instanceof OpenRouterOverloadedError) throw err;
+
+            // Log original cause so it appears in server logs before wrapping
+            logger.error({
+                brandId,
+                cause: err instanceof Error ? err.message : String(err),
+                causeStack: err instanceof Error ? err.stack : undefined,
+            }, '[Onboarding] AI upstream error in generateProfile');
+
             throw makeError('AI service is unresponsive', 502, 'AI_UPSTREAM_ERROR');
         }
 
@@ -184,6 +196,15 @@ Generate a suggestion for the field: ${fieldKey}`;
         } catch (err: unknown) {
             const e = err as { code?: string };
             if (e.code === 'AI_INVALID_RESPONSE') throw err;
+            if (err instanceof OpenRouterCreditError) throw err;
+            if (err instanceof OpenRouterOverloadedError) throw err;
+
+            logger.error({
+                brandId,
+                fieldKey,
+                cause: err instanceof Error ? err.message : String(err),
+            }, '[Onboarding] AI upstream error in generateFieldSuggestion');
+
             throw makeError('AI service is unresponsive', 502, 'AI_UPSTREAM_ERROR');
         }
 
