@@ -1,10 +1,14 @@
+import { useEffect } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation, useParams } from 'react-router-dom';
 import { useUiStore } from '@/store/uiStore';
 import { useAuthStore } from '@/store/authStore';
 import { cn } from '@/lib/utils';
-import ContextSwitcher from '@/components/layout/ContextSwitcher';
+import WorkspaceSwitcher from '@/components/layout/WorkspaceSwitcher';
+import BrandSwitcher from '@/components/layout/BrandSwitcher';
 import { useReviewQueue } from '@/hooks/useReviewQueue';
 import ThemeSwitcher from '@/components/ui/ThemeSwitcher';
+import { useWorkspaces } from '@/hooks/useWorkspaces';
+import { useBrands } from '@/hooks/useBrands';
 
 function ReviewQueueBadge({ brandId }: { brandId: number }) {
     const { data } = useReviewQueue(brandId);
@@ -18,14 +22,19 @@ function ReviewQueueBadge({ brandId }: { brandId: number }) {
 }
 
 export default function ProductLayout() {
-    const { sidebarCollapsed, toggleSidebar } = useUiStore();
+    const { sidebarCollapsed, toggleSidebar, setActiveWorkspaceId } = useUiStore();
     const { user, clearAuth } = useAuthStore();
     const navigate = useNavigate();
-    const { brandId } = useParams<{ brandId?: string }>();
+    const { brandId, workspaceId } = useParams<{ brandId?: string; workspaceId?: string }>();
     const bid = Number(brandId) || 0;
 
+    // Sync URL workspaceId → store so brand-only routes (/b/:brandId/*) can resolve it
+    useEffect(() => {
+        const wid = Number(workspaceId);
+        if (wid) setActiveWorkspaceId(wid);
+    }, [workspaceId, setActiveWorkspaceId]);
+
     const navItems = [
-        { label: 'Workspaces', path: '/workspaces', icon: '🏢', exact: true },
         ...(brandId ? [
             { label: 'Strategy', path: `/b/${brandId}/strategy`, icon: '📅' },
             { label: 'Review Queue', path: `/b/${brandId}/review-queue`, icon: '✍️', badgeKey: 'review-queue' as const },
@@ -66,10 +75,17 @@ export default function ProductLayout() {
                     </button>
                 </div>
 
-                {/* Context Switcher */}
+                {/* Workspace Switcher */}
                 {!sidebarCollapsed && (
-                    <div className="border-b border-[var(--color-border)] px-2 py-2">
-                        <ContextSwitcher />
+                    <div className="px-0 pt-1">
+                        <WorkspaceSwitcher />
+                    </div>
+                )}
+
+                {/* Brand Switcher */}
+                {!sidebarCollapsed && (
+                    <div className="border-b border-[var(--color-border)] pb-1">
+                        <BrandSwitcher />
                     </div>
                 )}
 
@@ -145,15 +161,66 @@ export default function ProductLayout() {
     );
 }
 
+const TAB_LABELS: Record<string, string> = {
+    strategy: 'Strategy',
+    'review-queue': 'Review Queue',
+    publishing: 'Publishing',
+    sources: 'Sources',
+    onboarding: 'Onboarding',
+    brands: 'Brands',
+    workspaces: 'Workspaces',
+    preview: 'Preview',
+};
+
 function Breadcrumbs() {
+    const { workspaceId, brandId } = useParams<{ workspaceId?: string; brandId?: string }>();
+    const { activeWorkspaceId } = useUiStore();
     const location = useLocation();
-    const parts = location.pathname.split('/').filter(Boolean);
+
+    const wid = Number(workspaceId) || activeWorkspaceId;
+    const bid = Number(brandId) || 0;
+
+    const { data: workspaces } = useWorkspaces();
+    const { data: brands } = useBrands(wid);
+
+    const workspace = workspaces?.find((w) => w.id === wid);
+    const brand = brands?.find((b) => b.id === bid);
+
+    // Determine the current tab from the last path segment
+    const segments = location.pathname.split('/').filter(Boolean);
+    const lastSegment = segments[segments.length - 1];
+    const tabLabel = TAB_LABELS[lastSegment] ?? null;
+
+    // Build breadcrumb parts: only include non-null items
+    const crumbs: { label: string; muted: boolean }[] = [];
+
+    if (workspace) crumbs.push({ label: workspace.name, muted: true });
+    if (brand) crumbs.push({ label: brand.name, muted: true });
+    if (tabLabel && tabLabel !== crumbs[crumbs.length - 1]?.label) {
+        crumbs.push({ label: tabLabel, muted: false });
+    }
+
+    // Fallback: raw last segment if nothing resolved
+    if (crumbs.length === 0 && lastSegment) {
+        crumbs.push({ label: TAB_LABELS[lastSegment] ?? lastSegment, muted: false });
+    }
+
     return (
-        <nav className="flex items-center gap-1 text-xs text-[var(--color-text-muted)]">
-            {parts.map((part, i) => (
-                <span key={i} className="flex items-center gap-1">
-                    {i > 0 && <span>/</span>}
-                    <span className={i === parts.length - 1 ? 'text-[var(--color-text)]' : ''}>{part}</span>
+        <nav className="flex items-center gap-1.5 text-xs">
+            {crumbs.map((crumb, i) => (
+                <span key={i} className="flex items-center gap-1.5">
+                    {i > 0 && (
+                        <span className="text-[var(--color-text-muted)] opacity-40">/</span>
+                    )}
+                    <span
+                        className={cn(
+                            crumb.muted
+                                ? 'text-[var(--color-text-muted)]'
+                                : 'font-medium text-[var(--color-text)]'
+                        )}
+                    >
+                        {crumb.label}
+                    </span>
                 </span>
             ))}
         </nav>
