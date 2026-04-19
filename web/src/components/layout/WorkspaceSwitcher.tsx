@@ -132,10 +132,10 @@ export default function WorkspaceSwitcher() {
                 {/* Trigger button */}
                 <button
                     onClick={() => setOpen((v) => !v)}
-                    className={cn(
-                        'flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors',
-                        open ? 'bg-white/10' : 'hover:bg-white/5'
-                    )}
+                    className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-all duration-150"
+                    style={{ background: open ? 'var(--sidebar-item-hover)' : undefined }}
+                    onMouseEnter={(e) => { if (!open) (e.currentTarget as HTMLElement).style.background = 'var(--sidebar-item-hover)'; }}
+                    onMouseLeave={(e) => { if (!open) (e.currentTarget as HTMLElement).style.background = ''; }}
                 >
                     <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded text-sm">🏢</span>
                     <span className="flex-1 truncate text-left font-medium text-[var(--color-text)]">
@@ -165,12 +165,13 @@ export default function WorkspaceSwitcher() {
                                 <button
                                     key={ws.id}
                                     onClick={() => handleSelect(ws)}
-                                    className={cn(
-                                        'flex w-full items-center gap-2.5 px-3 py-2 text-sm transition-colors',
-                                        ws.id === wid
-                                            ? 'bg-[#4FACFE]/10 text-[#4FACFE]'
-                                            : 'text-[var(--color-text)] hover:bg-white/5'
-                                    )}
+                                    className="flex w-full items-center gap-2.5 px-3 py-2 text-sm transition-all duration-100"
+                                    style={{
+                                        background: ws.id === wid ? 'var(--sidebar-item-active)' : undefined,
+                                        color: ws.id === wid ? 'var(--sidebar-item-active-text)' : 'var(--color-text)',
+                                    }}
+                                    onMouseEnter={(e) => { if (ws.id !== wid) (e.currentTarget as HTMLElement).style.background = 'var(--sidebar-item-hover)'; }}
+                                    onMouseLeave={(e) => { if (ws.id !== wid) (e.currentTarget as HTMLElement).style.background = ''; }}
                                 >
                                     <span className="text-sm">🏢</span>
                                     <span className="flex-1 truncate text-left">{ws.name}</span>
@@ -191,7 +192,9 @@ export default function WorkspaceSwitcher() {
                         <div className="border-t border-[var(--color-border)] p-1">
                             <button
                                 onClick={() => { setOpen(false); setShowCreate(true); }}
-                                className="flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-sm text-[var(--color-text-muted)] hover:bg-white/5 hover:text-[var(--color-text)] transition-colors"
+                                className="flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-sm text-[var(--color-text-muted)] transition-all duration-100"
+                                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--sidebar-item-hover)'; (e.currentTarget as HTMLElement).style.color = 'var(--color-text)'; }}
+                                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = ''; (e.currentTarget as HTMLElement).style.color = 'var(--color-text-muted)'; }}
                             >
                                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />

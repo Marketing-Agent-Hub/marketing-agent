@@ -20,6 +20,10 @@
   --glass-border: rgba(255, 255, 255, 0.1);
   --glass-blur: blur(12px);
 
+  --sidebar-item-hover: rgba(255, 255, 255, 0.07);
+  --sidebar-item-active: rgba(79, 172, 254, 0.12);
+  --sidebar-item-active-text: #4FACFE;
+
   --sidebar-width: 240px;
   --sidebar-collapsed-width: 64px;
 
@@ -44,6 +48,10 @@
   --glass-border: rgba(0, 0, 0, 0.08);
   --glass-blur: blur(12px);
 
+  --sidebar-item-hover: rgba(0, 0, 0, 0.06);
+  --sidebar-item-active: rgba(14, 165, 233, 0.1);
+  --sidebar-item-active-text: #0ea5e9;
+
   color-scheme: light;
 }
 
@@ -64,6 +72,10 @@
   --glass-bg: rgba(245, 240, 232, 0.8);
   --glass-border: rgba(139, 90, 43, 0.12);
   --glass-blur: blur(12px);
+
+  --sidebar-item-hover: rgba(139, 90, 43, 0.09);
+  --sidebar-item-active: rgba(180, 83, 9, 0.12);
+  --sidebar-item-active-text: #b45309;
 
   color-scheme: light;
 }
@@ -86,6 +98,10 @@
   --glass-border: rgba(129, 140, 248, 0.15);
   --glass-blur: blur(12px);
 
+  --sidebar-item-hover: rgba(129, 140, 248, 0.1);
+  --sidebar-item-active: rgba(129, 140, 248, 0.15);
+  --sidebar-item-active-text: #818cf8;
+
   color-scheme: dark;
 }
 
@@ -107,6 +123,10 @@
   --glass-border: rgba(74, 222, 128, 0.12);
   --glass-blur: blur(12px);
 
+  --sidebar-item-hover: rgba(74, 222, 128, 0.08);
+  --sidebar-item-active: rgba(74, 222, 128, 0.13);
+  --sidebar-item-active-text: #4ade80;
+
   color-scheme: dark;
 }
 
@@ -127,6 +147,10 @@
   --glass-bg: rgba(251, 113, 133, 0.06);
   --glass-border: rgba(251, 113, 133, 0.15);
   --glass-blur: blur(12px);
+
+  --sidebar-item-hover: rgba(251, 113, 133, 0.09);
+  --sidebar-item-active: rgba(251, 113, 133, 0.14);
+  --sidebar-item-active-text: #fb7185;
 
   color-scheme: dark;
 }

@@ -90,29 +90,41 @@ export default function ProductLayout() {
                 )}
 
                 {/* Navigation */}
-                <nav className="flex-1 overflow-y-auto py-4 px-2">
+                <nav className="flex-1 overflow-y-auto py-3 px-2">
                     {navItems.map((item) => (
                         <NavLink
                             key={item.path}
                             to={item.path}
                             end={'exact' in item ? item.exact : false}
-                            className={({ isActive }) =>
-                                cn(
-                                    'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors mb-1',
-                                    isActive
-                                        ? 'bg-[#4FACFE]/10 text-[#4FACFE]'
-                                        : 'text-[var(--color-text-muted)] hover:bg-white/5 hover:text-[var(--color-text)]'
-                                )
-                            }
                         >
-                            <span>{item.icon}</span>
-                            {!sidebarCollapsed && (
-                                <>
-                                    <span className="flex-1">{item.label}</span>
-                                    {'badgeKey' in item && item.badgeKey === 'review-queue' && bid > 0 && (
-                                        <ReviewQueueBadge brandId={bid} />
+                            {({ isActive }) => (
+                                <span
+                                    className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all duration-150 mb-0.5 cursor-pointer select-none"
+                                    style={{
+                                        background: isActive ? 'var(--sidebar-item-active)' : undefined,
+                                        color: isActive
+                                            ? 'var(--sidebar-item-active-text)'
+                                            : 'var(--color-text-muted)',
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        if (!isActive) (e.currentTarget as HTMLElement).style.background = 'var(--sidebar-item-hover)';
+                                        if (!isActive) (e.currentTarget as HTMLElement).style.color = 'var(--color-text)';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        if (!isActive) (e.currentTarget as HTMLElement).style.background = '';
+                                        if (!isActive) (e.currentTarget as HTMLElement).style.color = 'var(--color-text-muted)';
+                                    }}
+                                >
+                                    <span className="text-base leading-none">{item.icon}</span>
+                                    {!sidebarCollapsed && (
+                                        <>
+                                            <span className="flex-1 font-medium">{item.label}</span>
+                                            {'badgeKey' in item && item.badgeKey === 'review-queue' && bid > 0 && (
+                                                <ReviewQueueBadge brandId={bid} />
+                                            )}
+                                        </>
                                     )}
-                                </>
+                                </span>
                             )}
                         </NavLink>
                     ))}
