@@ -58,9 +58,9 @@ export default function PublishingDashboardPage() {
                     <thead>
                         <tr className="border-b border-[var(--color-border)] bg-white/5">
                             <th className="px-4 py-3 text-left text-xs font-medium text-[var(--color-text-muted)]">Lịch đăng</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-[var(--color-text-muted)]">Kênh</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-[var(--color-text-muted)]">Trạng thái</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-[var(--color-text-muted)]">Hành động</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-[var(--color-text-muted)]">Channel</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-[var(--color-text-muted)]">Status</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-[var(--color-text-muted)]">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -106,9 +106,9 @@ export default function PublishingDashboardPage() {
 
             {/* Pagination */}
             <div className="mt-4 flex justify-end gap-2">
-                <Button variant="ghost" className="text-xs px-3 py-1" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>← Trước</Button>
+                <Button variant="ghost" className="text-xs px-3 py-1" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>← Prev</Button>
                 <span className="flex items-center text-xs text-[var(--color-text-muted)]">Trang {page}</span>
-                <Button variant="ghost" className="text-xs px-3 py-1" onClick={() => setPage(p => p + 1)} disabled={!jobs?.length}>Sau →</Button>
+                <Button variant="ghost" className="text-xs px-3 py-1" onClick={() => setPage(p => p + 1)} disabled={!jobs?.length}>Next →</Button>
             </div>
         </div>
     );

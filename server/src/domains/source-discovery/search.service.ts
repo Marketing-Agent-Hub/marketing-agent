@@ -39,10 +39,10 @@ const SEARCH_QUERIES = [
     'podcast RSS feed directory',
     'YouTube channel RSS feed',
     // —— Vietnamese sources ————————————————————————————————————————————————————————————————
-    'tin tức RSS feed Việt Nam',
-    'blog chuyên ngành RSS feed tiếng Việt',
-    'báo điện tử RSS feed Việt Nam',
-    'trang tin tức RSS atom feed',
+    'news RSS feed globally',
+    'industry blog RSS feed english',
+    'electronic newspaper RSS feed',
+    'news site RSS atom feed',
     // —— By platform ———————————————————————————————————————————————————————————————————————
     'wordpress blog RSS feed',
     'substack newsletter RSS feed',

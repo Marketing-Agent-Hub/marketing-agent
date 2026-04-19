@@ -20,7 +20,7 @@ export default function Modal({
     title,
     children,
     variant = 'default',
-    confirmLabel = 'Xác nhận',
+    confirmLabel = 'Confirm',
     onConfirm,
     confirmLoading,
 }: ModalProps) {
@@ -44,14 +44,14 @@ export default function Modal({
                 <h2 className="mb-4 text-lg font-semibold text-[var(--color-text)]">{title}</h2>
                 <div className="mb-6 text-sm text-[var(--color-text-muted)]">{children}</div>
                 <div className="flex justify-end gap-3">
-                    <Button variant="ghost" onClick={onClose}>Hủy</Button>
+                    <Button variant="ghost" onClick={onClose}>Cancel</Button>
                     {onConfirm && confirmLabel !== null && (
                         <Button
                             variant={variant === 'destructive' ? 'destructive' : 'primary'}
                             onClick={onConfirm}
                             loading={confirmLoading}
                         >
-                            {confirmLabel ?? 'Xác nhận'}
+                            {confirmLabel ?? 'Confirm'}
                         </Button>
                     )}
                 </div>

@@ -66,7 +66,7 @@ export class WorkspaceService {
         }
 
         // Should never reach here, but TypeScript needs a return
-        const error = new Error('Không thể tạo workspace sau nhiều lần thử') as any;
+        const error = new Error('Cannot create workspace after multiple attempts') as any;
         error.statusCode = 500;
         throw error;
     }
@@ -98,7 +98,7 @@ export class WorkspaceService {
             where: { workspaceId_userId: { workspaceId, userId: data.userId } },
         });
         if (existing) {
-            const error = new Error('User đã là thành viên của workspace này') as any;
+            const error = new Error('User is already a member of this workspace') as any;
             error.statusCode = 409;
             error.code = 'CONFLICT';
             throw error;

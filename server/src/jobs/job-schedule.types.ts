@@ -64,13 +64,13 @@ export function intervalMinutesToCron(minutes: number): string {
 
 export function validateScheduleConfig(config: ScheduleConfig): string | null {
     if (config.cronExpression !== undefined && config.intervalMinutes !== undefined) {
-        return 'Chỉ được cung cấp một trong cronExpression hoặc intervalMinutes, không phải cả hai';
+        return 'Only one of cronExpression or intervalMinutes can be provided, not both';
     }
     if (config.intervalMinutes !== undefined && config.intervalMinutes < 1) {
-        return 'intervalMinutes phải >= 1';
+        return 'intervalMinutes must be >= 1';
     }
     if (config.cronExpression !== undefined && !cron.validate(config.cronExpression)) {
-        return `cronExpression không hợp lệ: "${config.cronExpression}"`;
+        return `Invalid cronExpression: "${config.cronExpression}"`;
     }
     return null;
 }

@@ -36,7 +36,7 @@ export function requireWorkspaceAccess(minimumRole: WorkspaceRole) {
 
             if (!member) {
                 const response: ApiErrorResponse = {
-                    error: { code: 'FORBIDDEN', message: 'Bạn không phải thành viên của workspace này' },
+                    error: { code: 'FORBIDDEN', message: 'You are not a member of this workspace' },
                 };
                 res.status(403).json(response);
                 return;
@@ -44,7 +44,7 @@ export function requireWorkspaceAccess(minimumRole: WorkspaceRole) {
 
             if (ROLE_HIERARCHY[member.role] < ROLE_HIERARCHY[minimumRole]) {
                 const response: ApiErrorResponse = {
-                    error: { code: 'FORBIDDEN', message: `Yêu cầu quyền ${minimumRole} trở lên` },
+                    error: { code: 'FORBIDDEN', message: `Requires ${minimumRole} role or higher` },
                 };
                 res.status(403).json(response);
                 return;

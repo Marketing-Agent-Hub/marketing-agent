@@ -32,7 +32,7 @@ export function requireBrandAccess(minimumRole: WorkspaceRole) {
             const brand = await prisma.brand.findUnique({ where: { id: brandId } });
             if (!brand) {
                 const response: ApiErrorResponse = {
-                    error: { code: 'NOT_FOUND', message: 'Brand không tồn tại' },
+                    error: { code: 'NOT_FOUND', message: 'Brand not found' },
                 };
                 res.status(404).json(response);
                 return;
@@ -49,7 +49,7 @@ export function requireBrandAccess(minimumRole: WorkspaceRole) {
 
             if (!member) {
                 const response: ApiErrorResponse = {
-                    error: { code: 'FORBIDDEN', message: 'Bạn không có quyền truy cập brand này' },
+                    error: { code: 'FORBIDDEN', message: 'You do not have permission to access this brand' },
                 };
                 res.status(403).json(response);
                 return;
@@ -57,7 +57,7 @@ export function requireBrandAccess(minimumRole: WorkspaceRole) {
 
             if (ROLE_HIERARCHY[member.role] < ROLE_HIERARCHY[minimumRole]) {
                 const response: ApiErrorResponse = {
-                    error: { code: 'FORBIDDEN', message: `Yêu cầu quyền ${minimumRole} trở lên` },
+                    error: { code: 'FORBIDDEN', message: `Requires ${minimumRole} role or higher` },
                 };
                 res.status(403).json(response);
                 return;

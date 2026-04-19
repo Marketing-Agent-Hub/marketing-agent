@@ -133,7 +133,7 @@ MỤC TIÊU CỐT LÕI:
 ${instructions.writingStyle}
 
 THÔNG TIN ĐẦU VÀO:
-Nguồn: ${item.sourceName}
+Source: ${item.sourceName}
 Tiêu đề: ${item.title}
 
 Nội dung gốc:
@@ -155,22 +155,22 @@ QUY TẮC CHỐNG VĂN AI:
 - Không dùng các nhãn mục cứng như “KẾT LUẬN”, “NGUYÊN NHÂN CHÍNH”, “TÁC ĐỘNG DỰ KIẾN”, “GIẢI PHÁP VÀ TRIỂN VỌNG”
 - Không lặp lại cùng một ý theo nhiều cách
 - Không viết các câu chung chung chỉ để làm đầy bài
-- Không biến mọi tin thành cùng một template
-- Không dùng giọng văn quá trang trọng hoặc quá công thức
+- Do not make every news item into the same template
+- Do not use overly formal or formulaic tones
 - Không mở bài kiểu sáo rỗng như “đang thu hút sự chú ý”, “đang đối mặt với biến động lớn”, “đây là vấn đề đáng quan tâm”
 
-ĐỘ DÀI LINH HOẠT:
-- Tin rất ngắn: khoảng 120-220 từ
-- Tin mức trung bình: khoảng 220-400 từ
-- Tin nhiều dữ kiện / nhiều ý: khoảng 400-650 từ
-- Chọn độ dài phù hợp với lượng thông tin thực tế trong input
+FLEXIBLE LENGTH:
+- Very short news: about 120-220 words
+- Medium news: about 220-400 words
+- News with many facts/ideas: about 400-650 words
+- Choose the length appropriate for the actual input information content
 
 OUTPUT FORMAT (valid JSON only):
 {
-  "fullArticle": "Facebook post hoàn chỉnh bằng tiếng Việt, plain text, có emoji, có line break hợp lý, có separator, tự nhiên, mạch lạc, sẵn sàng copy-paste."
+  "fullArticle": "Completed Facebook post in English, plain text, with emojis, reasonable line breaks, separators, natural, coherent, ready to copy-paste."
 }
 
-Chỉ trả về JSON hợp lệ, không kèm giải thích.`;
+Only return valid JSON without explanation.`;
 }
 
 /**
@@ -197,7 +197,7 @@ ${item.oneLineSummary}
 
 ______________
 
-Nguồn: ${item.sourceName}
+Source: ${item.sourceName}
 
 ${hashtags}`;
 
@@ -216,7 +216,7 @@ async function callStageB(prompt: string): Promise<{ result: StageBOutput; actua
         messages: [
             {
                 role: 'system',
-                content: `Bạn là AI chuyên viết lại tin tức thành bài đăng Facebook tiếng Việt tự nhiên, dễ đọc và linh hoạt theo độ dài/thể loại của nội dung gốc. Ưu tiên sự mạch lạc và cảm giác người thật viết. Giữ đúng nội dung input, không thêm thông tin ngoài dữ liệu đã cho. Chỉ trả về valid JSON.`,
+                content: `You are an AI specializing in rewriting news into natural, readable Facebook posts in English, flexible to the length/genre of the original content. Prioritize coherence and a human-written feel. Keep the input content accurate, do not add information outside the provided data. Return ONLY valid JSON.`,
             },
             {
                 role: 'user',

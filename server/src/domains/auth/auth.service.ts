@@ -34,7 +34,7 @@ export class AuthService {
     async register(data: RegisterInput): Promise<AuthResult> {
         const existing = await prisma.user.findUnique({ where: { email: data.email } });
         if (existing) {
-            const error = new Error('Email đã được sử dụng') as any;
+            const error = new Error('Email is already in use') as any;
             error.statusCode = 409;
             error.code = 'CONFLICT';
             throw error;
@@ -56,14 +56,14 @@ export class AuthService {
     async login(data: LoginInput): Promise<AuthResult> {
         const user = await prisma.user.findUnique({ where: { email: data.email } });
         if (!user) {
-            const error = new Error('Email hoặc mật khẩu không đúng') as any;
+            const error = new Error('Incorrect email or password') as any;
             error.statusCode = 401;
             error.code = 'UNAUTHORIZED';
             throw error;
         }
 
         if (user.passwordHash === null) {
-            const error = new Error('Tài khoản này không có mật khẩu. Vui lòng đăng nhập bằng Google hoặc Magic Link.') as any;
+            const error = new Error('This account does not have a password. Please log in using Google or Magic Link.') as any;
             error.statusCode = 401;
             error.code = 'UNAUTHORIZED';
             throw error;
@@ -71,7 +71,7 @@ export class AuthService {
 
         const isValid = await bcrypt.compare(data.password, user.passwordHash);
         if (!isValid) {
-            const error = new Error('Email hoặc mật khẩu không đúng') as any;
+            const error = new Error('Incorrect email or password') as any;
             error.statusCode = 401;
             error.code = 'UNAUTHORIZED';
             throw error;
@@ -88,7 +88,7 @@ export class AuthService {
         });
 
         if (!user) {
-            const error = new Error('User không tồn tại') as any;
+            const error = new Error('User not found') as any;
             error.statusCode = 404;
             error.code = 'NOT_FOUND';
             throw error;

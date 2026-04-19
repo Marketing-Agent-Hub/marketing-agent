@@ -35,7 +35,7 @@ export class SocialAccountService {
     async disconnectAccount(accountId: number) {
         const account = await prisma.socialAccount.findUnique({ where: { id: accountId } });
         if (!account) {
-            const err = new Error('Social account không tồn tại') as any;
+            const err = new Error('Social account not found') as any;
             err.statusCode = 404;
             err.code = 'NOT_FOUND';
             throw err;

@@ -166,13 +166,13 @@ export default function OnboardingFormPage() {
 
         // Validate brandName
         if (!formData.brandName.trim()) {
-            setErrors((prev) => ({ ...prev, brandName: 'Tên thương hiệu là bắt buộc' }));
+            setErrors((prev) => ({ ...prev, brandName: 'Brand name is required' }));
             return;
         }
 
         // Validate websiteUrl (optional but must be valid if provided)
         if (formData.websiteUrl.trim() && !isValidUrl(formData.websiteUrl.trim())) {
-            setErrors((prev) => ({ ...prev, websiteUrl: 'URL không hợp lệ (phải bắt đầu bằng http:// hoặc https://)' }));
+            setErrors((prev) => ({ ...prev, websiteUrl: 'Invalid URL (must start with http:// or https://)' }));
             return;
         }
 
@@ -189,7 +189,7 @@ export default function OnboardingFormPage() {
                 },
             });
         } catch {
-            toast.error('Không thể tạo Brand Profile. Vui lòng thử lại.');
+            toast.error('Cannot create Brand Profile. Please try again.');
         }
     }
 
@@ -209,10 +209,10 @@ export default function OnboardingFormPage() {
                     {/* Page header */}
                     <div>
                         <h1 className="text-2xl font-bold bg-gradient-to-r from-[#00F2FE] to-[#4FACFE] bg-clip-text text-transparent">
-                            Thiết lập Brand Profile
+                            Brand Profile Setup
                         </h1>
                         <p className="mt-1 text-sm text-[var(--color-text-muted)]">
-                            Điền thông tin thương hiệu của bạn. AI sẽ hỗ trợ tạo nội dung.
+                            Fill in your brand information. AI will assist in content creation.
                         </p>
                     </div>
 
@@ -231,7 +231,7 @@ export default function OnboardingFormPage() {
                                         setErrors((prev) => ({ ...prev, aiPrompt: undefined }));
                                     }
                                 }}
-                                placeholder="Mô tả thương hiệu của bạn để AI tự động điền form..."
+                                placeholder="Describe your brand for AI to auto-fill the form..."
                                 className={`${inputCls} resize-none`}
                                 disabled={isGeneratingAll}
                             />
@@ -246,7 +246,7 @@ export default function OnboardingFormPage() {
                                 loading={isGeneratingAll}
                                 disabled={isGeneratingAll || fieldLoadingKey !== null}
                             >
-                                ✨ AI Generate toàn bộ →
+                                ✨ AI Generate All →
                             </Button>
                         </div>
                     </div>
@@ -254,12 +254,12 @@ export default function OnboardingFormPage() {
                     {/* ── Basic Section ──────────────────────────────────────────────────── */}
                     <div className="space-y-5">
                         <h2 className="text-base font-semibold bg-gradient-to-r from-[#00F2FE] to-[#4FACFE] bg-clip-text text-transparent">
-                            Thông tin cơ bản
+                            Basic Information
                         </h2>
 
                         {/* brandName */}
                         <FieldWrapper
-                            label="Tên thương hiệu *"
+                            label="Brand Name *"
                             fieldKey="brandName"
                             fieldLoadingKey={fieldLoadingKey}
                             onAISuggest={handleFieldSuggest}
@@ -269,7 +269,7 @@ export default function OnboardingFormPage() {
                                 type="text"
                                 value={formData.brandName}
                                 onChange={(e) => setField('brandName', e.target.value)}
-                                placeholder="Nhập tên thương hiệu"
+                                placeholder="Enter brand name"
                                 className={inputCls}
                             />
                         </FieldWrapper>
@@ -293,7 +293,7 @@ export default function OnboardingFormPage() {
 
                         {/* industry */}
                         <FieldWrapper
-                            label="Ngành nghề"
+                            label="Industry"
                             fieldKey="industry"
                             fieldLoadingKey={fieldLoadingKey}
                             onAISuggest={handleFieldSuggest}
@@ -303,14 +303,14 @@ export default function OnboardingFormPage() {
                                 type="text"
                                 value={formData.industry}
                                 onChange={(e) => setField('industry', e.target.value)}
-                                placeholder="Ví dụ: Thương mại điện tử, SaaS, F&B..."
+                                placeholder="Example: E-commerce, SaaS, F&B..."
                                 className={inputCls}
                             />
                         </FieldWrapper>
 
                         {/* description */}
                         <FieldWrapper
-                            label="Mô tả thương hiệu"
+                            label="Brand Description"
                             fieldKey="description"
                             fieldLoadingKey={fieldLoadingKey}
                             onAISuggest={handleFieldSuggest}
@@ -320,14 +320,14 @@ export default function OnboardingFormPage() {
                                 rows={3}
                                 value={formData.description}
                                 onChange={(e) => setField('description', e.target.value)}
-                                placeholder="Mô tả ngắn gọn về thương hiệu của bạn..."
+                                placeholder="Brief description of your brand..."
                                 className={`${inputCls} resize-none`}
                             />
                         </FieldWrapper>
 
                         {/* targetAudience */}
                         <FieldWrapper
-                            label="Đối tượng mục tiêu"
+                            label="Target Audience"
                             fieldKey="targetAudience"
                             fieldLoadingKey={fieldLoadingKey}
                             onAISuggest={handleFieldSuggest}
@@ -337,14 +337,14 @@ export default function OnboardingFormPage() {
                                 rows={3}
                                 value={formData.targetAudience}
                                 onChange={(e) => setField('targetAudience', e.target.value)}
-                                placeholder="Mô tả đối tượng khách hàng mục tiêu..."
+                                placeholder="Describe target customers..."
                                 className={`${inputCls} resize-none`}
                             />
                         </FieldWrapper>
 
                         {/* toneOfVoice */}
                         <FieldWrapper
-                            label="Giọng điệu thương hiệu"
+                            label="Brand Tone"
                             fieldKey="toneOfVoice"
                             fieldLoadingKey={fieldLoadingKey}
                             onAISuggest={handleFieldSuggest}
@@ -354,14 +354,14 @@ export default function OnboardingFormPage() {
                                 type="text"
                                 value={formData.toneOfVoice}
                                 onChange={(e) => setField('toneOfVoice', e.target.value)}
-                                placeholder="Ví dụ: Chuyên nghiệp, thân thiện, sáng tạo..."
+                                placeholder="Example: Professional, friendly, creative..."
                                 className={inputCls}
                             />
                         </FieldWrapper>
 
                         {/* businessGoals */}
                         <FieldWrapper
-                            label="Mục tiêu kinh doanh"
+                            label="Business Objectives"
                             fieldKey="businessGoals"
                             fieldLoadingKey={fieldLoadingKey}
                             onAISuggest={handleFieldSuggest}
@@ -371,7 +371,7 @@ export default function OnboardingFormPage() {
                                 rows={3}
                                 value={formData.businessGoals}
                                 onChange={(e) => setField('businessGoals', e.target.value)}
-                                placeholder="Các mục tiêu kinh doanh chính của bạn..."
+                                placeholder="Your main business objectives..."
                                 className={`${inputCls} resize-none`}
                             />
                         </FieldWrapper>
@@ -385,14 +385,14 @@ export default function OnboardingFormPage() {
                             onClick={() => setAdvancedExpanded((v) => !v)}
                             className="flex items-center gap-2 text-sm font-semibold text-[#4FACFE] hover:underline transition-colors"
                         >
-                            {advancedExpanded ? '▲ Ẩn thông tin nâng cao' : '▼ Thông tin nâng cao'}
+                            {advancedExpanded ? '▲ Hide advanced info' : '▼ Advanced info'}
                         </button>
 
                         {advancedExpanded && (
                             <div className="space-y-5">
                                 {/* usp */}
                                 <FieldWrapper
-                                    label="Điểm khác biệt (USP)"
+                                    label="Unique Selling Proposition (USP)"
                                     fieldKey="usp"
                                     fieldLoadingKey={fieldLoadingKey}
                                     onAISuggest={handleFieldSuggest}
@@ -402,14 +402,14 @@ export default function OnboardingFormPage() {
                                         rows={2}
                                         value={formData.usp}
                                         onChange={(e) => setField('usp', e.target.value)}
-                                        placeholder="Điều gì làm thương hiệu bạn khác biệt?"
+                                        placeholder="What makes your brand different?"
                                         className={`${inputCls} resize-none`}
                                     />
                                 </FieldWrapper>
 
                                 {/* competitors */}
                                 <FieldWrapper
-                                    label="Đối thủ cạnh tranh"
+                                    label="Competitors"
                                     fieldKey="competitors"
                                     fieldLoadingKey={fieldLoadingKey}
                                     onAISuggest={handleFieldSuggest}
@@ -419,14 +419,14 @@ export default function OnboardingFormPage() {
                                         rows={2}
                                         value={formData.competitors}
                                         onChange={(e) => setField('competitors', e.target.value)}
-                                        placeholder="Liệt kê các đối thủ cạnh tranh chính..."
+                                        placeholder="List main competitors..."
                                         className={`${inputCls} resize-none`}
                                     />
                                 </FieldWrapper>
 
                                 {/* keyMessages */}
                                 <FieldWrapper
-                                    label="Thông điệp chính"
+                                    label="Key Messages"
                                     fieldKey="keyMessages"
                                     fieldLoadingKey={fieldLoadingKey}
                                     onAISuggest={handleFieldSuggest}
@@ -436,7 +436,7 @@ export default function OnboardingFormPage() {
                                         rows={2}
                                         value={formData.keyMessages}
                                         onChange={(e) => setField('keyMessages', e.target.value)}
-                                        placeholder="Các thông điệp cốt lõi bạn muốn truyền tải..."
+                                        placeholder="Core messages you want to convey..."
                                         className={`${inputCls} resize-none`}
                                     />
                                 </FieldWrapper>
@@ -453,14 +453,14 @@ export default function OnboardingFormPage() {
                                         rows={2}
                                         value={formData.contentPillars}
                                         onChange={(e) => setField('contentPillars', e.target.value)}
-                                        placeholder="Các chủ đề nội dung chính (mỗi dòng một chủ đề)..."
+                                        placeholder="Main content topics (one per line)..."
                                         className={`${inputCls} resize-none`}
                                     />
                                 </FieldWrapper>
 
                                 {/* socialChannels — comma-separated, stored as string[] */}
                                 <FieldWrapper
-                                    label="Kênh mạng xã hội"
+                                    label="Social Channels"
                                     fieldKey="socialChannels"
                                     fieldLoadingKey={fieldLoadingKey}
                                     onAISuggest={handleFieldSuggest}
@@ -494,7 +494,7 @@ export default function OnboardingFormPage() {
                             disabled={isDisabled}
                             className="w-full"
                         >
-                            Xem Preview →
+                            Preview →
                         </Button>
                     </div>
                 </div>

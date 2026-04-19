@@ -11,7 +11,7 @@ export default function AdminGuard() {
 
     const payload = decodeAppToken(token);
     if (!payload || payload.systemRole !== 'ADMIN') {
-        // TODO: show toast "Bạn không có quyền truy cập khu vực này" once Toast is wired up
+        // TODO: show toast "You do not have permission to access this area" once Toast is wired up
         return <Navigate to="/workspaces" replace />;
     }
 

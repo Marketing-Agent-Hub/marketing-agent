@@ -39,7 +39,7 @@ export class BrandController {
             const brand = await brandService.getById(brandId);
             if (!brand) {
                 const response: ApiErrorResponse = {
-                    error: { code: 'NOT_FOUND', message: 'Brand không tồn tại' },
+                    error: { code: 'NOT_FOUND', message: 'Brand not found' },
                 };
                 res.status(404).json(response);
                 return;

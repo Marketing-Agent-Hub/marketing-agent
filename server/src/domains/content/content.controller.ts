@@ -38,7 +38,7 @@ export class ContentController {
 
             const brief = await contentService.getBrief(briefId);
             if (!brief) {
-                const r: ApiErrorResponse = { error: { code: 'NOT_FOUND', message: 'Brief không tồn tại' } };
+                const r: ApiErrorResponse = { error: { code: 'NOT_FOUND', message: 'Brief not found' } };
                 res.status(404).json(r);
                 return;
             }

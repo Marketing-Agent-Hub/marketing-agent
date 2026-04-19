@@ -11,8 +11,8 @@ import Modal from '@/components/ui/Modal';
 import type { Brand } from '@/types';
 
 const schema = z.object({
-    name: z.string().min(1, 'Tên brand là bắt buộc'),
-    websiteUrl: z.string().url('URL không hợp lệ').optional().or(z.literal('')),
+    name: z.string().min(1, 'Brand name is required'),
+    websiteUrl: z.string().url('Invalid URL').optional().or(z.literal('')),
     industry: z.string().optional(),
     timezone: z.string().optional(),
     defaultLanguage: z.string().optional(),
@@ -48,10 +48,10 @@ export default function BrandListPage() {
                         Brands
                     </h1>
                     <p className="mt-1 text-sm text-[var(--color-text-muted)]">
-                        Quản lý các thương hiệu trong workspace
+                        Manage brands in workspace
                     </p>
                 </div>
-                <Button onClick={() => setShowModal(true)}>+ Thêm Brand</Button>
+                <Button onClick={() => setShowModal(true)}>+ Add Brand</Button>
             </div>
 
             {isLoading ? (
@@ -64,12 +64,12 @@ export default function BrandListPage() {
                 <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-[var(--color-border)] py-20 text-center">
                     <div className="mb-4 text-5xl">🎯</div>
                     <h3 className="mb-2 font-['Outfit',sans-serif] text-lg font-medium text-[var(--color-text)]">
-                        Chưa có Brand nào
+                        No Brands yet
                     </h3>
                     <p className="mb-6 text-sm text-[var(--color-text-muted)]">
-                        Thêm brand đầu tiên để bắt đầu tạo nội dung
+                        Add your first brand to start creating content
                     </p>
-                    <Button onClick={() => setShowModal(true)}>Thêm Brand mới</Button>
+                    <Button onClick={() => setShowModal(true)}>Add New Brand</Button>
                 </div>
             ) : (
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -106,17 +106,17 @@ export default function BrandListPage() {
             <Modal
                 open={showModal}
                 onClose={() => setShowModal(false)}
-                title="Thêm Brand mới"
-                confirmLabel="Tạo"
+                title="Add New Brand"
+                confirmLabel="Create"
                 onConfirm={handleSubmit(onSubmit)}
                 confirmLoading={createMutation.isPending}
             >
                 <div className="space-y-4">
-                    <Input label="Tên Brand" error={errors.name?.message} {...register('name')} />
+                    <Input label="Brand Name" error={errors.name?.message} {...register('name')} />
                     <Input label="Website URL" error={errors.websiteUrl?.message} {...register('websiteUrl')} />
-                    <Input label="Ngành nghề" {...register('industry')} />
-                    <Input label="Timezone (vd: Asia/Ho_Chi_Minh)" {...register('timezone')} />
-                    <Input label="Ngôn ngữ mặc định (vd: vi)" {...register('defaultLanguage')} />
+                    <Input label="Industry" {...register('industry')} />
+                    <Input label="Timezone (e.g. America/New_York)" {...register('timezone')} />
+                    <Input label="Default Language (e.g. en)" {...register('defaultLanguage')} />
                 </div>
             </Modal>
         </div>

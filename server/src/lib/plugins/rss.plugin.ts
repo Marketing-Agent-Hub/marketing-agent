@@ -5,11 +5,11 @@ import { BasePlugin, RawPluginData, NormalizedItem, generateContentHash } from '
 
 export class RssPlugin implements BasePlugin {
     /**
-     * Fetch RSS feed từ source.rssUrl
+     * Fetch RSS feed from source.rssUrl
      */
     async fetch(source: Source): Promise<RawPluginData[]> {
         if (!source.rssUrl) {
-            throw new Error(`Source ${source.id} (${source.name}) thiếu rssUrl`);
+            throw new Error(`Source ${source.id} (${source.name}) is missing rssUrl`);
         }
 
         const timeoutMs = 10000;
@@ -34,7 +34,7 @@ export class RssPlugin implements BasePlugin {
     }
 
     /**
-     * Parse RSS 2.0 / Atom XML thành NormalizedItem[]
+     * Parse RSS 2.0 / Atom XML into NormalizedItem[]
      */
     async parse(raw: RawPluginData[], source: Source): Promise<NormalizedItem[]> {
         const xml = raw[0].raw as string;
@@ -130,7 +130,7 @@ export class RssPlugin implements BasePlugin {
     }
 
     /**
-     * RSS không cần config đặc biệt
+     * RSS does not require special config
      */
     validateConfig(_config: unknown): boolean {
         return true;

@@ -35,7 +35,7 @@ export class OnboardingFormService {
         // Verify brand exists and get workspaceId
         const brand = await prisma.brand.findUnique({ where: { id: brandId } });
         if (!brand) {
-            throw makeError('Brand không tồn tại', 404, 'NOT_FOUND');
+            throw makeError('Brand not found', 404, 'NOT_FOUND');
         }
 
         // Use workspaceId from brand record — don't rely on caller passing it correctly
@@ -100,14 +100,14 @@ ${prompt ? `\n## Additional Context\n${prompt}` : ''}
                     try {
                         parsed = JSON.parse(rawContent);
                     } catch {
-                        throw makeError('AI trả về dữ liệu không hợp lệ', 502, 'AI_INVALID_RESPONSE');
+                        throw makeError('AI returned invalid data', 502, 'AI_INVALID_RESPONSE');
                     }
 
                     let validated: GeneratedBrandProfileInput;
                     try {
                         validated = generatedBrandProfileSchema.parse(parsed);
                     } catch {
-                        throw makeError('AI trả về dữ liệu không hợp lệ', 502, 'AI_INVALID_RESPONSE');
+                        throw makeError('AI returned invalid data', 502, 'AI_INVALID_RESPONSE');
                     }
 
                     return {
@@ -124,7 +124,7 @@ ${prompt ? `\n## Additional Context\n${prompt}` : ''}
             const e = err as { code?: string; statusCode?: number };
             if (e.code === 'AI_INVALID_RESPONSE') throw err;
             // Wrap any other AI/network error as upstream error
-            throw makeError('AI service không phản hồi', 502, 'AI_UPSTREAM_ERROR');
+            throw makeError('AI service is unresponsive', 502, 'AI_UPSTREAM_ERROR');
         }
 
         const { contentPillarCandidates, ...profile } = output;
@@ -169,7 +169,7 @@ Generate a suggestion for the field: ${fieldKey}`;
             try {
                 parsed = JSON.parse(rawContent);
             } catch {
-                throw makeError('AI trả về dữ liệu không hợp lệ', 502, 'AI_INVALID_RESPONSE');
+                throw makeError('AI returned invalid data', 502, 'AI_INVALID_RESPONSE');
             }
 
             const result = parsed as Record<string, unknown>;
@@ -177,14 +177,14 @@ Generate a suggestion for the field: ${fieldKey}`;
                 typeof result.fieldKey !== 'string' ||
                 typeof result.suggestion !== 'string'
             ) {
-                throw makeError('AI trả về dữ liệu không hợp lệ', 502, 'AI_INVALID_RESPONSE');
+                throw makeError('AI returned invalid data', 502, 'AI_INVALID_RESPONSE');
             }
 
             suggestion = result.suggestion;
         } catch (err: unknown) {
             const e = err as { code?: string };
             if (e.code === 'AI_INVALID_RESPONSE') throw err;
-            throw makeError('AI service không phản hồi', 502, 'AI_UPSTREAM_ERROR');
+            throw makeError('AI service is unresponsive', 502, 'AI_UPSTREAM_ERROR');
         }
 
         return { fieldKey, suggestion };
@@ -235,12 +235,12 @@ Generate a suggestion for the field: ${fieldKey}`;
         } catch (err: unknown) {
             const e = err as { code?: string };
             if (e.code === 'INTERNAL_ERROR') throw err;
-            throw makeError('Lỗi lưu dữ liệu', 500, 'INTERNAL_ERROR');
+            throw makeError('Error saving data', 500, 'INTERNAL_ERROR');
         }
 
         const saved = await prisma.brandProfile.findUnique({ where: { brandId } });
         if (!saved) {
-            throw makeError('Lỗi lưu dữ liệu', 500, 'INTERNAL_ERROR');
+            throw makeError('Error saving data', 500, 'INTERNAL_ERROR');
         }
         return saved;
     }

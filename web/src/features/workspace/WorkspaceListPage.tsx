@@ -11,7 +11,7 @@ import Modal from '@/components/ui/Modal';
 import type { Workspace } from '@/types';
 
 const schema = z.object({
-    name: z.string().min(1, 'Tên workspace là bắt buộc'),
+    name: z.string().min(1, 'Workspace name is required'),
 });
 type FormData = z.infer<typeof schema>;
 
@@ -41,9 +41,9 @@ export default function WorkspaceListPage() {
                     <h1 className="font-['Outfit',sans-serif] text-2xl font-semibold text-[var(--color-text)]">
                         Workspaces
                     </h1>
-                    <p className="mt-1 text-sm text-[var(--color-text-muted)]">Quản lý các workspace của bạn</p>
+                    <p className="mt-1 text-sm text-[var(--color-text-muted)]">Manage your workspaces</p>
                 </div>
-                <Button onClick={() => setShowModal(true)}>+ Tạo Workspace</Button>
+                <Button onClick={() => setShowModal(true)}>+ Create Workspace</Button>
             </div>
 
             {isLoading ? (
@@ -56,12 +56,12 @@ export default function WorkspaceListPage() {
                 <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-[var(--color-border)] py-20 text-center">
                     <div className="mb-4 text-5xl">🏢</div>
                     <h3 className="mb-2 font-['Outfit',sans-serif] text-lg font-medium text-[var(--color-text)]">
-                        Chưa có Workspace nào
+                        No Workspaces yet
                     </h3>
                     <p className="mb-6 text-sm text-[var(--color-text-muted)]">
-                        Tạo workspace đầu tiên để bắt đầu
+                        Create first workspace to start
                     </p>
-                    <Button onClick={() => setShowModal(true)}>Tạo Workspace đầu tiên</Button>
+                    <Button onClick={() => setShowModal(true)}>Create First Workspace</Button>
                 </div>
             ) : (
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -87,14 +87,14 @@ export default function WorkspaceListPage() {
             <Modal
                 open={showModal}
                 onClose={() => setShowModal(false)}
-                title="Tạo Workspace mới"
-                confirmLabel="Tạo"
+                title="Create New Workspace"
+                confirmLabel="Create"
                 onConfirm={handleSubmit(onSubmit)}
                 confirmLoading={createMutation.isPending}
             >
                 <div className="space-y-4">
                     <Input
-                        label="Tên Workspace"
+                        label="Name Workspace"
                         error={errors.name?.message}
                         {...register('name')}
                     />

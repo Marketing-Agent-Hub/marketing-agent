@@ -35,13 +35,13 @@ apiClient.interceptors.response.use(
 
         if (status === 401) {
             localStorage.removeItem('app_token');
-            toastFn?.('Phiên làm việc đã hết hạn. Vui lòng đăng nhập lại.');
+            toastFn?.('Session expired. Please log in again.');
             window.location.href = '/login';
         } else if (status === 422 || data?.error?.message) {
-            const msg = data?.error?.message ?? data?.message ?? 'Có lỗi xảy ra';
+            const msg = data?.error?.message ?? data?.message ?? 'An error occurred';
             toastFn?.(msg);
         } else if (status && status >= 500) {
-            toastFn?.('Không thể kết nối máy chủ');
+            toastFn?.('Cannot connect to server');
         }
 
         return Promise.reject(error);

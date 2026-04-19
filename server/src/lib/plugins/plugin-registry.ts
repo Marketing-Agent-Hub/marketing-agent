@@ -9,19 +9,19 @@ const registry = new Map<SourceType, BasePlugin>([
 ]);
 
 /**
- * Lấy plugin instance theo SourceType
- * Throws nếu plugin chưa được đăng ký
+ * Get plugin instance by SourceType
+ * Throws if plugin is not registered
  */
 export function getPlugin(type: SourceType): BasePlugin {
     const plugin = registry.get(type);
     if (!plugin) {
-        throw new Error(`Plugin chưa được hỗ trợ: ${type}`);
+        throw new Error(`Unsupported plugin type: ${type}`);
     }
     return plugin;
 }
 
 /**
- * Đăng ký plugin mới vào registry
+ * Register a new plugin into the registry
  */
 export function registerPlugin(type: SourceType, plugin: BasePlugin): void {
     registry.set(type, plugin);

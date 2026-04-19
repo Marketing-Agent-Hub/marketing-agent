@@ -57,7 +57,7 @@ export class BrandService {
     async update(brandId: number, data: UpdateBrandInput) {
         const existing = await prisma.brand.findUnique({ where: { id: brandId } });
         if (!existing) {
-            const error = new Error('Brand không tồn tại') as any;
+            const error = new Error('Brand not found') as any;
             error.statusCode = 404;
             error.code = 'NOT_FOUND';
             throw error;

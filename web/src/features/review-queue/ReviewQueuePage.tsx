@@ -51,7 +51,7 @@ export default function ReviewQueuePage() {
         }
         await approveMutation.mutateAsync(currentDraft.id);
         triggerConfetti();
-        toast.success('Bài đã được duyệt! ✓');
+        toast.success('Post approved! ✓');
         setCurrentIdx(0);
     }, [currentDraft, approveMutation, isEdited, editedContent, updateMutation]);
 
@@ -60,7 +60,7 @@ export default function ReviewQueuePage() {
         await rejectMutation.mutateAsync({ draftId: currentDraft.id, comment: rejectComment });
         setShowRejectPopover(false);
         setRejectComment('');
-        toast.info('Bài đã bị từ chối.');
+        toast.info('Post rejected.');
         setCurrentIdx(0);
     }, [currentDraft, rejectMutation, rejectComment]);
 
@@ -109,9 +109,9 @@ export default function ReviewQueuePage() {
             <div className="flex h-full flex-col items-center justify-center text-center">
                 <div className="mb-4 text-5xl">✅</div>
                 <h3 className="mb-2 font-['Outfit',sans-serif] text-lg font-medium text-[var(--color-text)]">
-                    Không có bài nào chờ duyệt
+                    No posts pending review
                 </h3>
-                <p className="text-sm text-[var(--color-text-muted)]">Tất cả bài đã được xử lý. Quay lại sau nhé!</p>
+                <p className="text-sm text-[var(--color-text-muted)]">All posts processed. Check back later!</p>
             </div>
         );
     }
@@ -133,7 +133,7 @@ export default function ReviewQueuePage() {
                     {/* Queue counter */}
                     <div className="flex items-center justify-between">
                         <span className="text-xs text-[var(--color-text-muted)]">
-                            {currentIdx + 1} / {drafts.length} bài chờ duyệt
+                            {currentIdx + 1} / {drafts.length} posts pending review
                         </span>
                         <div className="flex gap-1">
                             {drafts.map((_, i) => (
@@ -154,8 +154,8 @@ export default function ReviewQueuePage() {
                                 {brief.title}
                             </h3>
                             <div className="space-y-1 text-xs text-[var(--color-text-muted)]">
-                                <p><span className="text-[#4FACFE]">Mục tiêu:</span> {brief.objective}</p>
-                                <p><span className="text-[#4FACFE]">Góc độ:</span> {brief.keyAngle}</p>
+                                <p><span className="text-[#4FACFE]">Objective:</span> {brief.objective}</p>
+                                <p><span className="text-[#4FACFE]">Angle:</span> {brief.keyAngle}</p>
                                 <p><span className="text-[#4FACFE]">CTA:</span> {brief.callToAction}</p>
                             </div>
                         </div>
@@ -164,7 +164,7 @@ export default function ReviewQueuePage() {
                     {/* Source article */}
                     {brief?.sourceArticle && (
                         <div className="rounded-xl border border-[var(--color-border)] p-4">
-                            <p className="mb-2 text-xs font-medium text-[var(--color-text-muted)]">📰 Bài gốc</p>
+                            <p className="mb-2 text-xs font-medium text-[var(--color-text-muted)]">📰 Original Post</p>
                             <p className="text-xs leading-relaxed text-[var(--color-text)]">
                                 {brief.sourceArticle.extractedContent}
                             </p>
@@ -178,7 +178,7 @@ export default function ReviewQueuePage() {
                 <div className="flex-1 overflow-y-auto p-6">
                     <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium text-[var(--color-text)]">Nội dung Draft</span>
+                            <span className="text-sm font-medium text-[var(--color-text)]">Draft Content</span>
                             {isEdited && (
                                 <span className="rounded-full bg-yellow-500/10 px-2 py-0.5 text-xs text-yellow-400">
                                     ✏️ Edited by human
@@ -222,12 +222,12 @@ export default function ReviewQueuePage() {
                                 </Button>
                                 {showRejectPopover && (
                                     <div className="absolute bottom-full right-0 mb-2 w-72 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-4 shadow-2xl">
-                                        <p className="mb-2 text-xs font-medium text-[var(--color-text)]">Lý do từ chối</p>
+                                        <p className="mb-2 text-xs font-medium text-[var(--color-text)]">Reason for rejection</p>
                                         <textarea
                                             ref={rejectTextareaRef}
                                             value={rejectComment}
                                             onChange={(e) => setRejectComment(e.target.value)}
-                                            placeholder="Nhập lý do..."
+                                            placeholder="Enter reason..."
                                             rows={3}
                                             className="w-full resize-none rounded-lg border border-[var(--color-border)] bg-white/5 px-3 py-2 text-xs text-[var(--color-text)] outline-none"
                                         />
@@ -237,7 +237,7 @@ export default function ReviewQueuePage() {
                                                 onClick={() => setShowRejectPopover(false)}
                                                 className="text-xs px-3 py-1"
                                             >
-                                                Hủy
+                                                Cancel
                                             </Button>
                                             <Button
                                                 variant="destructive"

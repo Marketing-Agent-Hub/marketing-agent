@@ -36,7 +36,7 @@ export class StrategyController {
 
             const strategy = await strategyService.getStrategy(strategyId);
             if (!strategy) {
-                const r: ApiErrorResponse = { error: { code: 'NOT_FOUND', message: 'Strategy không tồn tại' } };
+                const r: ApiErrorResponse = { error: { code: 'NOT_FOUND', message: 'Strategy not found' } };
                 res.status(404).json(r);
                 return;
             }

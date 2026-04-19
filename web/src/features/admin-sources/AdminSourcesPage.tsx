@@ -42,9 +42,9 @@ interface SourcesResponse {
 // ── Form schema ────────────────────────────────────────────────────────────
 
 const sourceSchema = z.object({
-    name: z.string().min(1, 'Tên là bắt buộc'),
-    rssUrl: z.string().url('URL không hợp lệ').optional().or(z.literal('')),
-    siteUrl: z.string().url('URL không hợp lệ').optional().or(z.literal('')),
+    name: z.string().min(1, 'Name is required'),
+    rssUrl: z.string().url('Invalid URL').optional().or(z.literal('')),
+    siteUrl: z.string().url('Invalid URL').optional().or(z.literal('')),
     lang: z.enum(['VI', 'EN', 'MIXED']),
     type: z.enum(['RSS', 'WEB_SCRAPER', 'YOUTUBE', 'SOCIAL_MEDIA', 'CUSTOM_API']),
     trustScore: z.coerce.number().int().min(0).max(100),
@@ -82,7 +82,7 @@ function useCreateSource() {
     const qc = useQueryClient();
     return useMutation({
         mutationFn: (data: object) => apiClient.post('/api/internal/sources', data).then((r) => r.data),
-        onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin-sources'] }); toast.success('Đã tạo source'); },
+        onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin-sources'] }); toast.success('Created source'); },
     });
 }
 
@@ -90,7 +90,7 @@ function useUpdateSource(id: number) {
     const qc = useQueryClient();
     return useMutation({
         mutationFn: (data: object) => apiClient.patch(`/api/internal/sources/${id}`, data).then((r) => r.data),
-        onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin-sources'] }); toast.success('Đã cập nhật source'); },
+        onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin-sources'] }); toast.success('Updated source'); },
     });
 }
 
@@ -98,7 +98,7 @@ function useDeleteSource() {
     const qc = useQueryClient();
     return useMutation({
         mutationFn: (id: number) => apiClient.delete(`/api/internal/sources/${id}`),
-        onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin-sources'] }); toast.success('Đã xóa source'); },
+        onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin-sources'] }); toast.success('Deleted source'); },
     });
 }
 
@@ -141,8 +141,8 @@ function SourceForm({
         if (!rssUrl) return;
         try {
             const result = await validateMutation.mutateAsync(rssUrl);
-            if (result.ok) toast.success('Feed hợp lệ ✓');
-            else toast.error(`Feed không hợp lệ: ${result.error ?? 'unknown'}`);
+            if (result.ok) toast.success('Valid feed ✓');
+            else toast.error(`Invalid feed: ${result.error ?? 'unknown'}`);
         } catch { /* handled by interceptor */ }
     };
 
@@ -162,9 +162,9 @@ function SourceForm({
     return (
         <form onSubmit={handleSubmit(onSubmit as any)} className="space-y-3 font-mono text-xs">
             <div className="grid grid-cols-2 gap-3">
-                {field('Tên nguồn *', 'name', 'text', 'VD: VnExpress Tech')}
+                {field('Source Name *', 'name', 'text', 'Ex: TechCrunch AI')}
                 <div>
-                    <label className="mb-1 block text-[10px] uppercase tracking-wider text-white/40">Loại</label>
+                    <label className="mb-1 block text-[10px] uppercase tracking-wider text-white/40">Type</label>
                     <select {...register('type')} className="w-full rounded border border-white/10 bg-black/40 px-3 py-1.5 text-xs text-white outline-none focus:border-[#4FACFE]">
                         {['RSS', 'WEB_SCRAPER', 'YOUTUBE', 'SOCIAL_MEDIA', 'CUSTOM_API'].map((t) => (
                             <option key={t} value={t}>{t}</option>
@@ -198,7 +198,7 @@ function SourceForm({
 
             <div className="grid grid-cols-3 gap-3">
                 <div>
-                    <label className="mb-1 block text-[10px] uppercase tracking-wider text-[var(--color-text-muted)] opacity-50">Ngôn ngữ</label>
+                    <label className="mb-1 block text-[10px] uppercase tracking-wider text-[var(--color-text-muted)] opacity-50">Language</label>
                     <select {...register('lang')} className="w-full rounded border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-3 py-1.5 text-xs text-[var(--color-text)] outline-none focus:border-[#4FACFE]">
                         <option value="MIXED">MIXED</option>
                         <option value="VI">VI</option>
@@ -206,20 +206,20 @@ function SourceForm({
                     </select>
                 </div>
                 {field('Trust Score (0-100)', 'trustScore', 'number')}
-                {field('Fetch Interval (phút)', 'fetchIntervalMinutes', 'number')}
+                {field('Fetch Interval (min)', 'fetchIntervalMinutes', 'number')}
             </div>
 
-            {field('Topic Tags (phân cách bằng dấu phẩy)', 'topicTagsRaw', 'text', 'tech, ai, startup')}
-            {field('Deny Keywords (phân cách bằng dấu phẩy)', 'denyKeywordsRaw', 'text', 'spam, ads')}
-            {field('Ghi chú', 'notes', 'text', 'Ghi chú nội bộ...')}
+            {field('Topic Tags (comma-separated)', 'topicTagsRaw', 'text', 'tech, ai, startup')}
+            {field('Deny Keywords (comma-separated)', 'denyKeywordsRaw', 'text', 'spam, ads')}
+            {field('Notes', 'notes', 'text', 'Internal notes...')}
 
             <div className="flex items-center gap-2">
                 <input type="checkbox" id="enabled" {...register('enabled')} className="rounded" />
-                <label htmlFor="enabled" className="text-[10px] uppercase tracking-wider text-[var(--color-text-muted)] opacity-50">Kích hoạt ngay</label>
+                <label htmlFor="enabled" className="text-[10px] uppercase tracking-wider text-[var(--color-text-muted)] opacity-50">Enable immediately</label>
             </div>
 
             <Button type="submit" loading={loading} className="w-full text-xs">
-                Lưu
+                Save
             </Button>
         </form>
     );
@@ -266,7 +266,7 @@ export default function AdminSourcesPage() {
             a.download = `sources-${new Date().toISOString().slice(0, 10)}.json`;
             a.click();
             URL.revokeObjectURL(url);
-            toast.success('Đã tải xuống sources.json');
+            toast.success('Downloaded sources.json');
         } catch { /* handled by interceptor */ }
     };
 
@@ -292,7 +292,7 @@ export default function AdminSourcesPage() {
                         ↑ Import JSON
                     </button>
                     <Button onClick={() => setShowCreate(true)} className="text-xs">
-                        + Thêm nguồn
+                        + Add source
                     </Button>
                 </div>
             </div>
@@ -301,7 +301,7 @@ export default function AdminSourcesPage() {
             <input
                 value={search}
                 onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                placeholder="Tìm kiếm theo tên, URL..."
+                placeholder="Search by name, URL..."
                 className="mb-4 w-full rounded border border-[var(--color-border)] bg-[var(--color-bg-card)] px-3 py-2 text-xs text-[var(--color-text)] outline-none placeholder:text-[var(--color-text-muted)] opacity-80 focus:border-[#4FACFE]"
             />
 
@@ -310,7 +310,7 @@ export default function AdminSourcesPage() {
                 <table className="w-full">
                     <thead className="border-b border-[var(--color-border)] bg-[var(--color-bg-secondary)]">
                         <tr>
-                            {['Tên', 'URL', 'Loại', 'Lang', 'Score', 'Items', 'Status', ''].map((h) => (
+                            {['Name', 'URL', 'Type', 'Lang', 'Score', 'Items', 'Status', ''].map((h) => (
                                 <th key={h} className="px-3 py-2 text-left text-[10px] uppercase tracking-wider text-[var(--color-text-muted)] opacity-50">{h}</th>
                             ))}
                         </tr>
@@ -327,7 +327,7 @@ export default function AdminSourcesPage() {
                         ) : sources.length === 0 ? (
                             <tr>
                                 <td colSpan={8} className="px-3 py-8 text-center text-[var(--color-text-muted)] opacity-50">
-                                    Chưa có nguồn nào
+                                    No sources available
                                 </td>
                             </tr>
                         ) : (
@@ -358,13 +358,13 @@ export default function AdminSourcesPage() {
                                                 onClick={() => setEditSource(src)}
                                                 className="text-[#4FACFE] hover:underline"
                                             >
-                                                Sửa
+                                                Edit
                                             </button>
                                             <button
                                                 onClick={() => setDeleteTarget(src)}
                                                 className="text-red-400 hover:underline"
                                             >
-                                                Xóa
+                                                Delete
                                             </button>
                                         </div>
                                     </td>
@@ -379,11 +379,11 @@ export default function AdminSourcesPage() {
             {totalPages > 1 && (
                 <div className="mt-3 flex items-center justify-center gap-2">
                     <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className="rounded border border-[var(--color-border)] px-3 py-1 text-[10px] text-[var(--color-text-muted)] hover:bg-[var(--color-bg-card)] disabled:opacity-30">
-                        ← Trước
+                        ← Prev
                     </button>
                     <span className="text-[10px] text-[var(--color-text-muted)] opacity-50">{page} / {totalPages}</span>
                     <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="rounded border border-[var(--color-border)] px-3 py-1 text-[10px] text-[var(--color-text-muted)] hover:bg-[var(--color-bg-card)] disabled:opacity-30">
-                        Sau →
+                        Next →
                     </button>
                 </div>
             )}
@@ -392,7 +392,7 @@ export default function AdminSourcesPage() {
             <Modal
                 open={showCreate}
                 onClose={() => setShowCreate(false)}
-                title="Thêm nguồn mới"
+                title="Add new source"
                 confirmLabel={null}
             >
                 <SourceForm
@@ -413,9 +413,9 @@ export default function AdminSourcesPage() {
             <Modal
                 open={!!deleteTarget}
                 onClose={() => setDeleteTarget(null)}
-                title="Xóa nguồn"
+                title="Delete source"
                 variant="destructive"
-                confirmLabel="Xóa"
+                confirmLabel="Delete"
                 onConfirm={async () => {
                     if (deleteTarget) {
                         await deleteMutation.mutateAsync(deleteTarget.id);
@@ -425,8 +425,8 @@ export default function AdminSourcesPage() {
                 confirmLoading={deleteMutation.isPending}
             >
                 <p className="text-xs text-[var(--color-text)] opacity-80">
-                    Bạn có chắc muốn xóa nguồn <strong className="text-[var(--color-text)]">{deleteTarget?.name}</strong>?
-                    Hành động này không thể hoàn tác.
+                    Are you sure you want to delete source <strong className="text-[var(--color-text)]">{deleteTarget?.name}</strong>?
+                    This action cannot be undone.
                 </p>
             </Modal>
 
@@ -459,7 +459,7 @@ function EditSourceModal({ source, onClose }: { source: Source; onClose: () => v
         <Modal
             open
             onClose={onClose}
-            title={`Sửa: ${source.name}`}
+            title={`Edit: ${source.name}`}
             confirmLabel={null}
         >
             <SourceForm
@@ -497,7 +497,7 @@ function parseImportJson(raw: string): object[] {
     if (parsed?.sources && Array.isArray(parsed.sources)) return parsed.sources;
     if (parsed?.data?.sources && Array.isArray(parsed.data.sources)) return parsed.data.sources;
     if (typeof parsed === 'object' && parsed !== null) return [parsed];
-    throw new Error('Định dạng JSON không hợp lệ. Cần array hoặc object có field "sources".');
+    throw new Error('Invalid JSON format. Requires array or object with "sources" field.');
 }
 
 function ImportSourcesModal({ onClose }: { onClose: () => void }) {
@@ -515,7 +515,7 @@ function ImportSourcesModal({ onClose }: { onClose: () => void }) {
             const items = parseImportJson(jsonText);
             setPreview(items);
         } catch (e: any) {
-            setParseError(e.message ?? 'JSON không hợp lệ');
+            setParseError(e.message ?? 'Invalid JSON');
             setPreview(null);
         }
     };
@@ -556,24 +556,24 @@ function ImportSourcesModal({ onClose }: { onClose: () => void }) {
         setImporting(false);
         setResults({ ok, failed });
         qc.invalidateQueries({ queryKey: ['admin-sources'] });
-        if (ok > 0) toast.success(`Đã import ${ok} nguồn thành công`);
-        if (failed > 0) toast.error(`${failed} nguồn bị lỗi (trùng URL hoặc dữ liệu không hợp lệ)`);
+        if (ok > 0) toast.success(`Imported ${ok} sources successfully`);
+        if (failed > 0) toast.error(`${failed} sources failed (duplicate URL or invalid data)`);
     };
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
             <div className="glass relative w-full max-w-2xl rounded-xl p-6 shadow-2xl font-mono text-xs">
-                <h2 className="mb-4 text-sm font-bold text-[var(--color-text)]">Import Sources từ JSON</h2>
+                <h2 className="mb-4 text-sm font-bold text-[var(--color-text)]">Import Sources from JSON</h2>
 
                 {results ? (
                     <div className="space-y-4">
                         <div className="rounded border border-[var(--color-border)] bg-[var(--color-bg-card)] p-4 text-center">
-                            <p className="text-green-500 font-bold">✓ {results.ok} nguồn đã import</p>
-                            {results.failed > 0 && <p className="text-red-500 font-bold">✗ {results.failed} nguồn thất bại</p>}
+                            <p className="text-green-500 font-bold">✓ {results.ok} sources imported</p>
+                            {results.failed > 0 && <p className="text-red-500 font-bold">✗ {results.failed} sources failed</p>}
                         </div>
                         <div className="flex justify-end">
-                            <Button onClick={onClose} variant="ghost" className="text-xs">Đóng</Button>
+                            <Button onClick={onClose} variant="ghost" className="text-xs">Close</Button>
                         </div>
                     </div>
                 ) : (
@@ -581,7 +581,7 @@ function ImportSourcesModal({ onClose }: { onClose: () => void }) {
                         {/* File upload */}
                         <div>
                             <label className="mb-1 block text-[10px] uppercase tracking-wider text-[var(--color-text-muted)] opacity-50">
-                                Chọn file .json
+                                Select .json file
                             </label>
                             <div className="flex gap-2">
                                 <input
@@ -595,10 +595,10 @@ function ImportSourcesModal({ onClose }: { onClose: () => void }) {
                                     onClick={() => fileInputRef.current?.click()}
                                     className="rounded border border-[var(--color-border)] px-3 py-1.5 text-[10px] text-[var(--color-text)] opacity-60 hover:bg-[var(--color-bg-card)] transition-colors"
                                 >
-                                    📂 Chọn file
+                                    📂 Select file
                                 </button>
                                 <span className="flex items-center text-[10px] text-[var(--color-text-muted)] opacity-40">
-                                    hoặc paste JSON bên dưới
+                                    or paste JSON below
                                 </span>
                             </div>
                         </div>
@@ -620,14 +620,14 @@ function ImportSourcesModal({ onClose }: { onClose: () => void }) {
 
                         {/* Format hint */}
                         <p className="text-[10px] text-[var(--color-text-muted)] opacity-40">
-                            Hỗ trợ: array <code className="text-[var(--color-text-muted)]">[{'{...}'}]</code>, object đơn <code className="text-[var(--color-text-muted)]">{'{...}'}</code>, hoặc export format <code className="text-[var(--color-text-muted)]">{'{"sources":[...]}'}</code>
+                            Supports: array <code className="text-[var(--color-text-muted)]">[{'{...}'}]</code>, single object <code className="text-[var(--color-text-muted)]">{'{...}'}</code>, or export format <code className="text-[var(--color-text-muted)]">{'{"sources":[...]}'}</code>
                         </p>
 
                         {/* Preview */}
                         {preview && (
                             <div className="rounded border border-[#4FACFE]/20 bg-[#4FACFE]/5 p-3">
                                 <p className="mb-1 text-[10px] text-[#4FACFE]">
-                                    ✓ Đã parse {preview.length} nguồn — sẵn sàng import
+                                    ✓ Parsed {preview.length} sources — ready to import
                                 </p>
                                 <div className="max-h-32 overflow-y-auto space-y-0.5">
                                     {preview.slice(0, 10).map((item: any, i) => (
@@ -636,14 +636,14 @@ function ImportSourcesModal({ onClose }: { onClose: () => void }) {
                                         </p>
                                     ))}
                                     {preview.length > 10 && (
-                                        <p className="text-[10px] text-[var(--color-text-muted)] opacity-40">... và {preview.length - 10} nguồn khác</p>
+                                        <p className="text-[10px] text-[var(--color-text-muted)] opacity-40">... and {preview.length - 10} other sources</p>
                                     )}
                                 </div>
                             </div>
                         )}
 
                         <div className="flex justify-end gap-2 pt-1">
-                            <Button variant="ghost" onClick={onClose} className="text-xs">Hủy</Button>
+                            <Button variant="ghost" onClick={onClose} className="text-xs">Cancel</Button>
                             {!preview ? (
                                 <Button onClick={handleParse} disabled={!jsonText.trim()} className="text-xs">
                                     Parse JSON

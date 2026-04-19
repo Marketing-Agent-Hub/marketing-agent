@@ -42,7 +42,7 @@ export default function SourcesPage() {
         mutationFn: (data: FilterProfile) => apiClient.patch(`/api/brands/${bid}/filter-profile`, data),
         onSuccess: () => {
             qc.invalidateQueries({ queryKey: ['filter-profile', bid] });
-            toast.success('Filter Profile đã được cập nhật!');
+            toast.success('Filter Profile has been updated!');
             setShowFilterConfirm(false);
         },
     });
@@ -57,13 +57,13 @@ export default function SourcesPage() {
     return (
         <div className="max-w-3xl space-y-8">
             <div>
-                <h1 className="font-['Outfit',sans-serif] text-2xl font-semibold text-[var(--color-text)]">Nguồn Tin</h1>
-                <p className="mt-1 text-sm text-[var(--color-text-muted)]">Quản lý nguồn RSS và bộ lọc nội dung</p>
+                <h1 className="font-['Outfit',sans-serif] text-2xl font-semibold text-[var(--color-text)]">Sources</h1>
+                <p className="mt-1 text-sm text-[var(--color-text-muted)]">Manage RSS sources and content filters</p>
             </div>
 
             {/* Sources list */}
             <div>
-                <h2 className="mb-3 text-sm font-medium text-[var(--color-text)]">Nguồn đang theo dõi</h2>
+                <h2 className="mb-3 text-sm font-medium text-[var(--color-text)]">Followed sources</h2>
                 {isLoading ? (
                     <div className="space-y-2">{[1, 2, 3].map(i => <Skeleton key={i} variant="card" className="h-16" />)}</div>
                 ) : (
@@ -76,12 +76,12 @@ export default function SourcesPage() {
                                     <p className="text-xs text-[var(--color-text-muted)] truncate">{src.rssUrl}</p>
                                 </div>
                                 <span className={`text-xs ${src.lastFetchSuccess ? 'text-green-400' : 'text-red-400'}`}>
-                                    {src.lastFetchSuccess ? '🟢' : '🔴'} {src.lastFetchedAt ? new Date(src.lastFetchedAt).toLocaleDateString('vi-VN') : 'Chưa fetch'}
+                                    {src.lastFetchSuccess ? '🟢' : '🔴'} {src.lastFetchedAt ? new Date(src.lastFetchedAt).toLocaleDateString('vi-VN') : 'Not fetched'}
                                 </span>
                             </div>
                         ))}
                         {!sources?.length && (
-                            <p className="text-sm text-[var(--color-text-muted)]">Chưa có nguồn nào được thêm.</p>
+                            <p className="text-sm text-[var(--color-text-muted)]">No sources available.</p>
                         )}
                     </div>
                 )}
@@ -111,21 +111,21 @@ export default function SourcesPage() {
                     <div className="flex gap-2">
                         <input value={tagInput} onChange={(e) => setTagInput(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && addTag()}
-                            placeholder="Thêm tag (Enter)"
+                            placeholder="Add tag (Enter)"
                             className="flex-1 rounded-lg border border-[var(--color-border)] bg-white/5 px-3 py-2 text-xs text-[var(--color-text)] outline-none" />
-                        <Button variant="ghost" onClick={addTag} className="text-xs px-3 py-1">Thêm</Button>
+                        <Button variant="ghost" onClick={addTag} className="text-xs px-3 py-1">Add</Button>
                     </div>
                 </div>
 
-                <Button onClick={() => setShowFilterConfirm(true)} variant="ghost">Lưu Filter Profile</Button>
+                <Button onClick={() => setShowFilterConfirm(true)} variant="ghost">Save Filter Profile</Button>
             </div>
 
             <Modal open={showFilterConfirm} onClose={() => setShowFilterConfirm(false)}
-                title="Xác nhận thay đổi Filter Profile" variant="destructive"
-                confirmLabel="Lưu thay đổi"
+                title="Confirm Filter Profile changes" variant="destructive"
+                confirmLabel="Save thay đổi"
                 onConfirm={() => updateFilterMutation.mutate({ mode: 'SIMILARITY', similarityThreshold: threshold, topicTags })}
                 confirmLoading={updateFilterMutation.isPending}>
-                <p>Thay đổi này sẽ ảnh hưởng đến toàn bộ luồng lọc nội dung của brand. Bạn có chắc chắn không?</p>
+                <p>This change will affect the entire brand content filtering pipeline. Are you sure?</p>
             </Modal>
         </div>
     );

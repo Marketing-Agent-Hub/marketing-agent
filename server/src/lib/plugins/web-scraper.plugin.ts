@@ -4,7 +4,7 @@ import { Source } from '@prisma/client';
 import { env } from '../../config/env.js';
 import { BasePlugin, RawPluginData, NormalizedItem, generateContentHash } from './base.plugin.js';
 
-// Config schema cho Web Scraper
+// Config schema for Web Scraper
 export const webScraperConfigSchema = z.object({
     targetUrl: z.string().url(),
     selectors: z.object({
@@ -24,7 +24,7 @@ export type WebScraperConfig = z.infer<typeof webScraperConfigSchema>;
 
 export class WebScraperPlugin implements BasePlugin {
     /**
-     * Fetch HTML từ targetUrl trong config
+     * Fetch HTML from targetUrl in config
      */
     async fetch(source: Source): Promise<RawPluginData[]> {
         const config = webScraperConfigSchema.parse(source.config);
@@ -51,7 +51,7 @@ export class WebScraperPlugin implements BasePlugin {
     }
 
     /**
-     * Parse HTML bằng cheerio, extract items theo CSS selectors
+     * Parse HTML using cheerio, extract items using CSS selectors
      */
     async parse(raw: RawPluginData[], source: Source): Promise<NormalizedItem[]> {
         const config = webScraperConfigSchema.parse(source.config);
@@ -108,7 +108,7 @@ export class WebScraperPlugin implements BasePlugin {
     }
 
     /**
-     * Validate config bằng Zod schema
+     * Validate config using Zod schema
      */
     validateConfig(config: unknown): boolean {
         return webScraperConfigSchema.safeParse(config).success;

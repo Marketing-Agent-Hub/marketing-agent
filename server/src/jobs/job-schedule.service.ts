@@ -68,7 +68,7 @@ export class JobScheduleService {
      */
     async updateDefault(jobType: JobType, cronExpression: string): Promise<void> {
         if (!cron.validate(cronExpression)) {
-            throw new Error(`cronExpression không hợp lệ: "${cronExpression}"`);
+            throw new Error(`Invalid cronExpression: "${cronExpression}"`);
         }
 
         const key = `job_default:${jobType}`;

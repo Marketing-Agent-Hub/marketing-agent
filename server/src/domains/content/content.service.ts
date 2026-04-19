@@ -228,7 +228,7 @@ Return JSON: { hook, body, cta, hashtags }`,
             include: { brand: { include: { profile: true } }, drafts: true },
         });
         if (!brief) {
-            const err = new Error('Brief không tồn tại') as any;
+            const err = new Error('Brief not found') as any;
             err.statusCode = 404; err.code = 'NOT_FOUND'; throw err;
         }
 
@@ -284,11 +284,11 @@ Return JSON: { hook, body, cta, hashtags }`,
     async editDraft(draftId: number, data: EditDraftInput) {
         const draft = await prisma.contentDraft.findUnique({ where: { id: draftId } });
         if (!draft) {
-            const err = new Error('Draft không tồn tại') as any;
+            const err = new Error('Draft not found') as any;
             err.statusCode = 404; err.code = 'NOT_FOUND'; throw err;
         }
         if (!['IN_REVIEW', 'DRAFT'].includes(draft.status)) {
-            const err = new Error('Chỉ có thể chỉnh sửa draft ở trạng thái IN_REVIEW hoặc DRAFT') as any;
+            const err = new Error('Can only edit draft in IN_REVIEW or DRAFT status') as any;
             err.statusCode = 422; err.code = 'INVALID_STATE_TRANSITION'; throw err;
         }
         return prisma.contentDraft.update({ where: { id: draftId }, data });

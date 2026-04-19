@@ -2,15 +2,15 @@ import crypto from 'crypto';
 import { Source } from '@prisma/client';
 
 /**
- * Dữ liệu thô từ nguồn, trước khi parse
+ * Raw data from source, before parsing
  */
 export interface RawPluginData {
     raw: unknown;
 }
 
 /**
- * Item đã chuẩn hóa — output chuẩn của mọi plugin
- * Map trực tiếp vào Item model của Prisma
+ * Normalized item - standard output of every plugin
+ * Maps directly to Prisma's Item model
  */
 export interface NormalizedItem {
     sourceId: number;
@@ -23,7 +23,7 @@ export interface NormalizedItem {
 }
 
 /**
- * Config cơ bản cho mọi plugin
+ * Base config for every plugin
  */
 export interface BasePluginConfig {
     timeoutMs?: number;
@@ -32,7 +32,7 @@ export interface BasePluginConfig {
 }
 
 /**
- * Interface bắt buộc mọi plugin phải implement
+ * Mandatory interface that every plugin must implement
  */
 export interface BasePlugin {
     fetch(source: Source): Promise<RawPluginData[]>;
@@ -41,8 +41,8 @@ export interface BasePlugin {
 }
 
 /**
- * Hàm duy nhất tạo contentHash — dùng chung cho mọi plugin
- * Đảm bảo deduplication nhất quán
+ * Single function to generate contentHash - shared across plugins
+ * Ensures consistent deduplication
  */
 export function generateContentHash(item: {
     title: string;

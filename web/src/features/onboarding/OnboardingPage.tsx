@@ -66,7 +66,7 @@ export default function OnboardingPage() {
                         res.data.messages.map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content }))
                     );
                 } else {
-                    setMessages([{ role: 'assistant', content: 'Xin chào! Hãy cho tôi biết về thương hiệu của bạn. Tên thương hiệu là gì?' }]);
+                    setMessages([{ role: 'assistant', content: 'Xin chào! Hãy cho tôi biết về thương hiệu của bạn. Name thương hiệu là gì?' }]);
                 }
             })
             .catch(() => toast.error('Không thể tạo phiên onboarding'));
@@ -202,7 +202,7 @@ export default function OnboardingPage() {
                                 Gửi
                             </Button>
                             <Button variant="ghost" onClick={handleComplete} loading={completing} disabled={polling}>
-                                Lưu & Phân tích
+                                Save & Phân tích
                             </Button>
                         </div>
                     </div>

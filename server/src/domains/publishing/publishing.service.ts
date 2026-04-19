@@ -7,11 +7,11 @@ export class PublishingService {
     async scheduleDraft(draftId: number, scheduledFor: Date) {
         const draft = await prisma.contentDraft.findUnique({ where: { id: draftId } });
         if (!draft) {
-            const err = new Error('Draft không tồn tại') as any;
+            const err = new Error('Draft not found') as any;
             err.statusCode = 404; err.code = 'NOT_FOUND'; throw err;
         }
         if (draft.status !== 'APPROVED') {
-            const err = new Error(`Chỉ có thể lên lịch draft ở trạng thái APPROVED, hiện tại: ${draft.status}`) as any;
+            const err = new Error(`Can only schedule draft in APPROVED status, current: ${draft.status}`) as any;
             err.statusCode = 422; err.code = 'INVALID_STATE_TRANSITION'; throw err;
         }
 
@@ -40,11 +40,11 @@ export class PublishingService {
     async retryJob(jobId: number) {
         const job = await prisma.publishJob.findUnique({ where: { id: jobId } });
         if (!job) {
-            const err = new Error('PublishJob không tồn tại') as any;
+            const err = new Error('PublishJob not found') as any;
             err.statusCode = 404; err.code = 'NOT_FOUND'; throw err;
         }
         if (job.status !== 'FAILED') {
-            const err = new Error(`Chỉ có thể retry job ở trạng thái FAILED, hiện tại: ${job.status}`) as any;
+            const err = new Error(`Can only retry job in FAILED status, current: ${job.status}`) as any;
             err.statusCode = 422; err.code = 'INVALID_STATE_TRANSITION'; throw err;
         }
         return prisma.publishJob.update({

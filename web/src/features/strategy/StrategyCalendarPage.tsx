@@ -46,11 +46,11 @@ export default function StrategyCalendarPage() {
         timeoutMs: 120_000,
         onStop: () => {
             setGenerating(false);
-            toast.success('Kế hoạch nội dung đã được tạo!');
+            toast.success('Content plan đã được tạo!');
         },
         onTimeout: () => {
             setGenerating(false);
-            toast.error('Quá thời gian tạo kế hoạch. Vui lòng thử lại.');
+            toast.error('Plan generation timed out. Please try again.');
         },
     });
 
@@ -59,7 +59,7 @@ export default function StrategyCalendarPage() {
             await generateMutation.mutateAsync({ durationDays, postsPerWeek, channels: selectedChannels });
             setShowModal(false);
             setGenerating(true);
-            toast.info('AI đang tạo kế hoạch nội dung. Bạn có thể làm việc khác.');
+            toast.info('AI is generating content plan. You can do other work.');
         } catch {
             // handled by interceptor
         }
@@ -67,7 +67,7 @@ export default function StrategyCalendarPage() {
 
     const handleActivate = async (strategyId: number) => {
         await activateMutation.mutateAsync({ strategyId, brandId: bid });
-        toast.success('Chiến lược đã được kích hoạt!');
+        toast.success('Strategy activated!');
     };
 
     const toggleChannel = (ch: SocialPlatform) => {
@@ -97,12 +97,12 @@ export default function StrategyCalendarPage() {
             <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-[var(--color-border)] py-20 text-center">
                 <div className="mb-4 text-5xl">🎯</div>
                 <h3 className="mb-2 font-['Outfit',sans-serif] text-lg font-medium text-[var(--color-text)]">
-                    Chưa có Brand Profile
+                    No Brand Profile
                 </h3>
                 <p className="mb-6 text-sm text-[var(--color-text-muted)]">
-                    Hoàn thành Onboarding để AI hiểu thương hiệu của bạn trước khi tạo chiến lược.
+                    Complete Onboarding so AI can understand your brand before generating strategy.
                 </p>
-                <Button onClick={() => navigate(`/b/${bid}/onboarding`)}>Bắt đầu Onboarding</Button>
+                <Button onClick={() => navigate(`/b/${bid}/onboarding`)}>Start Onboarding</Button>
             </div>
         );
     }
@@ -112,9 +112,9 @@ export default function StrategyCalendarPage() {
             <div className="mb-6 flex items-center justify-between">
                 <div>
                     <h1 className="font-['Outfit',sans-serif] text-2xl font-semibold text-[var(--color-text)]">
-                        Lịch Chiến Lược
+                        Strategy Calendar
                     </h1>
-                    <p className="mt-1 text-sm text-[var(--color-text-muted)]">Kế hoạch nội dung 30 ngày</p>
+                    <p className="mt-1 text-sm text-[var(--color-text-muted)]">Content plan 30 ngày</p>
                 </div>
                 <div className="flex gap-3">
                     {activeStrategy && activeStrategy.status !== 'ACTIVE' && (
@@ -123,10 +123,10 @@ export default function StrategyCalendarPage() {
                             onClick={() => handleActivate(activeStrategy.id)}
                             loading={activateMutation.isPending}
                         >
-                            ⚡ Kích hoạt
+                            ⚡ Activate
                         </Button>
                     )}
-                    <Button onClick={() => setShowModal(true)}>+ Tạo Kế Hoạch</Button>
+                    <Button onClick={() => setShowModal(true)}>+ Create Kế Hoạch</Button>
                 </div>
             </div>
 
@@ -168,14 +168,14 @@ export default function StrategyCalendarPage() {
             <Modal
                 open={showModal}
                 onClose={() => setShowModal(false)}
-                title="Tạo Kế Hoạch 30 Ngày"
-                confirmLabel="Tạo kế hoạch"
+                title="Create Kế Hoạch 30 Ngày"
+                confirmLabel="Create kế hoạch"
                 onConfirm={handleGenerate}
                 confirmLoading={generateMutation.isPending}
             >
                 <div className="space-y-4">
                     <div>
-                        <label className="mb-1 block text-xs text-[var(--color-text-muted)]">Số ngày</label>
+                        <label className="mb-1 block text-xs text-[var(--color-text-muted)]">Number of days</label>
                         <input
                             type="number"
                             value={durationDays}
@@ -186,7 +186,7 @@ export default function StrategyCalendarPage() {
                         />
                     </div>
                     <div>
-                        <label className="mb-1 block text-xs text-[var(--color-text-muted)]">Bài/tuần</label>
+                        <label className="mb-1 block text-xs text-[var(--color-text-muted)]">Posts/week</label>
                         <input
                             type="number"
                             value={postsPerWeek}
@@ -197,7 +197,7 @@ export default function StrategyCalendarPage() {
                         />
                     </div>
                     <div>
-                        <label className="mb-2 block text-xs text-[var(--color-text-muted)]">Kênh đăng bài</label>
+                        <label className="mb-2 block text-xs text-[var(--color-text-muted)]">Publishing channel</label>
                         <div className="flex flex-wrap gap-2">
                             {PLATFORMS.map((p) => (
                                 <button

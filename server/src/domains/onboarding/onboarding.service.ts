@@ -22,14 +22,14 @@ export class OnboardingService {
     async addMessage(sessionId: number, msg: AddMessageInput) {
         const session = await prisma.onboardingSession.findUnique({ where: { id: sessionId } });
         if (!session) {
-            const error = new Error('Session không tồn tại') as any;
+            const error = new Error('Session not found') as any;
             error.statusCode = 404;
             error.code = 'NOT_FOUND';
             throw error;
         }
 
         if (session.status !== 'IN_PROGRESS') {
-            const error = new Error('Không thể thêm tin nhắn vào session đã hoàn thành') as any;
+            const error = new Error('Cannot add messages to a completed session') as any;
             error.statusCode = 422;
             error.code = 'INVALID_STATE_TRANSITION';
             throw error;
@@ -53,14 +53,14 @@ export class OnboardingService {
     async completeSession(sessionId: number) {
         const session = await prisma.onboardingSession.findUnique({ where: { id: sessionId } });
         if (!session) {
-            const error = new Error('Session không tồn tại') as any;
+            const error = new Error('Session not found') as any;
             error.statusCode = 404;
             error.code = 'NOT_FOUND';
             throw error;
         }
 
         if (session.status !== 'IN_PROGRESS') {
-            const error = new Error('Session đã hoàn thành') as any;
+            const error = new Error('Session is completed') as any;
             error.statusCode = 422;
             error.code = 'INVALID_STATE_TRANSITION';
             throw error;
@@ -68,7 +68,7 @@ export class OnboardingService {
 
         const transcript = (session.transcript as unknown as TranscriptMessage[]) ?? [];
         if (transcript.length === 0) {
-            const error = new Error('Transcript không được để trống trước khi hoàn thành session') as any;
+            const error = new Error('Transcript cannot be empty before completing the session') as any;
             error.statusCode = 422;
             error.code = 'VALIDATION_ERROR';
             throw error;
@@ -97,7 +97,7 @@ export class OnboardingService {
     async getSession(sessionId: number) {
         const session = await prisma.onboardingSession.findUnique({ where: { id: sessionId } });
         if (!session) {
-            const error = new Error('Session không tồn tại') as any;
+            const error = new Error('Session not found') as any;
             error.statusCode = 404;
             error.code = 'NOT_FOUND';
             throw error;

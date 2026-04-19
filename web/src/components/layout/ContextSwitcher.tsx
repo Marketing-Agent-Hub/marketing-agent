@@ -31,7 +31,7 @@ export default function ContextSwitcher() {
                 className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-white/5"
             >
                 <span className="truncate font-medium text-[var(--color-text)]">
-                    {currentBrand?.name ?? currentWorkspace?.name ?? 'Chọn Brand'}
+                    {currentBrand?.name ?? currentWorkspace?.name ?? 'Select Brand'}
                 </span>
                 <span className="ml-auto text-[var(--color-text-muted)]">▾</span>
             </button>
@@ -44,7 +44,7 @@ export default function ContextSwitcher() {
                             <input
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
-                                placeholder="Tìm kiếm..."
+                                placeholder="Search..."
                                 className="w-full rounded-lg bg-white/5 px-3 py-2 text-xs text-[var(--color-text)] outline-none placeholder:text-[var(--color-text-muted)]"
                             />
                         </div>

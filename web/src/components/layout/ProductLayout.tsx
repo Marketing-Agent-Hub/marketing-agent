@@ -111,7 +111,7 @@ export default function ProductLayout() {
                         onClick={handleLogout}
                         className="w-full rounded-lg px-3 py-2 text-xs text-red-400 hover:bg-red-500/10 transition-colors text-left"
                     >
-                        {sidebarCollapsed ? '🚪' : '🚪 Đăng xuất'}
+                        {sidebarCollapsed ? '🚪' : '🚪 Logout'}
                     </button>
                 </div>
             </aside>

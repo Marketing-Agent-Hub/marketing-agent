@@ -37,7 +37,7 @@ export class WorkspaceController {
             const workspace = await workspaceService.getById(workspaceId);
             if (!workspace) {
                 const response: ApiErrorResponse = {
-                    error: { code: 'NOT_FOUND', message: 'Workspace không tồn tại' },
+                    error: { code: 'NOT_FOUND', message: 'Workspace not found' },
                 };
                 res.status(404).json(response);
                 return;

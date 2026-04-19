@@ -74,7 +74,7 @@ export default function ProfilePreviewPage() {
             await saveMutation.mutateAsync({ profile, pillars });
             navigate(`/b/${brandId}/strategy`);
         } catch {
-            toast.error('Không thể lưu Brand Profile. Vui lòng thử lại.');
+            toast.error('Cannot save Brand Profile. Please try again.');
         }
     }
 
@@ -87,22 +87,22 @@ export default function ProfilePreviewPage() {
                 {/* Page header */}
                 <div>
                     <h1 className="text-2xl font-bold bg-gradient-to-r from-[#00F2FE] to-[#4FACFE] bg-clip-text text-transparent">
-                        Xem trước Brand Profile
+                        Preview Brand Profile
                     </h1>
                     <p className="mt-1 text-sm text-[var(--color-text-muted)]">
-                        Kiểm tra thông tin trước khi xác nhận lưu.
+                        Check information before saving.
                     </p>
                 </div>
 
                 {/* 1. Summary */}
-                <SectionCard title="Tóm tắt thương hiệu">
+                <SectionCard title="Brand Summary">
                     <p className="text-sm text-[var(--color-text)] leading-relaxed">
                         {profile.summary || '—'}
                     </p>
                 </SectionCard>
 
                 {/* 2. Target Audience */}
-                <SectionCard title="Đối tượng mục tiêu">
+                <SectionCard title="Target Audience">
                     {profile.targetAudience?.length ? (
                         <div className="space-y-4">
                             {profile.targetAudience.map((item, i) => (
@@ -132,16 +132,16 @@ export default function ProfilePreviewPage() {
                 </SectionCard>
 
                 {/* 3. Value Propositions */}
-                <SectionCard title="Giá trị cốt lõi">
+                <SectionCard title="Core Values">
                     <BulletList items={profile.valueProps} />
                 </SectionCard>
 
                 {/* 4. Tone Guidelines */}
-                <SectionCard title="Hướng dẫn giọng điệu">
+                <SectionCard title="Tone Guidelines">
                     <div className="space-y-3">
                         <div>
                             <p className="text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-1">
-                                Giọng điệu
+                                Tone
                             </p>
                             <p className="text-sm text-[var(--color-text)]">
                                 {profile.toneGuidelines?.voice || '—'}
@@ -150,7 +150,7 @@ export default function ProfilePreviewPage() {
                         {profile.toneGuidelines?.avoid?.length > 0 && (
                             <div>
                                 <p className="text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-1">
-                                    Tránh
+                                    Avoid
                                 </p>
                                 <BulletList items={profile.toneGuidelines.avoid} />
                             </div>
@@ -159,12 +159,12 @@ export default function ProfilePreviewPage() {
                 </SectionCard>
 
                 {/* 5. Business Goals */}
-                <SectionCard title="Mục tiêu kinh doanh">
+                <SectionCard title="Business Objectives">
                     <BulletList items={profile.businessGoals} />
                 </SectionCard>
 
                 {/* 6. Messaging Angles */}
-                <SectionCard title="Góc độ thông điệp">
+                <SectionCard title="Message Angles">
                     <BulletList items={profile.messagingAngles} />
                 </SectionCard>
 

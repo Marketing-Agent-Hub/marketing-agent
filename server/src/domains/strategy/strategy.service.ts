@@ -54,11 +54,11 @@ export class StrategyService {
             include: { profile: true, pillars: true },
         });
         if (!brand) {
-            const err = new Error('Brand không tồn tại') as any;
+            const err = new Error('Brand not found') as any;
             err.statusCode = 404; err.code = 'NOT_FOUND'; throw err;
         }
         if (!brand.profile) {
-            const err = new Error('Brand chưa có profile. Hãy hoàn thành onboarding trước.') as any;
+            const err = new Error('Brand does not have a profile. Please complete onboarding first.') as any;
             err.statusCode = 422; err.code = 'PRECONDITION_FAILED'; throw err;
         }
 
@@ -177,11 +177,11 @@ Generate exactly ${Math.round((durationDays / 7) * postsPerWeek)} slots spread a
     async activateStrategy(strategyId: number) {
         const strategy = await prisma.strategyPlan.findUnique({ where: { id: strategyId } });
         if (!strategy) {
-            const err = new Error('Strategy không tồn tại') as any;
+            const err = new Error('Strategy not found') as any;
             err.statusCode = 404; err.code = 'NOT_FOUND'; throw err;
         }
         if (strategy.status !== 'DRAFT') {
-            const err = new Error(`Chỉ có thể activate strategy ở trạng thái DRAFT, hiện tại: ${strategy.status}`) as any;
+            const err = new Error(`Can only activate strategy in DRAFT status, current: ${strategy.status}`) as any;
             err.statusCode = 422; err.code = 'INVALID_STATE_TRANSITION'; throw err;
         }
 

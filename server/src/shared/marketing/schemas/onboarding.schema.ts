@@ -13,8 +13,8 @@ export type AddMessageInput = z.infer<typeof addMessageSchema>;
 
 export const onboardingFormDataSchema = z.object({
     // Basic fields
-    brandName: z.string().min(1, 'Brand Name là bắt buộc'),
-    websiteUrl: z.string().url('URL không hợp lệ').optional().or(z.literal('')),
+    brandName: z.string().min(1, 'Brand Name is required'),
+    websiteUrl: z.string().url('Invalid URL').optional().or(z.literal('')),
     industry: z.string().optional(),
     description: z.string().optional(),
     targetAudience: z.string().optional(),
