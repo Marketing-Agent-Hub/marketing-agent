@@ -22,10 +22,12 @@ class CashReviewService {
 
     constructor() {
         this.s3 = new S3Client({
-            region: env.AWS_REGION,
+            region: 'us-east-1',
+            endpoint: env.S3_ENDPOINT,
+            forcePathStyle: env.NODE_ENV !== 'production',
             credentials: {
-                accessKeyId: env.AWS_ACCESS_KEY_ID,
-                secretAccessKey: env.AWS_SECRET_ACCESS_KEY,
+                accessKeyId: env.S3_ACCESS_KEY,
+                secretAccessKey: env.S3_SECRET_KEY,
             },
         });
     }
@@ -72,7 +74,7 @@ class CashReviewService {
         }
 
         const command = new GetObjectCommand({
-            Bucket: env.S3_BUCKET_NAME,
+            Bucket: env.S3_BUCKET,
             Key: topUpRequest.proofImageKey,
         });
 

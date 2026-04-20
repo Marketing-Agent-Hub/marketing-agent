@@ -1,4 +1,40 @@
 ﻿services:
+  minio:
+    image: minio/minio:latest
+    container_name: marketing_agent_dev_minio
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_dev_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - marketing_agent_dev_network
+
+  minio-init:
+    image: minio/mc:latest
+    container_name: marketing_agent_dev_minio_init
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      mc alias set local http://minio:9000 minioadmin minioadmin &&
+      mc mb -p local/my-bucket || true &&
+      mc anonymous set public local/my-bucket || true
+      "
+    networks:
+      - marketing_agent_dev_network
+
   postgres:
     image: postgres:16
     container_name: marketing_agent_dev_postgres
@@ -29,11 +65,17 @@
       DATABASE_URL: postgresql://postgres:m1505@postgres:5432/marketing_agent_dev
       NODE_ENV: development
       PORT: 3001
+      S3_ENDPOINT: http://minio:9000
+      S3_ACCESS_KEY: minioadmin
+      S3_SECRET_KEY: minioadmin
+      S3_BUCKET: my-bucket
     env_file:
       - .env
     ports:
       - "3003:3001"
     depends_on:
+      minio:
+        condition: service_healthy
       postgres:
         condition: service_healthy
     healthcheck:
@@ -71,6 +113,7 @@
 
 volumes:
   postgres_dev_data:
+  minio_dev_data:
 
 networks:
   marketing_agent_dev_network:

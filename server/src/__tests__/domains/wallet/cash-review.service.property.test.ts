@@ -1,16 +1,16 @@
-/**
+﻿/**
  * Property-Based Tests: CashReviewService
  *
  * Feature: credit-wallet-system
  *
- * Property 7: Admin review state machine — only PENDING_APPROVAL is reviewable
+ * Property 7: Admin review state machine â€” only PENDING_APPROVAL is reviewable
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import * as fc from 'fast-check';
 import { Decimal } from '@prisma/client/runtime/library.js';
 
-// ─── Mocks ────────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Mocks â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 vi.mock('../../../db/index.js', () => ({
     prisma: {
@@ -31,10 +31,10 @@ vi.mock('../../../db/index.js', () => ({
 
 vi.mock('../../../config/env.js', () => ({
     env: {
-        AWS_REGION: 'us-east-1',
-        AWS_ACCESS_KEY_ID: 'mock_key',
-        AWS_SECRET_ACCESS_KEY: 'mock_secret',
-        S3_BUCKET_NAME: 'mock-bucket',
+        S3_ENDPOINT: 'http://localhost:9000',
+        S3_ACCESS_KEY: 'mock_key',
+        S3_SECRET_KEY: 'mock_secret',
+        S3_BUCKET: 'mock-bucket',
     },
 }));
 
@@ -62,7 +62,7 @@ import {
     TopUpRequestNotReviewableError,
 } from '../../../domains/wallet/cash-review.service.js';
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 type TopUpStatus = 'PENDING_APPROVAL' | 'SUCCEEDED' | 'FAILED' | 'REJECTED';
 
@@ -88,17 +88,17 @@ function makeTopUpRequest(status: TopUpStatus, overrides: Record<string, unknown
     };
 }
 
-// ─── Tests ────────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Tests â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-describe('CashReviewService — Property-Based Tests', () => {
+describe('CashReviewService â€” Property-Based Tests', () => {
     beforeEach(() => {
         vi.clearAllMocks();
     });
 
     /**
-     * Property 7: Admin review state machine — only PENDING_APPROVAL is reviewable
+     * Property 7: Admin review state machine â€” only PENDING_APPROVAL is reviewable
      *
-     * For any TopUpRequest with status ≠ PENDING_APPROVAL, calling
+     * For any TopUpRequest with status â‰  PENDING_APPROVAL, calling
      * CashReviewService.approve or CashReviewService.reject SHALL return an error
      * and SHALL NOT modify the wallet balance or create any WalletTransaction.
      *
@@ -221,3 +221,4 @@ describe('CashReviewService — Property-Based Tests', () => {
         }
     });
 });
+

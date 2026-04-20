@@ -1,9 +1,9 @@
-/**
+﻿/**
  * Property-Based Tests: TopUpService
  *
  * Feature: credit-wallet-system
  *
- * Property 4: creditsToAdd = floor(amountUsd × 1000)
+ * Property 4: creditsToAdd = floor(amountUsd Ã— 1000)
  * Property 5: Stripe webhook idempotency
  * Property 6: Cash top-up minimum amount validation
  */
@@ -12,7 +12,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import * as fc from 'fast-check';
 import { Decimal } from '@prisma/client/runtime/library.js';
 
-// ─── Mocks ────────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Mocks â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 vi.mock('../../../db/index.js', () => ({
     prisma: {
@@ -36,14 +36,14 @@ vi.mock('../../../config/env.js', () => ({
     env: {
         STRIPE_SECRET_KEY: 'sk_test_mock',
         STRIPE_WEBHOOK_SECRET: 'whsec_mock',
-        AWS_REGION: 'us-east-1',
-        AWS_ACCESS_KEY_ID: 'mock_key',
-        AWS_SECRET_ACCESS_KEY: 'mock_secret',
-        S3_BUCKET_NAME: 'mock-bucket',
+        S3_ENDPOINT: 'http://localhost:9000',
+        S3_ACCESS_KEY: 'mock_key',
+        S3_SECRET_KEY: 'mock_secret',
+        S3_BUCKET: 'mock-bucket',
     },
 }));
 
-// Mock Stripe — use a shared constructEvent mock that can be configured per test
+// Mock Stripe â€” use a shared constructEvent mock that can be configured per test
 const sharedConstructEvent = vi.fn();
 
 vi.mock('stripe', () => {
@@ -86,7 +86,7 @@ import { walletService } from '../../../domains/wallet/wallet.service.js';
 import { topUpService, InvalidTopUpAmountError } from '../../../domains/wallet/topup.service.js';
 import { calculateCreditsFromUsd } from '../../../lib/model-pricing.registry.js';
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function makeWallet(userId = 1) {
     return {
@@ -122,23 +122,23 @@ function makeTopUpRequest(overrides: Record<string, unknown> = {}) {
     };
 }
 
-// ─── Tests ────────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Tests â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-describe('TopUpService — Property-Based Tests', () => {
+describe('TopUpService â€” Property-Based Tests', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         vi.mocked(walletService.getOrCreate).mockResolvedValue(makeWallet());
     });
 
     /**
-     * Property 4: creditsToAdd = floor(amountUsd × 1000)
+     * Property 4: creditsToAdd = floor(amountUsd Ã— 1000)
      *
      * For any positive USD amount a, the credits calculated SHALL equal
-     * Math.floor(a × 1000), which is always a non-negative integer.
+     * Math.floor(a Ã— 1000), which is always a non-negative integer.
      *
      * Validates: Requirements 2.2
      */
-    it('Property 4: calculateCreditsFromUsd(a) === Math.floor(a × 1000) for any positive USD amount', () => {
+    it('Property 4: calculateCreditsFromUsd(a) === Math.floor(a Ã— 1000) for any positive USD amount', () => {
         fc.assert(
             fc.property(fc.float({ min: Math.fround(0.01), max: Math.fround(10000), noNaN: true }), (amountUsd) => {
                 const credits = calculateCreditsFromUsd(amountUsd);
@@ -153,7 +153,7 @@ describe('TopUpService — Property-Based Tests', () => {
     });
 
     /**
-     * Property 4 (integration): createStripeTopUp uses floor(amountUsd × 1000) for creditsToAdd
+     * Property 4 (integration): createStripeTopUp uses floor(amountUsd Ã— 1000) for creditsToAdd
      */
     it('Property 4: createStripeTopUp stores correct creditsToAdd in metadata', async () => {
         await fc.assert(
@@ -182,12 +182,12 @@ describe('TopUpService — Property-Based Tests', () => {
      * Property 5: Stripe webhook idempotency
      *
      * For any valid payment_intent.succeeded event with PaymentIntentId P,
-     * processing the webhook N times (N ≥ 1) SHALL result in credits being
+     * processing the webhook N times (N â‰¥ 1) SHALL result in credits being
      * added to the user's wallet exactly once.
      *
      * Validates: Requirements 2.5
      */
-    it('Property 5: Stripe webhook idempotency — credits added exactly once for any paymentIntentId', async () => {
+    it('Property 5: Stripe webhook idempotency â€” credits added exactly once for any paymentIntentId', async () => {
         await fc.assert(
             fc.asyncProperty(
                 fc.string({ minLength: 5, maxLength: 50 }).filter((s) => s.trim().length > 0),
@@ -344,3 +344,4 @@ describe('TopUpService — Property-Based Tests', () => {
         ).rejects.toThrow(InvalidTopUpAmountError);
     });
 });
+

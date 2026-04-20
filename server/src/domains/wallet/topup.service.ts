@@ -24,14 +24,16 @@ class TopUpService {
 
     constructor() {
         this.stripe = new Stripe(env.STRIPE_SECRET_KEY, {
-            apiVersion: '2025-04-30.basil',
+            apiVersion: '2026-03-25.dahlia',
         });
 
         this.s3 = new S3Client({
-            region: env.AWS_REGION,
+            region: 'us-east-1',
+            endpoint: env.S3_ENDPOINT,
+            forcePathStyle: env.NODE_ENV !== 'production',
             credentials: {
-                accessKeyId: env.AWS_ACCESS_KEY_ID,
-                secretAccessKey: env.AWS_SECRET_ACCESS_KEY,
+                accessKeyId: env.S3_ACCESS_KEY,
+                secretAccessKey: env.S3_SECRET_KEY,
             },
         });
     }
@@ -201,7 +203,7 @@ class TopUpService {
         const key = `proof-images/${userId}/${Date.now()}-${randomUUID()}`;
 
         const command = new PutObjectCommand({
-            Bucket: env.S3_BUCKET_NAME,
+            Bucket: env.S3_BUCKET,
             Key: key,
             ContentType: 'image/*',
         });

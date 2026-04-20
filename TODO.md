@@ -37,7 +37,7 @@
 
 7. **Hạ tầng**
 - IaC (Terraform/Pulumi) cho network, DB, object storage, secrets, monitoring.
-- Chuẩn hóa `infra/` thành `infra/{env}/{network,compute,data,observability}`.
+- [ DONE ] Chuẩn hóa `infra/` thành `infra/{env}/{network,compute,data,observability}`.
 - Container hardening (non-root, image scan, SBOM, pinned base image).
 - Blue/green hoặc rolling deploy với health check thật (readiness/liveness).
 

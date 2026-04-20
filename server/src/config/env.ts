@@ -40,11 +40,11 @@ export const envSchema = z.object({
   STRIPE_SECRET_KEY: z.string().min(1, 'STRIPE_SECRET_KEY is required'),
   STRIPE_WEBHOOK_SECRET: z.string().min(1, 'STRIPE_WEBHOOK_SECRET is required'),
 
-  // AWS S3 (Proof image uploads for cash top-up)
-  AWS_ACCESS_KEY_ID: z.string().min(1, 'AWS_ACCESS_KEY_ID is required'),
-  AWS_SECRET_ACCESS_KEY: z.string().min(1, 'AWS_SECRET_ACCESS_KEY is required'),
-  AWS_REGION: z.string().min(1, 'AWS_REGION is required'),
-  S3_BUCKET_NAME: z.string().min(1, 'S3_BUCKET_NAME is required'),
+  // S3 storage (same variables for all envs)
+  S3_ENDPOINT: z.string().url('S3_ENDPOINT must be a valid URL'),
+  S3_ACCESS_KEY: z.string().min(1, 'S3_ACCESS_KEY is required'),
+  S3_SECRET_KEY: z.string().min(1, 'S3_SECRET_KEY is required'),
+  S3_BUCKET: z.string().min(1, 'S3_BUCKET is required'),
 });
 
 export type Env = z.infer<typeof envSchema>;
@@ -54,6 +54,8 @@ let env: Env;
 
 try {
   env = envSchema.parse(process.env);
+
+  // Single S3 config for all environments.
 } catch (error) {
   if (error instanceof z.ZodError) {
     console.error('❌ Invalid environment variables:');
