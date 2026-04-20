@@ -16,9 +16,7 @@
         "format": "prettier --write \"src/**/*.ts\"",
         "test": "vitest",
         "test:coverage": "vitest --coverage",
-        "test:pipeline": "tsx test-pipeline.ts",
-        "check:imports": "node scripts/check-imports.js",
-        "postman:generate": "tsx scripts/generate-postman-collection.ts"
+        "test:pipeline": "tsx test-pipeline.ts"
     },
     "keywords": [
         "marketing",
