@@ -4,6 +4,7 @@ import { env } from './config/env.js';
 import { errorHandler } from './middleware/error-handler.js';
 import { requestMonitoring, errorMonitoring } from './middleware/monitoring.js';
 import routes from './routes/index.js';
+import stripeWebhookRoutes from './domains/wallet/stripe-webhook.routes.js';
 import { startMonitoringCleanupJob, stopMonitoringCleanupJob } from './jobs/monitoring-cleanup.job.js';
 import { startBackgroundJobs, stopBackgroundJobs } from './jobs/bootstrap.js';
 import { initTelemetry, shutdownTelemetry } from './lib/telemetry.js';
@@ -20,6 +21,9 @@ app.use(
         credentials: true,
     })
 );
+
+// Mount Stripe webhook BEFORE express.json() — Stripe requires raw body for signature verification
+app.use('/api', stripeWebhookRoutes);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

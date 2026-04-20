@@ -15,6 +15,7 @@ import jobScheduleRoutes from '../../domains/job-scheduling/job-schedule.routes.
 import pipelineRoutes from '../../domains/content/routes/pipeline.routes.js';
 import brandModelRoutes from '../../domains/ai-model-configuration/brand-model.routes.js';
 import mediaConfigRoutes from '../../domains/ai-model-configuration/media-config.routes.js';
+import walletRoutes from '../../domains/wallet/wallet.routes.js';
 
 const router = Router();
 
@@ -44,5 +45,6 @@ router.use('/', productSocialAccountRouter);
 router.use('/', pipelineRoutes);
 router.use('/brands/:brandId/ai/models', brandModelRoutes);
 router.use('/brands/:brandId/media-config', mediaConfigRoutes);
+router.use('/', walletRoutes);
 
 export default router;

@@ -11,6 +11,7 @@ import sourceDiscoveryRoutes from '../../domains/source-discovery/source-discove
 import aiSettingsRoutes from '../../domains/content-intelligence/ai-settings.routes.js';
 import jobScheduleAdminRoutes from '../../domains/job-scheduling/job-schedule.admin.routes.js';
 import modelRegistryAdminRoutes from '../../domains/ai-model-configuration/model-registry.routes.js';
+import walletAdminRoutes from '../../domains/wallet/wallet-admin.routes.js';
 
 const router = Router();
 
@@ -57,5 +58,7 @@ router.post('/brands/:brandId/trends/match', requireBrandAccess('EDITOR'), async
 router.get('/auth-check', requireAdminAuth, (_req, res) => {
     res.json({ status: 'ok' });
 });
+
+router.use('/', walletAdminRoutes);
 
 export default router;

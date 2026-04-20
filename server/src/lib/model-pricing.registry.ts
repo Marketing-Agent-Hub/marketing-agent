@@ -28,7 +28,9 @@ export const DEFAULT_PRICE_PER_TOKEN = 0.000005;
  * Always returns a value > 0.
  */
 export function getPricePerToken(model: string): number {
-    return MODEL_PRICING[model] ?? DEFAULT_PRICE_PER_TOKEN;
+    return Object.prototype.hasOwnProperty.call(MODEL_PRICING, model)
+        ? MODEL_PRICING[model]
+        : DEFAULT_PRICE_PER_TOKEN;
 }
 
 /**
