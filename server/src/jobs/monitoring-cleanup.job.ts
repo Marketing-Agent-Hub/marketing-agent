@@ -1,6 +1,5 @@
 import cron, { ScheduledTask } from 'node-cron';
 import { logger } from '../lib/logger.js';
-import { logService } from '../domains/monitoring/log.service.js';
 import { metricService } from '../domains/monitoring/metric.service.js';
 import { healthService } from '../domains/monitoring/health.service.js';
 import { traceService } from '../domains/monitoring/trace.service.js';
@@ -26,11 +25,6 @@ export function startMonitoringCleanupJob() {
 
             const startTime = Date.now();
 
-            // Clean up old logs
-            const logsDeleted = await logService.cleanupOldLogs(
-                monitorConfig.database.retentionDays
-            );
-
             // Clean up old metrics
             const metricsDeleted = await metricService.cleanupOldMetrics(
                 monitorConfig.database.retentionDays
@@ -46,7 +40,6 @@ export function startMonitoringCleanupJob() {
 
             logger.info({
                 duration,
-                logsDeleted,
                 metricsDeleted,
                 healthChecksDeleted,
                 tracesDeleted,

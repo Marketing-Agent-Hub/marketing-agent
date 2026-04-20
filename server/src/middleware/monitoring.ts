@@ -1,5 +1,4 @@
 import { Request, Response, NextFunction } from 'express';
-import { logService } from '../domains/monitoring/log.service.js';
 import { metricService } from '../domains/monitoring/metric.service.js';
 import { traceService } from '../domains/monitoring/trace.service.js';
 import { getCurrentTraceContext } from '../lib/telemetry.js';
@@ -40,26 +39,31 @@ export function requestMonitoring(req: Request, res: Response, next: NextFunctio
 
         // Log response only if not already logged as error by errorMonitoring
         if (!req.errorLogged && statusCode >= 500) {
-            logService.log({
-                level: 'ERROR',
-                message: `${req.method} ${req.path} ${statusCode} ${duration}ms`,
-                service: 'http',
-                method: req.method,
-                path: req.path,
-                statusCode,
-                duration,
-            });
+            logger.error(
+                {
+                    service: 'http',
+                    method: req.method,
+                    path: req.path,
+                    statusCode,
+                    duration,
+                    traceId,
+                    spanId,
+                },
+                `${req.method} ${req.path} ${statusCode} ${duration}ms`
+            );
         } else if (statusCode < 500) {
-            // Log successful responses
-            logService.log({
-                level: 'INFO',
-                message: `${req.method} ${req.path} ${statusCode} ${duration}ms`,
-                service: 'http',
-                method: req.method,
-                path: req.path,
-                statusCode,
-                duration,
-            });
+            logger.info(
+                {
+                    service: 'http',
+                    method: req.method,
+                    path: req.path,
+                    statusCode,
+                    duration,
+                    traceId,
+                    spanId,
+                },
+                `${req.method} ${req.path} ${statusCode} ${duration}ms`
+            );
         }
 
         // Record metrics
@@ -115,17 +119,19 @@ export function errorMonitoring(
     // Mark that error has been logged to prevent duplicate logging in requestMonitoring
     req.errorLogged = true;
 
-    // Log error
-    logService.log({
-        level: 'ERROR',
-        message: `Error in ${req.method} ${req.path}: ${error.message}`,
-        service: 'http',
-        method: req.method,
-        path: req.path,
-        statusCode: 500,
-        error: error.message,
-        stack: error.stack,
-    });
+    logger.error(
+        {
+            service: 'http',
+            method: req.method,
+            path: req.path,
+            statusCode: 500,
+            error: error.message,
+            stack: error.stack,
+            traceId,
+            spanId,
+        },
+        `Error in ${req.method} ${req.path}: ${error.message}`
+    );
 
     // Record error metric
     metricService.incrementCounter('http_errors_total', 1, {

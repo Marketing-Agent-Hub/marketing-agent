@@ -1,5 +1,4 @@
 import { logger } from '../lib/logger.js';
-import { logService } from '../domains/monitoring/log.service.js';
 import { metricService } from '../domains/monitoring/metric.service.js';
 import { withSpan } from '../lib/telemetry.js';
 
@@ -46,17 +45,6 @@ export async function withJobMonitoring<T>(
         const errorMessage = error instanceof Error ? error.message : String(error);
         const errorStack = error instanceof Error ? error.stack : undefined;
 
-        // Log error to monitoring system
-        await logService.log({
-            level: 'ERROR',
-            message: `[${jobName}] Job failed: ${errorMessage}`,
-            service: 'job',
-            context: jobName,
-            duration,
-            error: errorMessage,
-            stack: errorStack,
-        });
-
         logger.error(
             { job: jobName, duration, error: errorMessage, stack: errorStack },
             `[${jobName}] Failed after ${duration}ms`
@@ -84,16 +72,6 @@ export async function logProcessingError(
     const errorMessage = error instanceof Error ? error.message : String(error);
     const errorStack = error instanceof Error ? error.stack : undefined;
 
-    await logService.log({
-        level: 'ERROR',
-        message: `[${context}] ${message}: ${errorMessage}`,
-        service: context,
-        context,
-        error: errorMessage,
-        stack: errorStack,
-        metadata,
-    });
-
     logger.error(
         { context, error: errorMessage, stack: errorStack, ...metadata },
         `[${context}] ${message}`
@@ -108,14 +86,6 @@ export async function logInfo(
     message: string,
     metadata?: Record<string, any>
 ) {
-    await logService.log({
-        level: 'INFO',
-        message: `[${context}] ${message}`,
-        service: context,
-        context,
-        metadata,
-    });
-
     logger.info({ context, ...metadata }, `[${context}] ${message}`);
 }
 
@@ -127,14 +97,6 @@ export async function logWarning(
     message: string,
     metadata?: Record<string, any>
 ) {
-    await logService.log({
-        level: 'WARN',
-        message: `[${context}] ${message}`,
-        service: context,
-        context,
-        metadata,
-    });
-
     logger.warn({ context, ...metadata }, `[${context}] ${message}`);
 }
 

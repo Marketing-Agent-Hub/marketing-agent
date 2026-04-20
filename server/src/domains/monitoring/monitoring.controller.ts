@@ -1,47 +1,15 @@
 import { Request, Response } from 'express';
 import { asyncHandler } from '../../lib/async-handler.js';
 import { db } from '../../db/index.js';
-import { logService } from './log.service.js';
 import { metricService } from './metric.service.js';
 import { healthService } from './health.service.js';
 import { traceService } from './trace.service.js';
 import {
-    getLogsSchema,
     getMetricsSchema,
     getMetricStatsSchema,
     getTracesSchema,
     getHealthHistorySchema,
 } from './monitoring.schemas.js';
-
-/**
- * Get system logs
- */
-export const getLogs = asyncHandler(async (req: Request, res: Response) => {
-    const params = getLogsSchema.parse(req.query);
-    const result = await logService.getLogs(params);
-
-    res.json({
-        success: true,
-        data: result,
-    });
-});
-
-/**
- * Get log statistics
- */
-export const getLogStats = asyncHandler(async (req: Request, res: Response) => {
-    const { startDate, endDate } = req.query;
-
-    const stats = await logService.getLogStats({
-        startDate: startDate ? new Date(startDate as string) : undefined,
-        endDate: endDate ? new Date(endDate as string) : undefined,
-    });
-
-    res.json({
-        success: true,
-        data: stats,
-    });
-});
 
 /**
  * Get system metrics
@@ -205,17 +173,10 @@ export const getMonitoringOverview = asyncHandler(async (_req: Request, res: Res
     const last24Hours = new Date(now.getTime() - 24 * 60 * 60 * 1000);
     const lastHour = new Date(now.getTime() - 60 * 60 * 1000);
 
-    const [health, logStats, traceStats] = await Promise.all([
+    const [health, traceStats] = await Promise.all([
         healthService.getHealthStatus(),
-        logService.getLogStats({ startDate: last24Hours, endDate: now }),
         traceService.getTraceStats({ startDate: last24Hours, endDate: now }),
     ]);
-
-    // Calculate logs summary
-    const totalLogs = logStats.byLevel.reduce((sum, stat) => sum + stat.count, 0);
-    const recentErrors = logStats.byLevel
-        .filter(stat => stat.level === 'error' || stat.level === 'fatal')
-        .reduce((sum, stat) => sum + stat.count, 0);
 
     // Get metrics counts
     const [totalMetrics, recentMetrics] = await Promise.all([
@@ -254,11 +215,6 @@ export const getMonitoringOverview = asyncHandler(async (_req: Request, res: Res
         success: true,
         data: {
             health,
-            logs: {
-                total: totalLogs,
-                byLevel: logStats.byLevel,
-                recentErrors,
-            },
             metrics: {
                 total: totalMetrics,
                 recentCount: recentMetrics,

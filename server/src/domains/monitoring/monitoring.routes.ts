@@ -10,10 +10,6 @@ router.use(requireAdminAuth);
 // Overview/Dashboard
 router.get('/overview', monitorController.getMonitoringOverview);
 
-// Logs
-router.get('/logs', monitorController.getLogs);
-router.get('/logs/stats', monitorController.getLogStats);
-
 // Metrics
 router.get('/metrics', monitorController.getMetrics);
 router.get('/metrics/stats', monitorController.getMetricStats);

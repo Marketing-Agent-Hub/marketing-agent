@@ -1,10 +1,11 @@
-import { settingService, AiSettingsResponse } from '../lib/setting.service.js';
+﻿import { settingService, AiSettingsResponse } from '../lib/setting.service.js';
+import { logger } from '../lib/logger.js';
 
 // Runtime AI feature toggles (loaded from database)
 let stageAEnabled = false; // Default: DISABLED to save tokens
 let stageBEnabled = false; // Default: DISABLED to save tokens
 
-// Export configuration (model fields removed — managed via runtime settings in DB)
+// Export configuration (model fields removed â€” managed via runtime settings in DB)
 export const AI_CONFIG = {
     get STAGE_A_ENABLED() {
         return stageAEnabled;
@@ -24,19 +25,20 @@ export async function loadAISettings() {
         stageAEnabled = settings.stages.stageA.enabled;
         stageBEnabled = settings.stages.stageB.enabled;
 
-        console.log('✅ AI Settings loaded from database:');
-        console.log(`   Stage A: ${stageAEnabled ? 'ENABLED' : 'DISABLED'} (model: ${settings.models.stageA})`);
-        console.log(`   Stage B: ${stageBEnabled ? 'ENABLED' : 'DISABLED'} (model: ${settings.models.stageB})`);
+        logger.info({
+            stageA: { enabled: stageAEnabled, model: settings.models.stageA },
+            stageB: { enabled: stageBEnabled, model: settings.models.stageB },
+        }, 'AI settings loaded from database');
 
         if (!stageAEnabled) {
-            console.warn('⚠️  AI Stage A disabled - using heuristic filtering');
+            logger.warn('AI Stage A disabled - using heuristic filtering');
         }
         if (!stageBEnabled) {
-            console.warn('⚠️  AI Stage B disabled - using simple summaries');
+            logger.warn('AI Stage B disabled - using simple summaries');
         }
     } catch (error) {
-        console.error('❌ Error loading AI settings:', error);
-        console.warn('⚠️  Using default settings (AI disabled)');
+        logger.error({ error }, 'Error loading AI settings');
+        logger.warn('Using default settings (AI disabled)');
     }
 }
 
@@ -54,7 +56,7 @@ export async function updateAISetting(stage: 'A' | 'B', enabled: boolean) {
         stageBEnabled = enabled;
     }
 
-    console.log(`✅ AI Stage ${stage}: ${enabled ? 'ENABLED' : 'DISABLED'}`);
+    logger.info({ stage, enabled }, `AI Stage ${stage} ${enabled ? 'enabled' : 'disabled'}`);
 }
 
 /**
@@ -79,3 +81,4 @@ export async function getAISettings(): Promise<AiSettingsResponse & {
         },
     };
 }
+

@@ -1,9 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import { ApiErrorResponse } from '../types/index.js';
 import { ZodError } from 'zod';
+import { logger } from '../lib/logger.js';
 
 export function errorHandler(err: Error, _req: Request, res: Response, _next: NextFunction): void {
-    console.error('Error:', err);
+    logger.error({ err }, 'Unhandled error');
 
     // Zod validation errors
     if (err instanceof ZodError) {
@@ -40,4 +41,3 @@ export function errorHandler(err: Error, _req: Request, res: Response, _next: Ne
     };
     res.status(500).json(response);
 }
-

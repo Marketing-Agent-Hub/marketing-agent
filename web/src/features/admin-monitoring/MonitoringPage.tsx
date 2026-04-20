@@ -1,140 +1,102 @@
-import { useState, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import apiClient from '@/api/client';
 import JsonViewer from '@/components/ui/JsonViewer';
-import type { LogEntry } from '@/types';
-import { cn } from '@/lib/utils';
 
-const levelColors: Record<string, string> = {
-    INFO: 'text-blue-500',
-    DEBUG: 'text-[var(--color-text-muted)] opacity-60',
-    WARN: 'text-yellow-500',
-    ERROR: 'text-red-500',
-    FATAL: 'text-red-600',
-    TRACE: 'text-[var(--color-text-muted)] opacity-40',
+type MonitoringOverviewResponse = {
+    health?: {
+        overall?: string;
+        services?: Array<{
+            service: string;
+            status: string;
+            lastCheck?: string;
+            responseTimeMs?: number;
+        }>;
+    };
+    metrics?: {
+        total?: number;
+        recentCount?: number;
+    };
+    traces?: {
+        total?: number;
+        avgDuration?: number;
+        slowCount?: number;
+    };
+    timestamp?: string;
 };
 
 export default function MonitoringPage() {
-    const [search, setSearch] = useState('');
-    const [levels, setLevels] = useState<Set<string>>(new Set(['INFO', 'DEBUG', 'WARN', 'ERROR', 'FATAL', 'TRACE']));
-    const [autoTail, setAutoTail] = useState(true);
-    const [expandedId, setExpandedId] = useState<string | null>(null);
-    const searchRef = useRef<HTMLInputElement>(null);
-    const bottomRef = useRef<HTMLDivElement>(null);
-
-    const { data: logs } = useQuery<LogEntry[]>({
-        queryKey: ['monitor-logs'],
-        queryFn: () => apiClient.get('/api/internal/monitor/logs').then((r) => r.data.data?.logs ?? []),
-        refetchInterval: 5000,
+    const { data, isLoading, isError } = useQuery<MonitoringOverviewResponse>({
+        queryKey: ['monitor-overview'],
+        queryFn: () => apiClient.get('/api/internal/monitor/overview').then((r) => r.data.data ?? {}),
+        refetchInterval: 10000,
     });
 
-    const hasErrors = logs?.some((l) => l.level === 'ERROR' || l.level === 'FATAL');
+    if (isLoading) {
+        return <div className="text-sm text-[var(--color-text-muted)]">Loading monitoring overview...</div>;
+    }
 
-    const filtered = logs?.filter((log) => {
-        if (!levels.has(log.level)) return false;
-        if (!search) return true;
-        try {
-            return new RegExp(search, 'i').test(log.message) || new RegExp(search, 'i').test(log.service ?? '');
-        } catch {
-            return log.message.toLowerCase().includes(search.toLowerCase());
-        }
-    });
+    if (isError) {
+        return <div className="text-sm text-red-500">Cannot load monitoring overview.</div>;
+    }
 
-    useEffect(() => {
-        if (autoTail) bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, [filtered, autoTail]);
-
-    useEffect(() => {
-        const handler = (e: KeyboardEvent) => {
-            if (e.key === '/' && document.activeElement !== searchRef.current) {
-                e.preventDefault();
-                searchRef.current?.focus();
-            } else if (e.key === 'g' || e.key === 'G') {
-                bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-            }
-        };
-        document.addEventListener('keydown', handler);
-        return () => document.removeEventListener('keydown', handler);
-    }, []);
-
-    const toggleLevel = (level: string) => {
-        setLevels((prev) => {
-            const next = new Set(prev);
-            next.has(level) ? next.delete(level) : next.add(level);
-            return next;
-        });
-    };
+    const services = data?.health?.services ?? [];
 
     return (
-        <div className="flex h-full flex-col font-mono text-xs">
-            {/* Toolbar */}
-            <div className="mb-3 flex flex-wrap items-center gap-2">
-                <input ref={searchRef} value={search} onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Search (/ to focus, regex ok)"
-                    className="flex-1 rounded border border-[var(--color-border)] bg-[var(--color-bg-card)] px-3 py-1.5 text-xs text-[var(--color-text)] outline-none placeholder:text-[var(--color-text-muted)] opacity-80 focus:border-[#4FACFE]" />
-
-                {(['INFO', 'DEBUG', 'WARN', 'ERROR', 'FATAL'] as const).map((level) => (
-                    <button key={level} onClick={() => toggleLevel(level)}
-                        className={cn('rounded border px-2 py-1 text-[10px] transition-colors',
-                            levels.has(level)
-                                ? level === 'ERROR' && hasErrors
-                                    ? 'border-red-500 bg-red-500/20 text-red-600'
-                                    : 'border-[var(--color-border)] bg-[var(--color-bg-card)] text-[var(--color-text)]'
-                                : 'border-[var(--color-border)] text-[var(--color-text-muted)] opacity-50')}>
-                        {level}
-                    </button>
-                ))}
-
-                <button onClick={() => setAutoTail(!autoTail)}
-                    className={cn('rounded border px-2 py-1 text-[10px] transition-colors',
-                        autoTail ? 'border-[#4FACFE] bg-[#4FACFE]/10 text-[#4FACFE]' : 'border-[var(--color-border)] text-[var(--color-text-muted)] opacity-50')}>
-                    Auto-tail
-                </button>
+        <div className="space-y-4">
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
+                <Card title="System Health" value={data?.health?.overall ?? 'UNKNOWN'} />
+                <Card title="Metrics (24h)" value={String(data?.metrics?.total ?? 0)} />
+                <Card title="Metrics (1h)" value={String(data?.metrics?.recentCount ?? 0)} />
+                <Card title="Slow Traces (24h)" value={String(data?.traces?.slowCount ?? 0)} />
             </div>
 
-            {/* Log table */}
-            <div className="flex-1 overflow-y-auto rounded border border-[var(--color-border)] bg-[var(--color-bg-card)]">
-                <table className="w-full">
-                    <thead className="sticky top-0 bg-[var(--color-bg-secondary)]">
-                        <tr className="border-b border-[var(--color-border)]">
-                            <th className="px-3 py-2 text-left text-[10px] text-[var(--color-text-muted)] opacity-50">TIMESTAMP</th>
-                            <th className="px-3 py-2 text-left text-[10px] text-[var(--color-text-muted)] opacity-50">LEVEL</th>
-                            <th className="px-3 py-2 text-left text-[10px] text-[var(--color-text-muted)] opacity-50">SERVICE</th>
-                            <th className="px-3 py-2 text-left text-[10px] text-[var(--color-text-muted)] opacity-50">MESSAGE</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {filtered?.map((log) => (
-                            <>
-                                <tr key={log.id}
-                                    onClick={() => log.metadata && setExpandedId(expandedId === String(log.id) ? null : String(log.id))}
-                                    className={cn('border-b border-[var(--color-border)] transition-colors',
-                                        log.metadata ? 'cursor-pointer hover:bg-[var(--color-bg-secondary)]' : '')}>
-                                    <td className="px-3 py-1.5 text-[var(--color-text-muted)] opacity-60 whitespace-nowrap">
-                                        {new Date(log.createdAt).toISOString().replace('T', ' ').slice(0, 23)}
-                                    </td>
-                                    <td className={cn('px-3 py-1.5 font-bold', levelColors[log.level] ?? 'text-[var(--color-text-muted)]')}>{log.level}</td>
-                                    <td className="px-3 py-1.5 text-[#4FACFE] font-bold">{log.service ?? '—'}</td>
-                                    <td className="px-3 py-1.5 text-[var(--color-text)]">{log.message}</td>
+            <div className="rounded border border-[var(--color-border)] bg-[var(--color-bg-card)] p-3">
+                <h3 className="mb-2 text-sm font-semibold text-[var(--color-text)]">Services</h3>
+                {services.length === 0 ? (
+                    <p className="text-xs text-[var(--color-text-muted)]">No service health data.</p>
+                ) : (
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-xs">
+                            <thead>
+                                <tr className="border-b border-[var(--color-border)] text-left text-[var(--color-text-muted)]">
+                                    <th className="px-2 py-2">Service</th>
+                                    <th className="px-2 py-2">Status</th>
+                                    <th className="px-2 py-2">Response</th>
+                                    <th className="px-2 py-2">Last Check</th>
                                 </tr>
-                                {expandedId === String(log.id) && log.metadata && (
-                                    <tr key={`${log.id}-payload`}>
-                                        <td colSpan={4} className="px-3 py-2">
-                                            <JsonViewer data={log.metadata} />
+                            </thead>
+                            <tbody>
+                                {services.map((service) => (
+                                    <tr key={service.service} className="border-b border-[var(--color-border)] last:border-0">
+                                        <td className="px-2 py-2 text-[var(--color-text)]">{service.service}</td>
+                                        <td className="px-2 py-2 text-[var(--color-text)]">{service.status}</td>
+                                        <td className="px-2 py-2 text-[var(--color-text-muted)]">
+                                            {service.responseTimeMs != null ? `${service.responseTimeMs} ms` : '-'}
+                                        </td>
+                                        <td className="px-2 py-2 text-[var(--color-text-muted)]">
+                                            {service.lastCheck ? new Date(service.lastCheck).toLocaleString() : '-'}
                                         </td>
                                     </tr>
-                                )}
-                            </>
-                        ))}
-                    </tbody>
-                </table>
-                <div ref={bottomRef} />
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
             </div>
 
-            <p className="mt-2 text-[10px] text-white/20">
-                <kbd className="rounded border border-white/10 px-1">/</kbd> focus search ·{' '}
-                <kbd className="rounded border border-white/10 px-1">G</kbd> scroll to bottom
-            </p>
+            <div className="rounded border border-[var(--color-border)] bg-[var(--color-bg-card)] p-3">
+                <h3 className="mb-2 text-sm font-semibold text-[var(--color-text)]">Raw Overview Payload</h3>
+                <JsonViewer data={data ?? {}} />
+            </div>
+        </div>
+    );
+}
+
+function Card({ title, value }: { title: string; value: string }) {
+    return (
+        <div className="rounded border border-[var(--color-border)] bg-[var(--color-bg-card)] p-3">
+            <div className="text-xs text-[var(--color-text-muted)]">{title}</div>
+            <div className="mt-1 text-lg font-semibold text-[var(--color-text)]">{value}</div>
         </div>
     );
 }
