@@ -16,6 +16,9 @@ export default defineConfig({
       // Allow popup window communication for Google OAuth
       'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',
     },
+    host: '0.0.0.0',
+    port: 5173,
+    allowedHosts: ['x0gengar.space', 'www.x0gengar.space'],
     proxy: {
       // All product API calls: /api/* → http://localhost:3001/*
       // (strips /api prefix, backend routes start at /)
