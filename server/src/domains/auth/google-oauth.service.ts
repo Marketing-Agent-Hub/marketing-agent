@@ -68,17 +68,42 @@ export class GoogleOAuthService {
             // Try to find by email and merge googleId
             const existingByEmail = await prisma.user.findUnique({ where: { email } });
             if (existingByEmail) {
-                user = await prisma.user.update({
-                    where: { id: existingByEmail.id },
-                    data: { googleId },
-                });
+                try {
+                    user = await prisma.user.update({
+                        where: { id: existingByEmail.id },
+                        data: { googleId },
+                    });
+                } catch (error: any) {
+                    if (error?.code === 'P2002') {
+                        const byGoogleId = await prisma.user.findUnique({ where: { googleId } });
+                        if (!byGoogleId) throw error;
+                        user = byGoogleId;
+                    } else {
+                        throw error;
+                    }
+                }
             } else {
                 // Create new user — use upsert to handle race conditions
-                user = await prisma.user.upsert({
-                    where: { email },
-                    update: { googleId },
-                    create: { email, name: name ?? null, googleId, passwordHash: null },
-                });
+                try {
+                    user = await prisma.user.create({
+                        data: { email, name: name ?? null, googleId, passwordHash: null },
+                    });
+                } catch (error: any) {
+                    if (error?.code === 'P2002') {
+                        const byGoogleId = await prisma.user.findUnique({ where: { googleId } });
+                        if (byGoogleId) {
+                            user = byGoogleId;
+                        } else {
+                            user = await prisma.user.upsert({
+                                where: { email },
+                                update: { googleId },
+                                create: { email, name: name ?? null, googleId, passwordHash: null },
+                            });
+                        }
+                    } else {
+                        throw error;
+                    }
+                }
             }
         }
 
