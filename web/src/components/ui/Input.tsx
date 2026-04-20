@@ -20,7 +20,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
                     ref={ref}
                     id={inputId}
                     className={cn(
-                        'peer w-full rounded-lg border bg-white/5 px-4 pt-5 pb-2 text-sm text-[var(--color-text)] outline-none transition-all duration-200',
+                        'peer w-full rounded-lg border bg-white/5 px-4 pt-5 pb-4 text-sm text-[var(--color-text)] outline-none transition-all duration-200',
                         'border-[var(--color-border)]',
                         focused
                             ? 'border-[#4FACFE] shadow-[0_0_0_2px_rgba(79,172,254,0.2)]'

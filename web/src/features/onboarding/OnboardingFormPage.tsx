@@ -110,7 +110,7 @@ export default function OnboardingFormPage() {
     // ── AI Generate All ────────────────────────────────────────────────────────
     async function handleGenerateAll() {
         if (!aiPrompt.trim()) {
-            setErrors((prev) => ({ ...prev, aiPrompt: 'Vui lòng nhập mô tả' }));
+            setErrors((prev) => ({ ...prev, aiPrompt: 'Enter the describe!' }));
             return;
         }
         setErrors((prev) => ({ ...prev, aiPrompt: undefined }));
@@ -135,7 +135,7 @@ export default function OnboardingFormPage() {
                 }
             }
         } catch {
-            toast.error('Không thể tạo nội dung AI. Vui lòng thử lại.');
+            toast.error('Error when generating AI content! Please try later');
         } finally {
             setIsGeneratingAll(false);
         }
@@ -154,7 +154,7 @@ export default function OnboardingFormPage() {
                 );
             }
         } catch {
-            toast.error('Không thể lấy gợi ý AI. Vui lòng thử lại.');
+            toast.error('Unable to generate AI content: ');
         } finally {
             setFieldLoadingKey(null);
         }
