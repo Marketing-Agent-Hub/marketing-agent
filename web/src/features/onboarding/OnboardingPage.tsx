@@ -52,9 +52,13 @@ export default function OnboardingPage() {
     const [timedOut, setTimedOut] = useState(false);
     const [profileFound, setProfileFound] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const initializedRef = useRef(false);
 
     // Create session on mount
     useEffect(() => {
+        if (initializedRef.current) return;
+        initializedRef.current = true;
+
         apiClient
             .post<{ id: string; messages?: Array<{ role: string; content: string }> }>(
                 `/api/brands/${bid}/onboarding/sessions`
@@ -69,7 +73,9 @@ export default function OnboardingPage() {
                     setMessages([{ role: 'assistant', content: 'Hello! Tell me about your brand. What is the brand name?' }]);
                 }
             })
-            .catch(() => toast.error('Unable to create onboarding session'));
+            .catch(() => {
+                // Error toast is handled by apiClient interceptor.
+            });
     }, [bid]);
 
     // Auto-scroll
