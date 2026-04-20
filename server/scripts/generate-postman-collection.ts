@@ -1,4 +1,4 @@
-import { mkdirSync, writeFileSync } from 'node:fs';
+﻿import { mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 
 type Method = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
@@ -14,9 +14,9 @@ type Endpoint = {
     body?: unknown;
 };
 
-const collectionName = 'ocNewsBot Server API';
+const collectionName = 'Marketing Agent Server API';
 const outputDir = path.resolve(process.cwd(), 'postman');
-const outputFile = path.join(outputDir, 'ocnewsbot.postman_collection.json');
+const outputFile = path.join(outputDir, 'marketing-agent.postman_collection.json');
 
 const defaultHeaders = [{ key: 'Content-Type', value: 'application/json' }];
 

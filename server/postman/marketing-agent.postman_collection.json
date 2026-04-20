@@ -1,6 +1,6 @@
-{
+﻿{
   "info": {
-    "name": "ocNewsBot Server API",
+    "name": "Marketing Agent Server API",
     "_postman_id": "4b065415-f981-4dbb-aefc-f3c179cb6cb4",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "description": "Generated from Express route and schema inspection in source code."

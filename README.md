@@ -1,4 +1,4 @@
-# AI RSS Bot
+# Marketing Agent
 
 Automated system for RSS content curation → AI analysis → Vietnamese digests → Facebook publishing.
 
@@ -22,14 +22,14 @@ git push origin main
 # 2. Setup trên VPS
 ssh root@your-vps
 curl -fsSL https://get.docker.com | sh
-cd /opt && git clone https://github.com/your-username/ocNewsBot.git
-cd ocNewsBot && cp .env.production.example .env
+cd /opt && git clone https://github.com/your-username/MarketingAgent.git
+cd MarketingAgent && cp .env.production.example .env
 
 # 3. Chỉnh sửa .env (GitHub username, passwords, API keys)
 nano .env
 
 # 4. Deploy
-chmod +x deploy.sh && ./deploy.sh latest
+chmod +x infra/deploy/deploy.sh && ./infra/deploy/deploy.sh latest
 ```
 
 Xem [QUICKSTART.md](QUICKSTART.md) để biết chi tiết.

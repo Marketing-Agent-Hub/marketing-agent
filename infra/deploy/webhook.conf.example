@@ -3,9 +3,9 @@
 
 [
   {
-    "id": "deploy-ocnewsbot",
-    "execute-command": "/opt/ocNewsBot/webhook-deploy.sh",
-    "command-working-directory": "/opt/ocNewsBot",
+    "id": "deploy-marketing-agent",
+    "execute-command": "/opt/MarketingAgent/infra/deploy/webhook-deploy.sh",
+    "command-working-directory": "/opt/MarketingAgent",
     "pass-arguments-to-command": [],
     "response-message": "Deployment started successfully",
     "trigger-rule": {

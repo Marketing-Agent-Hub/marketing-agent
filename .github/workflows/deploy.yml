@@ -1,4 +1,4 @@
-# name: Build and Deploy Docker Images
+﻿# name: Build and Deploy Docker Images
 
 # on:
 #   push:
@@ -42,7 +42,7 @@
 #         id: meta
 #         uses: docker/metadata-action@v5
 #         with:
-#           images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/ocnewsbot-${{ matrix.service }}
+#           images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/marketing-agent-${{ matrix.service }}
 #           tags: |
 #             type=ref,event=branch
 #             type=sha,prefix={{branch}}-
@@ -63,6 +63,6 @@
 
 #       - name: Image digest
 #         run: |
-#           echo "✅ Successfully built and pushed: ${{ matrix.service }}"
-#           echo "📦 Tags:"
+#           echo "âœ… Successfully built and pushed: ${{ matrix.service }}"
+#           echo "ðŸ“¦ Tags:"
 #           echo "${{ steps.meta.outputs.tags }}"

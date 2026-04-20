@@ -1,4 +1,4 @@
-# name: Deploy to VPS
+﻿# name: Deploy to VPS
 
 # on:
 #   workflow_run:
@@ -21,17 +21,17 @@
 #           username: ${{ secrets.VPS_USER }}
 #           key: ${{ secrets.VPS_SSH_KEY }}
 #           script: |
-#             cd ~/opt/oc-news-bot
+#             cd ~/opt/marketing-agent
             
-#             # Pull images mới từ GHCR            
+#             # Pull images má»›i tá»« GHCR            
 #             docker compose down
 
-#             ./deploy.sh latest
+#             ./infra/deploy/deploy.sh latest
             
-#             # Đợi containers khởi động
+#             # Äá»£i containers khá»Ÿi Ä‘á»™ng
 #             sleep 10
             
 #             # Show status
 #             docker compose ps
             
-#             echo "✅ Deployment completed!"
+#             echo "âœ… Deployment completed!"
