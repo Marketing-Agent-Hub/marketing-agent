@@ -23,7 +23,9 @@ app.use(
 );
 
 // Mount Stripe webhook BEFORE express.json() — Stripe requires raw body for signature verification
-app.use('/api', stripeWebhookRoutes);
+if (env.STRIPE_ENABLED) {
+    app.use('/api', stripeWebhookRoutes);
+}
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

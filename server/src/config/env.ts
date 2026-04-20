@@ -37,8 +37,12 @@ export const envSchema = z.object({
   EMAIL_FROM: z.string().min(1, 'EMAIL_FROM is required'),
 
   // Stripe (Credit Wallet)
-  STRIPE_SECRET_KEY: z.string().min(1, 'STRIPE_SECRET_KEY is required'),
-  STRIPE_WEBHOOK_SECRET: z.string().min(1, 'STRIPE_WEBHOOK_SECRET is required'),
+  STRIPE_ENABLED: z
+    .enum(['true', 'false'])
+    .transform((value) => value === 'true')
+    .default('false'),
+  STRIPE_SECRET_KEY: z.string().optional(),
+  STRIPE_WEBHOOK_SECRET: z.string().optional(),
 
   // S3 storage (same variables for all envs)
   S3_ENDPOINT: z.string().url('S3_ENDPOINT must be a valid URL'),
@@ -54,6 +58,13 @@ let env: Env;
 
 try {
   env = envSchema.parse(process.env);
+
+  if (env.STRIPE_ENABLED) {
+    if (!env.STRIPE_SECRET_KEY || !env.STRIPE_WEBHOOK_SECRET) {
+      console.error('❌ STRIPE_SECRET_KEY and STRIPE_WEBHOOK_SECRET are required when STRIPE_ENABLED=true');
+      process.exit(1);
+    }
+  }
 
   // Single S3 config for all environments.
 } catch (error) {

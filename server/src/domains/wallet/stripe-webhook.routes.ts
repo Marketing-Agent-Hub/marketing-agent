@@ -1,6 +1,7 @@
 import { Router, raw } from 'express';
 import { topUpService } from './topup.service.js';
 import { logger } from '../../lib/logger.js';
+import { env } from '../../config/env.js';
 
 const router = Router();
 
@@ -16,6 +17,11 @@ router.post(
     '/webhooks/stripe',
     raw({ type: 'application/json' }),
     async (req, res) => {
+        if (!env.STRIPE_ENABLED) {
+            res.status(200).json({ received: false, disabled: true });
+            return;
+        }
+
         const signature = req.headers['stripe-signature'];
 
         if (!signature || typeof signature !== 'string') {

@@ -5,7 +5,7 @@ import { logger } from '../lib/logger.js';
 let stageAEnabled = false; // Default: DISABLED to save tokens
 let stageBEnabled = false; // Default: DISABLED to save tokens
 
-// Export configuration (model fields removed â€” managed via runtime settings in DB)
+// Export configuration (model fields removed  managed via runtime settings in DB)
 export const AI_CONFIG = {
     get STAGE_A_ENABLED() {
         return stageAEnabled;

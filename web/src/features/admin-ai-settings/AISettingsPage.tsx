@@ -44,20 +44,20 @@ type FormData = z.infer<typeof schema>;
 const DEFAULT_STAGES: PipelineStage[] = [
     {
         id: 'stage_a_curator',
-        label: 'Stage A â€” Curator',
+        label: 'Stage A  Curator',
         enabled: true,
         model: 'gpt-4o-mini',
         similarityThreshold: 0.6,
     },
     {
         id: 'stage_b_writer',
-        label: 'Stage B â€” Writer',
+        label: 'Stage B  Writer',
         enabled: true,
         model: 'gpt-4o',
     },
     {
         id: 'stage_c_publisher',
-        label: 'Stage C â€” Publisher',
+        label: 'Stage C  Publisher',
         enabled: true,
         model: 'gpt-4o-mini',
     },
@@ -181,7 +181,7 @@ export default function AISettingsPage() {
                                     )}
                                 </div>
 
-                                {/* Similarity threshold â€” only for stages that have it */}
+                                {/* Similarity threshold  only for stages that have it */}
                                 {stage.similarityThreshold !== undefined && (
                                     <div>
                                         <label className="mb-1 block text-[10px] uppercase tracking-wider text-[var(--color-text-muted)] opacity-50">

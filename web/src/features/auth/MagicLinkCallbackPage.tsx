@@ -27,7 +27,7 @@ export default function MagicLinkCallbackPage() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        // Case 2: Google OAuth redirect â€” id_token in URL fragment
+        // Case 2: Google OAuth redirect  id_token in URL fragment
         const fragment = new URLSearchParams(window.location.hash.slice(1));
         const idToken = fragment.get('id_token');
         if (idToken) {
@@ -44,7 +44,7 @@ export default function MagicLinkCallbackPage() {
             return;
         }
 
-        // Case 1: Magic link â€” app JWT in query string
+        // Case 1: Magic link  app JWT in query string
         const token = searchParams.get('token');
         if (token) {
             setToken(token);

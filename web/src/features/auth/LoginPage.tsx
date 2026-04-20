@@ -25,7 +25,7 @@ export default function LoginPage() {
     });
 
     /**
-     * Google OAuth â€” full redirect flow (no popup).
+     * Google OAuth  full redirect flow (no popup).
      * Saves the intent URL in sessionStorage so the callback page
      * can redirect back after exchanging the token.
      */
@@ -61,7 +61,7 @@ export default function LoginPage() {
 
     return (
         <div className="flex h-screen bg-[var(--color-bg)]">
-            {/* Right panel â€” 45% */}
+            {/* Right panel  45% */}
             <div className="flex w-full flex-col items-center justify-center px-8 lg:w-[45%]">
                 <div className="w-full max-w-sm">
                     <div className="mb-8">

@@ -19,13 +19,15 @@ export class InvalidTopUpAmountError extends Error {
 }
 
 class TopUpService {
-    private stripe: Stripe;
+    private stripe: Stripe | null;
     private s3: S3Client;
 
     constructor() {
-        this.stripe = new Stripe(env.STRIPE_SECRET_KEY, {
-            apiVersion: '2026-03-25.dahlia',
-        });
+        this.stripe = env.STRIPE_ENABLED && env.STRIPE_SECRET_KEY
+            ? new Stripe(env.STRIPE_SECRET_KEY, {
+                apiVersion: '2026-03-25.dahlia',
+            })
+            : null;
 
         this.s3 = new S3Client({
             region: 'us-east-1',
@@ -46,6 +48,10 @@ class TopUpService {
         userId: number,
         amountUsd: number
     ): Promise<{ clientSecret: string; topUpRequestId: number }> {
+        if (!this.stripe || !env.STRIPE_ENABLED) {
+            throw new StripeFeatureDisabledError();
+        }
+
         const creditsToAdd = calculateCreditsFromUsd(amountUsd);
 
         // Ensure wallet exists
@@ -95,6 +101,10 @@ class TopUpService {
      * Idempotent: duplicate webhooks for the same PaymentIntent are safely ignored.
      */
     async handleStripeWebhook(rawBody: Buffer, signature: string): Promise<void> {
+        if (!this.stripe || !env.STRIPE_ENABLED || !env.STRIPE_WEBHOOK_SECRET) {
+            throw new StripeFeatureDisabledError();
+        }
+
         let event: Stripe.Event;
 
         try {
@@ -274,3 +284,12 @@ class TopUpService {
 }
 
 export const topUpService = new TopUpService();
+
+export class StripeFeatureDisabledError extends Error {
+    readonly statusCode = 503;
+    readonly code = 'STRIPE_DISABLED';
+    constructor(message = 'Stripe top-up is temporarily disabled') {
+        super(message);
+        this.name = 'StripeFeatureDisabledError';
+    }
+}

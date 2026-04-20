@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { requireProductAuth } from '../../middleware/product-auth.js';
 import { asyncHandler } from '../../lib/async-handler.js';
 import { walletService } from './wallet.service.js';
-import { topUpService, InvalidTopUpAmountError } from './topup.service.js';
+import { topUpService, InvalidTopUpAmountError, StripeFeatureDisabledError } from './topup.service.js';
 import { prisma } from '../../db/index.js';
 import type { TransactionType } from '@prisma/client';
 
@@ -92,8 +92,18 @@ router.post(
             return;
         }
 
-        const result = await topUpService.createStripeTopUp(userId, amountUsd);
-        res.json(result);
+        try {
+            const result = await topUpService.createStripeTopUp(userId, amountUsd);
+            res.json(result);
+        } catch (err) {
+            if (err instanceof StripeFeatureDisabledError) {
+                res.status(err.statusCode).json({
+                    error: { code: err.code, message: err.message },
+                });
+                return;
+            }
+            throw err;
+        }
     })
 );
 
