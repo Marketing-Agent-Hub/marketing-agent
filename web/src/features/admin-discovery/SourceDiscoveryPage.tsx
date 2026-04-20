@@ -19,7 +19,7 @@ export default function SourceDiscoveryPage() {
         mutationFn: (id: number) => apiClient.post(`/api/internal/source-discovery/pending/${id}/approve`),
         onSuccess: () => {
             qc.invalidateQueries({ queryKey: ['pending-sources'] });
-            toast.success('Nguồn đã được duyệt!');
+            toast.success('Source approved!');
             setCurrentIdx(0);
         },
     });
@@ -28,7 +28,7 @@ export default function SourceDiscoveryPage() {
         mutationFn: (id: number) => apiClient.post(`/api/internal/source-discovery/pending/${id}/reject`),
         onSuccess: () => {
             qc.invalidateQueries({ queryKey: ['pending-sources'] });
-            toast.info('Nguồn đã bị từ chối.');
+            toast.info('Source rejected.');
             setCurrentIdx(0);
         },
     });
@@ -55,7 +55,7 @@ export default function SourceDiscoveryPage() {
         return (
             <div className="flex flex-col items-center justify-center py-20 text-center font-mono">
                 <div className="mb-4 text-4xl">✅</div>
-                <p className="text-sm text-[var(--color-text-muted)] opacity-60">Không còn nguồn nào chờ duyệt.</p>
+                <p className="text-sm text-[var(--color-text-muted)] opacity-60">No sources pending review.</p>
             </div>
         );
     }
@@ -64,7 +64,7 @@ export default function SourceDiscoveryPage() {
         <div className="mx-auto max-w-xl font-mono">
             <div className="mb-4 flex items-center justify-between">
                 <h1 className="text-sm font-bold text-[var(--color-text)]">Source Discovery</h1>
-                <span className="text-xs text-[var(--color-text-muted)] opacity-50">Còn {remaining} nguồn chưa duyệt</span>
+                <span className="text-xs text-[var(--color-text-muted)] opacity-50">{remaining} sources pending review</span>
             </div>
 
             {current && (

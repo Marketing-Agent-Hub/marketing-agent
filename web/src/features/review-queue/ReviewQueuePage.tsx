@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+﻿import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { useReviewQueue, useApproveDraft, useRejectDraft, useUpdateDraft } from '@/hooks/useReviewQueue';
 import { toast } from '@/components/ui/Toast';
@@ -51,7 +51,7 @@ export default function ReviewQueuePage() {
         }
         await approveMutation.mutateAsync(currentDraft.id);
         triggerConfetti();
-        toast.success('Post approved! ✓');
+        toast.success('Post approved! âœ“');
         setCurrentIdx(0);
     }, [currentDraft, approveMutation, isEdited, editedContent, updateMutation]);
 
@@ -107,7 +107,7 @@ export default function ReviewQueuePage() {
     if (!drafts?.length) {
         return (
             <div className="flex h-full flex-col items-center justify-center text-center">
-                <div className="mb-4 text-5xl">✅</div>
+                <div className="mb-4 text-5xl">âœ…</div>
                 <h3 className="mb-2 font-['Outfit',sans-serif] text-lg font-medium text-[var(--color-text)]">
                     No posts pending review
                 </h3>
@@ -123,7 +123,7 @@ export default function ReviewQueuePage() {
             {/* Confetti overlay */}
             {showConfetti && (
                 <div className="pointer-events-none absolute inset-0 z-50 flex items-center justify-center">
-                    <div className="text-6xl animate-bounce">🎉</div>
+                    <div className="text-6xl animate-bounce">ðŸŽ‰</div>
                 </div>
             )}
 
@@ -164,7 +164,7 @@ export default function ReviewQueuePage() {
                     {/* Source article */}
                     {brief?.sourceArticle && (
                         <div className="rounded-xl border border-[var(--color-border)] p-4">
-                            <p className="mb-2 text-xs font-medium text-[var(--color-text-muted)]">📰 Original Post</p>
+                            <p className="mb-2 text-xs font-medium text-[var(--color-text-muted)]">ðŸ“° Original Post</p>
                             <p className="text-xs leading-relaxed text-[var(--color-text)]">
                                 {brief.sourceArticle.extractedContent}
                             </p>
@@ -181,7 +181,7 @@ export default function ReviewQueuePage() {
                             <span className="text-sm font-medium text-[var(--color-text)]">Draft Content</span>
                             {isEdited && (
                                 <span className="rounded-full bg-yellow-500/10 px-2 py-0.5 text-xs text-yellow-400">
-                                    ✏️ Edited by human
+                                    âœï¸ Edited by human
                                 </span>
                             )}
                         </div>
@@ -207,7 +207,7 @@ export default function ReviewQueuePage() {
                 <div className="border-t border-[var(--color-border)] bg-[var(--color-bg)] px-6 py-4">
                     <div className="flex items-center justify-between">
                         <p className="text-xs text-[var(--color-text-muted)]">
-                            <kbd className="rounded border border-[var(--color-border)] px-1">Ctrl+Enter</kbd> Approve ·{' '}
+                            <kbd className="rounded border border-[var(--color-border)] px-1">Ctrl+Enter</kbd> Approve Â·{' '}
                             <kbd className="rounded border border-[var(--color-border)] px-1">Esc</kbd> Reject
                         </p>
                         <div className="flex gap-3">
@@ -245,14 +245,14 @@ export default function ReviewQueuePage() {
                                                 loading={rejectMutation.isPending}
                                                 className="text-xs px-3 py-1"
                                             >
-                                                Xác nhận
+                                                Confirm
                                             </Button>
                                         </div>
                                     </div>
                                 )}
                             </div>
                             <Button onClick={handleApprove} loading={approveMutation.isPending}>
-                                ✓ Approve
+                                âœ“ Approve
                             </Button>
                         </div>
                     </div>
@@ -261,3 +261,4 @@ export default function ReviewQueuePage() {
         </div>
     );
 }
+

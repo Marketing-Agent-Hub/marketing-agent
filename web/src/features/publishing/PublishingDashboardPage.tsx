@@ -38,7 +38,7 @@ export default function PublishingDashboardPage() {
         mutationFn: (jobId: string) => apiClient.post(`/api/publish-jobs/${jobId}/retry`),
         onSuccess: () => {
             qc.invalidateQueries({ queryKey: ['publish-jobs', bid] });
-            toast.success('Đã yêu cầu đăng lại!');
+            toast.success('Retry requested!');
         },
     });
 
@@ -50,14 +50,14 @@ export default function PublishingDashboardPage() {
         <div>
             <div className="mb-6">
                 <h1 className="font-['Outfit',sans-serif] text-2xl font-semibold text-[var(--color-text)]">Publishing</h1>
-                <p className="mt-1 text-sm text-[var(--color-text-muted)]">Theo dõi trạng thái đăng bài</p>
+                <p className="mt-1 text-sm text-[var(--color-text-muted)]">Track publishing status</p>
             </div>
 
             <div className="overflow-hidden rounded-xl border border-[var(--color-border)]">
                 <table className="w-full text-sm">
                     <thead>
                         <tr className="border-b border-[var(--color-border)] bg-white/5">
-                            <th className="px-4 py-3 text-left text-xs font-medium text-[var(--color-text-muted)]">Lịch đăng</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-[var(--color-text-muted)]">Scheduled At</th>
                             <th className="px-4 py-3 text-left text-xs font-medium text-[var(--color-text-muted)]">Channel</th>
                             <th className="px-4 py-3 text-left text-xs font-medium text-[var(--color-text-muted)]">Status</th>
                             <th className="px-4 py-3 text-left text-xs font-medium text-[var(--color-text-muted)]">Actions</th>
@@ -107,7 +107,7 @@ export default function PublishingDashboardPage() {
             {/* Pagination */}
             <div className="mt-4 flex justify-end gap-2">
                 <Button variant="ghost" className="text-xs px-3 py-1" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>← Prev</Button>
-                <span className="flex items-center text-xs text-[var(--color-text-muted)]">Trang {page}</span>
+                <span className="flex items-center text-xs text-[var(--color-text-muted)]">Page {page}</span>
                 <Button variant="ghost" className="text-xs px-3 py-1" onClick={() => setPage(p => p + 1)} disabled={!jobs?.length}>Next →</Button>
             </div>
         </div>

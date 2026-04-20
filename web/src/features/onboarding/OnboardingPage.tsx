@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+﻿import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import apiClient from '@/api/client';
 import { toast } from '@/components/ui/Toast';
@@ -66,10 +66,10 @@ export default function OnboardingPage() {
                         res.data.messages.map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content }))
                     );
                 } else {
-                    setMessages([{ role: 'assistant', content: 'Xin chào! Hãy cho tôi biết về thương hiệu của bạn. Name thương hiệu là gì?' }]);
+                    setMessages([{ role: 'assistant', content: 'Hello! Tell me about your brand. What is the brand name?' }]);
                 }
             })
-            .catch(() => toast.error('Không thể tạo phiên onboarding'));
+            .catch(() => toast.error('Unable to create onboarding session'));
     }, [bid]);
 
     // Auto-scroll
@@ -89,7 +89,7 @@ export default function OnboardingPage() {
             if (data.profile) {
                 setProfileFound(true);
                 setPolling(false);
-                toast.success('Brand Profile đã được tạo thành công! 🎉');
+                toast.success('Brand Profile created successfully! ðŸŽ‰');
                 setTimeout(() => navigate(`/b/${bid}/strategy`), 2000);
             }
         },
@@ -124,7 +124,7 @@ export default function OnboardingPage() {
         setCompleting(true);
         try {
             await apiClient.post(`/api/brands/${bid}/onboarding/sessions/${sessionId}/complete`);
-            toast.info('Đang xử lý Brand Profile... Bạn có thể tiếp tục làm việc.');
+            toast.info('Processing Brand Profile... You can continue working.');
             setPolling(true);
         } catch {
             // error handled by interceptor
@@ -167,16 +167,16 @@ export default function OnboardingPage() {
 
                     {profileFound && (
                         <div className="glass rounded-2xl border-[#4FACFE]/30 p-4 text-center animate-pulse">
-                            <div className="text-2xl">✨</div>
-                            <p className="mt-2 text-sm text-[#4FACFE]">Brand Profile đã được tạo! Đang chuyển hướng...</p>
+                            <div className="text-2xl">âœ¨</div>
+                            <p className="mt-2 text-sm text-[#4FACFE]">Brand Profile created! Redirecting...</p>
                         </div>
                     )}
 
                     {timedOut && (
                         <div className="glass rounded-2xl border-red-500/30 p-4 text-center">
-                            <p className="mb-3 text-sm text-red-400">Quá thời gian chờ. Vui lòng thử lại.</p>
+                            <p className="mb-3 text-sm text-red-400">Request timed out. Please try again.</p>
                             <Button variant="ghost" onClick={() => { setTimedOut(false); setPolling(true); }}>
-                                Thử lại
+                                Retry
                             </Button>
                         </div>
                     )}
@@ -193,16 +193,16 @@ export default function OnboardingPage() {
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
                             onKeyDown={handleKeyDown}
-                            placeholder="Nhập tin nhắn... (Enter để gửi)"
+                            placeholder="Type a message... (Press Enter to send)"
                             rows={2}
                             className="flex-1 resize-none rounded-xl border border-[var(--color-border)] bg-white/5 px-4 py-3 text-sm text-[var(--color-text)] outline-none placeholder:text-[var(--color-text-muted)] focus:border-[#4FACFE] transition-colors"
                         />
                         <div className="flex flex-col gap-2">
                             <Button onClick={sendMessage} loading={generating} disabled={!input.trim()}>
-                                Gửi
+                                Send
                             </Button>
                             <Button variant="ghost" onClick={handleComplete} loading={completing} disabled={polling}>
-                                Save & Phân tích
+                                Save & Analyze
                             </Button>
                         </div>
                     </div>
@@ -211,3 +211,4 @@ export default function OnboardingPage() {
         </div>
     );
 }
+

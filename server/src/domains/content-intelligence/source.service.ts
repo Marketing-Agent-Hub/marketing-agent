@@ -153,7 +153,7 @@ export class SourceService {
     }
 
     /**
-     * Validate plugin config của một source
+     * Validate plugin config for a source
      */
     async validatePluginConfig(id: number): Promise<{ valid: boolean; error?: string }> {
         const source = await this.getSourceById(id);

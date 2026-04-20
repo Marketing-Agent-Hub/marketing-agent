@@ -57,7 +57,7 @@ export class BrandController {
             const { title, content, sourceUrl, docType } = req.body;
             if (!title || !content) {
                 const response: ApiErrorResponse = {
-                    error: { code: 'VALIDATION_ERROR', message: 'title và content là bắt buộc' },
+                    error: { code: 'VALIDATION_ERROR', message: 'title and content are required' },
                 };
                 res.status(400).json(response);
                 return;

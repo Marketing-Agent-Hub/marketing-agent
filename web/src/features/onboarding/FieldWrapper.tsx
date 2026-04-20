@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+﻿import type { ReactNode } from 'react';
 
 interface FieldWrapperProps {
     label: string;
@@ -31,11 +31,11 @@ export default function FieldWrapper({
                     className="flex items-center gap-1 text-xs text-[#4FACFE] hover:underline disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"
                 >
                     {isLoading ? (
-                        <span className="inline-block animate-spin">⟳</span>
+                        <span className="inline-block animate-spin">âŸ³</span>
                     ) : (
-                        <span>✨</span>
+                        <span>âœ¨</span>
                     )}
-                    {isLoading ? 'Đang gợi ý...' : 'AI Suggest'}
+                    {isLoading ? 'Generating suggestion...' : 'AI Suggest'}
                 </button>
             </div>
             {children}
@@ -43,3 +43,4 @@ export default function FieldWrapper({
         </div>
     );
 }
+

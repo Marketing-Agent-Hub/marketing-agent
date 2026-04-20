@@ -46,25 +46,25 @@ const DENY_KEYWORDS_EN = [
     'support level',
 ];
 
-// Global deny keywords (Vietnamese)
+// Global deny keywords (additional aliases)
 const DENY_KEYWORDS_VI = [
-    'giá',
-    'giá coin',
-    'giao dịch',
-    'mua bán',
-    'tăng giá',
-    'giảm giá',
-    'thị trường',
-    'phân tích kỹ thuật',
-    'đầu tư',
-    'lãi',
-    'lỗ',
+    'price',
+    'coin price',
+    'trading',
+    'buy sell',
+    'price increase',
+    'price decrease',
+    'market',
+    'technical analysis',
+    'investment',
+    'profit',
+    'loss',
     'margin',
     'futures',
     'x10',
     'x100',
-    'bơm',
-    'xả',
+    'pump',
+    'dump',
 ];
 
 /**

@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+﻿import { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { decodeAppToken } from '@/lib/jwt';
@@ -19,7 +19,7 @@ function getRedirectTarget(token: string): string {
  * 1. Magic link: backend redirects to /auth/callback?token=<jwt>
  *
  * 2. Google OAuth redirect: Google redirects to /auth/callback#id_token=...
- *    → exchange id_token with backend → get app JWT → navigate
+ *    â†’ exchange id_token with backend â†’ get app JWT â†’ navigate
  */
 export default function MagicLinkCallbackPage() {
     const [searchParams] = useSearchParams();
@@ -27,7 +27,7 @@ export default function MagicLinkCallbackPage() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        // Case 2: Google OAuth redirect — id_token in URL fragment
+        // Case 2: Google OAuth redirect â€” id_token in URL fragment
         const fragment = new URLSearchParams(window.location.hash.slice(1));
         const idToken = fragment.get('id_token');
         if (idToken) {
@@ -44,7 +44,7 @@ export default function MagicLinkCallbackPage() {
             return;
         }
 
-        // Case 1: Magic link — app JWT in query string
+        // Case 1: Magic link â€” app JWT in query string
         const token = searchParams.get('token');
         if (token) {
             setToken(token);
@@ -59,9 +59,10 @@ export default function MagicLinkCallbackPage() {
     return (
         <div className="flex h-screen items-center justify-center bg-[var(--color-bg)]">
             <div className="text-center">
-                <div className="mb-4 text-2xl">🔐</div>
-                <p className="text-sm text-[var(--color-text-muted)]">Đang xác thực...</p>
+                <div className="mb-4 text-2xl">ðŸ”</div>
+                <p className="text-sm text-[var(--color-text-muted)]">Verifying...</p>
             </div>
         </div>
     );
 }
+

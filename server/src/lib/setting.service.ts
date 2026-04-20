@@ -80,7 +80,7 @@ class SettingService {
     }
 
     async resolveModel(key: string, brandId?: number): Promise<string> {
-        // 1. Brand override (nếu brandId được cung cấp)
+        // 1. Brand override (if brandId is provided)
         if (brandId !== undefined) {
             const config = await prisma.contentAgentConfig.findUnique({
                 where: { brandId },
@@ -89,7 +89,7 @@ class SettingService {
             const override = this.getBrandOverride(config, key);
             if (override) return override;
         }
-        // 2. Global setting từ DB
+        // 2. Global setting from DB
         const record = await prisma.setting.findUnique({ where: { key } });
         if (record?.value) return record.value;
         // 3. Hardcoded default

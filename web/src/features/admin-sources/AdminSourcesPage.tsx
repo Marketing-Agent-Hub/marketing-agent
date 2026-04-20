@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+﻿import { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -9,7 +9,7 @@ import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
 import Skeleton from '@/components/ui/Skeleton';
 
-// ── Types ──────────────────────────────────────────────────────────────────
+// â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 interface Source {
     id: number;
@@ -39,7 +39,7 @@ interface SourcesResponse {
     offset: number;
 }
 
-// ── Form schema ────────────────────────────────────────────────────────────
+// â”€â”€ Form schema â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const sourceSchema = z.object({
     name: z.string().min(1, 'Name is required'),
@@ -64,7 +64,7 @@ function toTagString(arr: string[]): string {
     return arr.join(', ');
 }
 
-// ── Hooks ──────────────────────────────────────────────────────────────────
+// â”€â”€ Hooks â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function useSources(search: string, page: number) {
     const limit = 20;
@@ -109,7 +109,7 @@ function useValidateRSS() {
     });
 }
 
-// ── Source Form ────────────────────────────────────────────────────────────
+// â”€â”€ Source Form â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function SourceForm({
     defaultValues,
@@ -141,7 +141,7 @@ function SourceForm({
         if (!rssUrl) return;
         try {
             const result = await validateMutation.mutateAsync(rssUrl);
-            if (result.ok) toast.success('Valid feed ✓');
+            if (result.ok) toast.success('Valid feed âœ“');
             else toast.error(`Invalid feed: ${result.error ?? 'unknown'}`);
         } catch { /* handled by interceptor */ }
     };
@@ -225,7 +225,7 @@ function SourceForm({
     );
 }
 
-// ── Main Page ──────────────────────────────────────────────────────────────
+// â”€â”€ Main Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export default function AdminSourcesPage() {
     const [search, setSearch] = useState('');
@@ -255,7 +255,7 @@ export default function AdminSourcesPage() {
         setShowCreate(false);
     };
 
-    // ── Export ──────────────────────────────────────────────────────────────
+    // â”€â”€ Export â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const handleExport = async () => {
         try {
             const res = await apiClient.get('/api/internal/sources/export');
@@ -276,20 +276,20 @@ export default function AdminSourcesPage() {
             <div className="mb-4 flex items-center justify-between">
                 <div>
                     <h1 className="text-sm font-bold text-[var(--color-text)]">Master Sources</h1>
-                    <p className="text-[10px] text-[var(--color-text-muted)] opacity-50">{total} nguồn · trang {page}/{totalPages || 1}</p>
+                    <p className="text-[10px] text-[var(--color-text-muted)] opacity-50">{total} sources ? page {page}/{totalPages || 1}</p>
                 </div>
                 <div className="flex items-center gap-2">
                     <button
                         onClick={handleExport}
                         className="rounded border border-[var(--color-border)] px-3 py-1.5 text-[10px] text-[var(--color-text)] opacity-60 hover:bg-[var(--color-bg-card)] hover:text-[var(--color-text)] transition-colors"
                     >
-                        ↓ Export JSON
+                        â†“ Export JSON
                     </button>
                     <button
                         onClick={() => setShowImport(true)}
                         className="rounded border border-[var(--color-border)] px-3 py-1.5 text-[10px] text-[var(--color-text)] opacity-60 hover:bg-[var(--color-bg-card)] hover:text-[var(--color-text)] transition-colors"
                     >
-                        ↑ Import JSON
+                        â†‘ Import JSON
                     </button>
                     <Button onClick={() => setShowCreate(true)} className="text-xs">
                         + Add source
@@ -336,7 +336,7 @@ export default function AdminSourcesPage() {
                                     <td className="px-3 py-2 text-[var(--color-text)] font-semibold max-w-[160px] truncate">{src.name}</td>
                                     <td className="px-3 py-2 text-[var(--color-text-muted)] opacity-70 max-w-[200px] truncate">
                                         <a href={src.rssUrl ?? src.siteUrl ?? '#'} target="_blank" rel="noopener noreferrer" className="hover:text-[#4FACFE] transition-colors">
-                                            {src.rssUrl ?? src.siteUrl ?? '—'}
+                                            {src.rssUrl ?? src.siteUrl ?? 'â€”'}
                                         </a>
                                     </td>
                                     <td className="px-3 py-2 text-[var(--color-text-muted)] opacity-60">{src.type}</td>
@@ -379,11 +379,11 @@ export default function AdminSourcesPage() {
             {totalPages > 1 && (
                 <div className="mt-3 flex items-center justify-center gap-2">
                     <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className="rounded border border-[var(--color-border)] px-3 py-1 text-[10px] text-[var(--color-text-muted)] hover:bg-[var(--color-bg-card)] disabled:opacity-30">
-                        ← Prev
+                        â† Prev
                     </button>
                     <span className="text-[10px] text-[var(--color-text-muted)] opacity-50">{page} / {totalPages}</span>
                     <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="rounded border border-[var(--color-border)] px-3 py-1 text-[10px] text-[var(--color-text-muted)] hover:bg-[var(--color-bg-card)] disabled:opacity-30">
-                        Next →
+                        Next â†’
                     </button>
                 </div>
             )}
@@ -438,7 +438,7 @@ export default function AdminSourcesPage() {
     );
 }
 
-// ── Edit Modal ─────────────────────────────────────────────────────────────
+// â”€â”€ Edit Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function EditSourceModal({ source, onClose }: { source: Source; onClose: () => void }) {
     const updateMutation = useUpdateSource(source.id);
@@ -483,7 +483,7 @@ function EditSourceModal({ source, onClose }: { source: Source; onClose: () => v
     );
 }
 
-// ── Import Modal ───────────────────────────────────────────────────────────
+// â”€â”€ Import Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Accepts either:
@@ -569,8 +569,8 @@ function ImportSourcesModal({ onClose }: { onClose: () => void }) {
                 {results ? (
                     <div className="space-y-4">
                         <div className="rounded border border-[var(--color-border)] bg-[var(--color-bg-card)] p-4 text-center">
-                            <p className="text-green-500 font-bold">✓ {results.ok} sources imported</p>
-                            {results.failed > 0 && <p className="text-red-500 font-bold">✗ {results.failed} sources failed</p>}
+                            <p className="text-green-500 font-bold">âœ“ {results.ok} sources imported</p>
+                            {results.failed > 0 && <p className="text-red-500 font-bold">âœ— {results.failed} sources failed</p>}
                         </div>
                         <div className="flex justify-end">
                             <Button onClick={onClose} variant="ghost" className="text-xs">Close</Button>
@@ -595,7 +595,7 @@ function ImportSourcesModal({ onClose }: { onClose: () => void }) {
                                     onClick={() => fileInputRef.current?.click()}
                                     className="rounded border border-[var(--color-border)] px-3 py-1.5 text-[10px] text-[var(--color-text)] opacity-60 hover:bg-[var(--color-bg-card)] transition-colors"
                                 >
-                                    📂 Select file
+                                    ðŸ“‚ Select file
                                 </button>
                                 <span className="flex items-center text-[10px] text-[var(--color-text-muted)] opacity-40">
                                     or paste JSON below
@@ -627,7 +627,7 @@ function ImportSourcesModal({ onClose }: { onClose: () => void }) {
                         {preview && (
                             <div className="rounded border border-[#4FACFE]/20 bg-[#4FACFE]/5 p-3">
                                 <p className="mb-1 text-[10px] text-[#4FACFE]">
-                                    ✓ Parsed {preview.length} sources — ready to import
+                                    âœ“ Parsed {preview.length} sources â€” ready to import
                                 </p>
                                 <div className="max-h-32 overflow-y-auto space-y-0.5">
                                     {preview.slice(0, 10).map((item: any, i) => (
@@ -650,7 +650,7 @@ function ImportSourcesModal({ onClose }: { onClose: () => void }) {
                                 </Button>
                             ) : (
                                 <Button onClick={handleImport} loading={importing} className="text-xs">
-                                    Import {preview.length} nguồn
+                                    Import {preview.length} sources
                                 </Button>
                             )}
                         </div>
@@ -660,3 +660,5 @@ function ImportSourcesModal({ onClose }: { onClose: () => void }) {
         </div>
     );
 }
+
+

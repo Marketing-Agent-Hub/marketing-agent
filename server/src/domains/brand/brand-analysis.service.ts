@@ -33,12 +33,12 @@ export class BrandAnalysisService {
             include: { knowledgeDocs: true },
         });
         if (!brand) {
-            throw new Error(`Brand ${brandId} không tồn tại`);
+            throw new Error(`Brand ${brandId} does not exist`);
         }
 
         const session = await prisma.onboardingSession.findUnique({ where: { id: sessionId } });
         if (!session) {
-            throw new Error(`Session ${sessionId} không tồn tại`);
+            throw new Error(`Session ${sessionId} does not exist`);
         }
 
         const model = await getAIModel('businessAnalysis');

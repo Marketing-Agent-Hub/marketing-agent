@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -30,8 +30,8 @@ const stageSchema = z.object({
     model: z.enum(['gpt-4o', 'gpt-4o-mini', 'claude-3-opus', 'claude-3-haiku']),
     similarityThreshold: z
         .number()
-        .min(0, 'Phải ≥ 0')
-        .max(1, 'Phải ≤ 1')
+        .min(0, 'Must be >= 0')
+        .max(1, 'Must be <= 1')
         .optional(),
 });
 
@@ -44,20 +44,20 @@ type FormData = z.infer<typeof schema>;
 const DEFAULT_STAGES: PipelineStage[] = [
     {
         id: 'stage_a_curator',
-        label: 'Stage A — Curator',
+        label: 'Stage A â€” Curator',
         enabled: true,
         model: 'gpt-4o-mini',
         similarityThreshold: 0.6,
     },
     {
         id: 'stage_b_writer',
-        label: 'Stage B — Writer',
+        label: 'Stage B â€” Writer',
         enabled: true,
         model: 'gpt-4o',
     },
     {
         id: 'stage_c_publisher',
-        label: 'Stage C — Publisher',
+        label: 'Stage C â€” Publisher',
         enabled: true,
         model: 'gpt-4o-mini',
     },
@@ -181,7 +181,7 @@ export default function AISettingsPage() {
                                     )}
                                 </div>
 
-                                {/* Similarity threshold — only for stages that have it */}
+                                {/* Similarity threshold â€” only for stages that have it */}
                                 {stage.similarityThreshold !== undefined && (
                                     <div>
                                         <label className="mb-1 block text-[10px] uppercase tracking-wider text-[var(--color-text-muted)] opacity-50">
@@ -238,3 +238,4 @@ export default function AISettingsPage() {
         </div>
     );
 }
+

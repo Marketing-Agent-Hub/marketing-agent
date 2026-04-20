@@ -46,7 +46,7 @@ export default function StrategyCalendarPage() {
         timeoutMs: 120_000,
         onStop: () => {
             setGenerating(false);
-            toast.success('Content plan đã được tạo!');
+            toast.success('Content plan created!');
         },
         onTimeout: () => {
             setGenerating(false);
@@ -114,7 +114,7 @@ export default function StrategyCalendarPage() {
                     <h1 className="font-['Outfit',sans-serif] text-2xl font-semibold text-[var(--color-text)]">
                         Strategy Calendar
                     </h1>
-                    <p className="mt-1 text-sm text-[var(--color-text-muted)]">Content plan 30 ngày</p>
+                    <p className="mt-1 text-sm text-[var(--color-text-muted)]">30-day content plan</p>
                 </div>
                 <div className="flex gap-3">
                     {activeStrategy && activeStrategy.status !== 'ACTIVE' && (
@@ -126,7 +126,7 @@ export default function StrategyCalendarPage() {
                             ⚡ Activate
                         </Button>
                     )}
-                    <Button onClick={() => setShowModal(true)}>+ Create Kế Hoạch</Button>
+                    <Button onClick={() => setShowModal(true)}>+ Create Plan</Button>
                 </div>
             </div>
 
@@ -168,8 +168,8 @@ export default function StrategyCalendarPage() {
             <Modal
                 open={showModal}
                 onClose={() => setShowModal(false)}
-                title="Create Kế Hoạch 30 Ngày"
-                confirmLabel="Create kế hoạch"
+                title="Create 30-Day Plan"
+                confirmLabel="Create plan"
                 onConfirm={handleGenerate}
                 confirmLoading={generateMutation.isPending}
             >

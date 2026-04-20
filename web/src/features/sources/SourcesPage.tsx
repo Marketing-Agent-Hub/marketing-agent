@@ -93,7 +93,7 @@ export default function SourcesPage() {
 
                 <div>
                     <label className="mb-2 block text-xs text-[var(--color-text-muted)]">
-                        Similarity Threshold — lọc nội dung theo độ liên quan
+                        Similarity Threshold ? filter content by relevance
                     </label>
                     <Slider value={threshold} onChange={setThreshold} />
                 </div>
@@ -122,7 +122,7 @@ export default function SourcesPage() {
 
             <Modal open={showFilterConfirm} onClose={() => setShowFilterConfirm(false)}
                 title="Confirm Filter Profile changes" variant="destructive"
-                confirmLabel="Save thay đổi"
+                confirmLabel="Save changes"
                 onConfirm={() => updateFilterMutation.mutate({ mode: 'SIMILARITY', similarityThreshold: threshold, topicTags })}
                 confirmLoading={updateFilterMutation.isPending}>
                 <p>This change will affect the entire brand content filtering pipeline. Are you sure?</p>
