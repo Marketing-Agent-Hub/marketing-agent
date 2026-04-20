@@ -2,9 +2,24 @@ import { Request, Response, NextFunction } from 'express';
 import { ApiErrorResponse } from '../types/index.js';
 import { ZodError } from 'zod';
 import { logger } from '../lib/logger.js';
+import { getCurrentTraceContext } from '../lib/telemetry.js';
 
-export function errorHandler(err: Error, _req: Request, res: Response, _next: NextFunction): void {
-    logger.error({ err }, 'Unhandled error');
+export function errorHandler(err: Error, req: Request, res: Response, _next: NextFunction): void {
+    const statusCode = 'statusCode' in err && typeof err.statusCode === 'number' ? err.statusCode : 500;
+    const { traceId, spanId } = getCurrentTraceContext();
+
+    logger.error(
+        {
+            service: 'http',
+            method: req.method,
+            path: req.path,
+            statusCode,
+            traceId,
+            spanId,
+            err,
+        },
+        `Error in ${req.method} ${req.path}: ${err.message}`
+    );
 
     // Zod validation errors
     if (err instanceof ZodError) {
