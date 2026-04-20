@@ -1,5 +1,7 @@
 import OpenAI, { APIError } from 'openai';
 import { logger } from './logger.js';
+import { walletService } from '../domains/wallet/wallet.service.js';
+import { getPricePerToken, DEFAULT_PRICE_PER_TOKEN } from './model-pricing.registry.js';
 
 // ─── Return types ────────────────────────────────────────────────────────────
 
@@ -11,6 +13,13 @@ export interface ChatResult {
 export interface EmbedResult {
     data: OpenAI.Embeddings.CreateEmbeddingResponse;
     actualModel: string;
+}
+
+// ─── Credit context ───────────────────────────────────────────────────────────
+
+export interface CreditContext {
+    userId: number;
+    brandId?: number;
 }
 
 // ─── OpenRouter-specific error types ─────────────────────────────────────────
@@ -28,6 +37,14 @@ export class OpenRouterOverloadedError extends Error {
     constructor() {
         super('The server is experiencing high traffic. Please try again in a few minutes!');
         this.name = 'OpenRouterOverloadedError';
+    }
+}
+
+export class InsufficientCreditsError extends Error {
+    readonly statusCode = 402;
+    constructor() {
+        super('Insufficient credits. Please top up your wallet to continue using AI features.');
+        this.name = 'InsufficientCreditsError';
     }
 }
 
@@ -51,8 +68,17 @@ export class AiClient {
     }
 
     async chat(
-        params: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming
+        params: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming,
+        creditContext?: CreditContext
     ): Promise<ChatResult> {
+        // Pre-call balance check
+        if (creditContext) {
+            const wallet = await walletService.getOrCreate(creditContext.userId);
+            if (wallet.balanceCredits.lessThanOrEqualTo(0)) {
+                throw new InsufficientCreditsError();
+            }
+        }
+
         try {
             const { data, response } = await this.client.chat.completions
                 .create(params)
@@ -66,8 +92,51 @@ export class AiClient {
             }
             const actualModel = headerModel ?? params.model;
 
+            // Post-call credit deduction
+            if (creditContext) {
+                const usage = data.usage;
+                if (usage) {
+                    const totalTokens = usage.total_tokens;
+                    const pricePerToken = getPricePerToken(actualModel);
+
+                    if (pricePerToken === DEFAULT_PRICE_PER_TOKEN && !getPricePerToken(actualModel)) {
+                        logger.warn(
+                            { model: actualModel },
+                            '[AiClient] Model not in pricing registry, using default price'
+                        );
+                    }
+
+                    const credits = Math.ceil(totalTokens * pricePerToken * 1000);
+
+                    try {
+                        await walletService.deductCredits({
+                            userId: creditContext.userId,
+                            credits,
+                            description: `AI usage: ${actualModel} (${totalTokens} tokens)`,
+                            brandId: creditContext.brandId,
+                            aiModel: actualModel,
+                            promptTokens: usage.prompt_tokens,
+                            completionTokens: usage.completion_tokens,
+                            totalTokens,
+                        });
+                    } catch (deductError) {
+                        // Log but don't throw — AI call already completed
+                        logger.error(
+                            {
+                                userId: creditContext.userId,
+                                credits,
+                                model: actualModel,
+                                error: deductError instanceof Error ? deductError.message : String(deductError),
+                            },
+                            '[AiClient] Failed to deduct credits after successful AI call'
+                        );
+                    }
+                }
+            }
+
             return { data, actualModel };
         } catch (error) {
+            if (error instanceof InsufficientCreditsError) throw error;
             if (error instanceof APIError) {
                 if (error.status === 402) throw new OpenRouterCreditError();
                 if (error.status === 529) throw new OpenRouterOverloadedError();

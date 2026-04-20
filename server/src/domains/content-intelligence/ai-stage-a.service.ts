@@ -1,7 +1,7 @@
 import { AI_CONFIG } from '../../config/ai.config.js';
 import { prisma } from '../../db/index.js';
 import { ItemStatus } from '@prisma/client';
-import { aiClient, OpenRouterCreditError, OpenRouterOverloadedError } from '../../lib/ai-client.js';
+import { aiClient, OpenRouterCreditError, OpenRouterOverloadedError, type CreditContext } from '../../lib/ai-client.js';
 import { settingService } from '../../lib/setting.service.js';
 import { logger } from '../../lib/logger.js';
 
@@ -151,26 +151,64 @@ function applyHeuristicFilter(item: {
 }
 
 /**
+ * Resolve the workspace owner userId for a given brandId.
+ * Returns null if not found (credit deduction will be skipped).
+ */
+async function resolveWorkspaceOwner(brandId: number): Promise<number | null> {
+    const brand = await prisma.brand.findUnique({
+        where: { id: brandId },
+        select: { workspaceId: true },
+    });
+
+    if (!brand) return null;
+
+    const ownerMember = await prisma.workspaceMember.findFirst({
+        where: { workspaceId: brand.workspaceId, role: 'OWNER' },
+        select: { userId: true },
+    });
+
+    return ownerMember?.userId ?? null;
+}
+
+/**
  * Call AI for Stage A analysis
  */
 async function callStageA(prompt: string, brandId?: number): Promise<{ result: StageAOutput; actualModel: string }> {
     const model = await settingService.resolveModel('ai.models.stageA', brandId);
-    const { data: response, actualModel } = await aiClient.chat({
-        model,
-        messages: [
-            {
-                role: 'system',
-                content: 'You are a content filtering AI. Respond only with valid JSON.',
-            },
-            {
-                role: 'user',
-                content: prompt,
-            },
-        ],
-        temperature: 0.3,
-        max_tokens: 500,
-        response_format: { type: 'json_object' },
-    });
+
+    // Resolve workspace owner for credit deduction
+    let creditContext: CreditContext | undefined;
+    if (brandId !== undefined) {
+        const ownerUserId = await resolveWorkspaceOwner(brandId);
+        if (ownerUserId !== null) {
+            creditContext = { userId: ownerUserId, brandId };
+        } else {
+            logger.error(
+                { brandId },
+                '[Stage A] No workspace owner found for brandId, skipping credit deduction'
+            );
+        }
+    }
+
+    const { data: response, actualModel } = await aiClient.chat(
+        {
+            model,
+            messages: [
+                {
+                    role: 'system',
+                    content: 'You are a content filtering AI. Respond only with valid JSON.',
+                },
+                {
+                    role: 'user',
+                    content: prompt,
+                },
+            ],
+            temperature: 0.3,
+            max_tokens: 500,
+            response_format: { type: 'json_object' },
+        },
+        creditContext
+    );
 
     const content = response.choices[0]?.message?.content;
     if (!content) {

@@ -1,7 +1,7 @@
 import { AI_CONFIG } from '../../config/ai.config.js';
 import { prisma } from '../../db/index.js';
 import { ItemStatus } from '@prisma/client';
-import { aiClient, OpenRouterCreditError, OpenRouterOverloadedError } from '../../lib/ai-client.js';
+import { aiClient, OpenRouterCreditError, OpenRouterOverloadedError, type CreditContext } from '../../lib/ai-client.js';
 import { settingService } from '../../lib/setting.service.js';
 import { logger } from '../../lib/logger.js';
 
@@ -207,26 +207,64 @@ ${hashtags}`;
 }
 
 /**
+ * Resolve the workspace owner userId for a given brandId.
+ * Returns null if not found (credit deduction will be skipped).
+ */
+async function resolveWorkspaceOwner(brandId: number): Promise<number | null> {
+    const brand = await prisma.brand.findUnique({
+        where: { id: brandId },
+        select: { workspaceId: true },
+    });
+
+    if (!brand) return null;
+
+    const ownerMember = await prisma.workspaceMember.findFirst({
+        where: { workspaceId: brand.workspaceId, role: 'OWNER' },
+        select: { userId: true },
+    });
+
+    return ownerMember?.userId ?? null;
+}
+
+/**
  * Call AI for Stage B analysis
  */
 async function callStageB(prompt: string, brandId?: number): Promise<{ result: StageBOutput; actualModel: string }> {
     const model = await settingService.resolveModel('ai.models.stageB', brandId);
-    const { data: response, actualModel } = await aiClient.chat({
-        model,
-        messages: [
-            {
-                role: 'system',
-                content: `You are an AI specializing in rewriting news into natural, readable Facebook posts in English, flexible to the length/genre of the original content. Prioritize coherence and a human-written feel. Keep the input content accurate, do not add information outside the provided data. Return ONLY valid JSON.`,
-            },
-            {
-                role: 'user',
-                content: prompt,
-            },
-        ],
-        temperature: 0.75,
-        max_tokens: 3500, // Increased to allow 400-600 word articles (Vietnamese uses more tokens)
-        response_format: { type: 'json_object' },
-    });
+
+    // Resolve workspace owner for credit deduction
+    let creditContext: CreditContext | undefined;
+    if (brandId !== undefined) {
+        const ownerUserId = await resolveWorkspaceOwner(brandId);
+        if (ownerUserId !== null) {
+            creditContext = { userId: ownerUserId, brandId };
+        } else {
+            logger.error(
+                { brandId },
+                '[Stage B] No workspace owner found for brandId, skipping credit deduction'
+            );
+        }
+    }
+
+    const { data: response, actualModel } = await aiClient.chat(
+        {
+            model,
+            messages: [
+                {
+                    role: 'system',
+                    content: `You are an AI specializing in rewriting news into natural, readable Facebook posts in English, flexible to the length/genre of the original content. Prioritize coherence and a human-written feel. Keep the input content accurate, do not add information outside the provided data. Return ONLY valid JSON.`,
+                },
+                {
+                    role: 'user',
+                    content: prompt,
+                },
+            ],
+            temperature: 0.75,
+            max_tokens: 3500, // Increased to allow 400-600 word articles (Vietnamese uses more tokens)
+            response_format: { type: 'json_object' },
+        },
+        creditContext
+    );
 
     const content = response.choices[0]?.message?.content;
     if (!content) {
