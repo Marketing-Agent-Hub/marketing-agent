@@ -4,7 +4,7 @@
 [
   {
     "id": "deploy-marketing-agent",
-    "execute-command": "/opt/MarketingAgent/infra/deploy/webhook-deploy.sh",
+    "execute-command": "/opt/MarketingAgent/infra/prod/compute/deploy/webhook-deploy.sh",
     "command-working-directory": "/opt/MarketingAgent",
     "pass-arguments-to-command": [],
     "response-message": "Deployment started successfully",

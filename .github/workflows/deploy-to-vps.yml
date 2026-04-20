@@ -26,7 +26,7 @@
 #             # Pull images má»›i tá»« GHCR            
 #             docker compose down
 
-#             ./infra/deploy/deploy.sh latest
+#             ./infra/prod/compute/deploy/deploy.sh latest
             
 #             # Äá»£i containers khá»Ÿi Ä‘á»™ng
 #             sleep 10

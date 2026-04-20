@@ -29,7 +29,7 @@ cd MarketingAgent && cp .env.production.example .env
 nano .env
 
 # 4. Deploy
-chmod +x infra/deploy/deploy.sh && ./infra/deploy/deploy.sh latest
+chmod +x infra/prod/compute/deploy/deploy.sh && ./infra/prod/compute/deploy/deploy.sh latest
 ```
 
 Xem [QUICKSTART.md](QUICKSTART.md) để biết chi tiết.

@@ -19,7 +19,7 @@ git pull origin main 2>&1 | tee -a $LOG_FILE
 
 # Run deploy script
 echo "Running deploy script..." | tee -a $LOG_FILE
-./infra/deploy/deploy.sh latest 2>&1 | tee -a $LOG_FILE
+./infra/prod/compute/deploy/deploy.sh latest 2>&1 | tee -a $LOG_FILE
 
 echo "Deploy completed at $(date)" | tee -a $LOG_FILE
 echo "" | tee -a $LOG_FILE

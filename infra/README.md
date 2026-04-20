@@ -1,8 +1,12 @@
 ﻿# Infrastructure
 
-This folder centralizes infrastructure assets and deployment automation.
+Infrastructure is organized by environment and concern:
 
-## Structure
-- `infra/nginx/`: Nginx configs used by Docker and VPS setups.
-- `infra/s3/`: S3-related templates and notes.
-- `infra/deploy/`: Deployment scripts and webhook configs.
+- `infra/dev/{network,compute,data,observability}`
+- `infra/staging/{network,compute,data,observability}`
+- `infra/prod/{network,compute,data,observability}`
+
+Current active assets:
+- `infra/prod/network/nginx/default.conf`
+- `infra/prod/compute/deploy/*`
+- `infra/prod/data/s3/README.md`
