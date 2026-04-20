@@ -8,13 +8,12 @@ export default function LoginPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const navigate = useNavigate();
-    const { setToken, setUser } = useAuthStore();
+    const { setToken } = useAuthStore();
 
     const handleLogin = (e: React.FormEvent) => {
         e.preventDefault();
         // Placeholder auth logic
         setToken('mock_token');
-        setUser({ id: 1, email });
         navigate('/workspaces');
     };
 

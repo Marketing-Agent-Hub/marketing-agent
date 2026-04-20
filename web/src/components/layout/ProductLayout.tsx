@@ -10,6 +10,14 @@ import ThemeSwitcher from '@/components/ui/ThemeSwitcher';
 import { useWorkspaces } from '@/hooks/useWorkspaces';
 import { useBrands } from '@/hooks/useBrands';
 
+type NavItem = {
+    label: string;
+    path: string;
+    icon: string;
+    badgeKey?: 'review-queue';
+    exact?: boolean;
+};
+
 function ReviewQueueBadge({ brandId }: { brandId: number }) {
     const { data } = useReviewQueue(brandId);
     const count = data?.length ?? 0;
@@ -34,7 +42,7 @@ export default function ProductLayout() {
         if (wid) setActiveWorkspaceId(wid);
     }, [workspaceId, setActiveWorkspaceId]);
 
-    const navItems = [
+    const navItems: NavItem[] = [
         ...(brandId ? [
             { label: 'Strategy', path: `/b/${brandId}/strategy`, icon: '📅' },
             { label: 'Review Queue', path: `/b/${brandId}/review-queue`, icon: '✍️', badgeKey: 'review-queue' as const },
@@ -95,7 +103,7 @@ export default function ProductLayout() {
                         <NavLink
                             key={item.path}
                             to={item.path}
-                            end={'exact' in item ? item.exact : false}
+                            end={item.exact ?? false}
                         >
                             {({ isActive }) => (
                                 <span

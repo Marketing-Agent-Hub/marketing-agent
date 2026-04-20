@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { authenticate } from '../middleware/auth.js';
+import { requireAdminAuth } from '../middleware/admin-auth.js';
 import {
     getAISettingsController,
     updateStageASetting,
@@ -8,8 +8,8 @@ import {
 
 const router = Router();
 
-// All settings routes require authentication
-router.use(authenticate);
+// All settings routes require admin authentication
+router.use(requireAdminAuth);
 
 // AI settings
 router.get('/ai', getAISettingsController);

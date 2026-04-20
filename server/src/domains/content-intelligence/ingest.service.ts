@@ -46,35 +46,37 @@ export async function fetchEnabledSources() {
 }
 
 export async function saveItems(items: NormalizedItem[]): Promise<{ created: number; existing: number }> {
+    if (items.length === 0) return { created: 0, existing: 0 };
+
+    const sourceIds = Array.from(new Set(items.map((item) => item.sourceId)));
+    const brandSources = await prisma.brandSource.findMany({
+        where: { enabled: true, sourceId: { in: sourceIds } },
+        select: { sourceId: true, brandId: true },
+    });
+
+    if (brandSources.length === 0) {
+        logger.warn('[Ingest] Skip saveItems because no enabled brand-source mapping found');
+        return { created: 0, existing: 0 };
+    }
+
+    const brandIdsBySource = new Map<number, number[]>();
+    for (const bs of brandSources) {
+        const current = brandIdsBySource.get(bs.sourceId) ?? [];
+        current.push(bs.brandId);
+        brandIdsBySource.set(bs.sourceId, current);
+    }
+
     let created = 0;
     let existing = 0;
 
-    for (const item of items) {
-        try {
-            await prisma.item.create({
-                data: {
-                    sourceId: item.sourceId,
-                    guid: item.guid,
-                    title: item.title,
-                    link: item.link,
-                    snippet: item.snippet,
-                    contentHash: item.contentHash,
-                    publishedAt: item.publishedAt,
-                    status: ItemStatus.NEW,
-                },
-            });
-            created++;
-        } catch (error: any) {
-            if (error.code === 'P2002') {
-                existing++;
-            } else {
-                await logProcessingError(
-                    'Ingest',
-                    `Error saving item: ${item.title}`,
-                    error,
-                    { sourceId: item.sourceId, link: item.link }
-                );
-            }
+    for (const sourceId of sourceIds) {
+        const sourceItems = items.filter((item) => item.sourceId === sourceId);
+        const brandIds = brandIdsBySource.get(sourceId) ?? [];
+
+        for (const brandId of brandIds) {
+            const result = await saveBrandItems(sourceItems, brandId);
+            created += result.created;
+            existing += result.existing;
         }
     }
 
