@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { AxiosError } from 'axios';
 import apiClient from '@/api/client';
 import { toast } from '@/components/ui/Toast';
 import Button from '@/components/ui/Button';
@@ -134,8 +135,10 @@ export default function OnboardingFormPage() {
                     }));
                 }
             }
-        } catch {
-            toast.error('Error when generating AI content! Please try later');
+        } catch (error) {
+            if (!(error as AxiosError).response) {
+                toast.error('Error when generating AI content! Please try later');
+            }
         } finally {
             setIsGeneratingAll(false);
         }
@@ -153,8 +156,10 @@ export default function OnboardingFormPage() {
                     suggestion.suggestion as OnboardingFormData[keyof OnboardingFormData],
                 );
             }
-        } catch {
-            toast.error('Unable to generate AI content: ');
+        } catch (error) {
+            if (!(error as AxiosError).response) {
+                toast.error('Unable to generate AI content: ');
+            }
         } finally {
             setFieldLoadingKey(null);
         }
@@ -188,8 +193,10 @@ export default function OnboardingFormPage() {
                     formData,
                 },
             });
-        } catch {
-            toast.error('Cannot create Brand Profile. Please try again.');
+        } catch (error) {
+            if (!(error as AxiosError).response) {
+                toast.error('Cannot create Brand Profile. Please try again.');
+            }
         }
     }
 
