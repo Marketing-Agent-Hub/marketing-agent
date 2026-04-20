@@ -357,8 +357,10 @@ model User {
   createdAt    DateTime          @default(now())
   updatedAt    DateTime          @updatedAt
 
-  memberships  WorkspaceMember[]
-  magicTokens  MagicLinkToken[]
+  memberships    WorkspaceMember[]
+  magicTokens    MagicLinkToken[]
+  wallet         UserWallet?
+  topUpRequests  TopUpRequest[]
 
   @@map("users")
 }
@@ -934,4 +936,94 @@ model MediaGenerationConfig {
   updatedAt   DateTime @updatedAt
 
   @@map("media_generation_configs")
+}
+
+// ============ CREDIT WALLET SYSTEM MODELS ============
+
+enum TransactionType {
+  TOPUP
+  USAGE
+  REFUND
+  ADJUSTMENT
+  BONUS
+}
+
+enum TopUpMethod {
+  STRIPE
+  CASH_VND
+}
+
+enum TopUpStatus {
+  PENDING_APPROVAL
+  SUCCEEDED
+  FAILED
+  REJECTED
+}
+
+model UserWallet {
+  id             Int       @id @default(autoincrement())
+  userId         Int       @unique
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  balanceCredits Decimal   @default(0) @db.Decimal(14, 4)
+  lifetimeAdded  Decimal   @default(0) @db.Decimal(14, 4)
+  lifetimeUsed   Decimal   @default(0) @db.Decimal(14, 4)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  transactions   WalletTransaction[]
+  topUpRequests  TopUpRequest[]
+
+  @@index([userId])
+  @@map("user_wallets")
+}
+
+model WalletTransaction {
+  id               Int             @id @default(autoincrement())
+  walletId         Int
+  wallet           UserWallet      @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  type             TransactionType
+  credits          Decimal         @db.Decimal(14, 4)
+  balanceAfter     Decimal         @db.Decimal(14, 4)
+  description      String
+  brandId          Int?
+  aiModel          String?
+  promptTokens     Int?
+  completionTokens Int?
+  totalTokens      Int?
+  topUpRequestId   Int?
+  topUpRequest     TopUpRequest?   @relation(fields: [topUpRequestId], references: [id])
+  createdAt        DateTime        @default(now())
+
+  @@index([walletId, createdAt])
+  @@index([type])
+  @@index([brandId])
+  @@map("wallet_transactions")
+}
+
+model TopUpRequest {
+  id                    Int           @id @default(autoincrement())
+  userId                Int
+  user                  User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  walletId              Int
+  wallet                UserWallet    @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  method                TopUpMethod
+  status                TopUpStatus   @default(PENDING_APPROVAL)
+  amountUsd             Decimal?      @db.Decimal(10, 2)
+  amountVnd             Int?
+  creditsAdded          Decimal?      @db.Decimal(14, 4)
+  stripePaymentIntentId String?       @unique
+  proofImageKey         String?
+  note                  String?
+  rejectionReason       String?
+  reviewedAt            DateTime?
+  reviewedByUserId      Int?
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+
+  transactions          WalletTransaction[]
+
+  @@index([userId, createdAt])
+  @@index([status, createdAt])
+  @@index([stripePaymentIntentId])
+  @@map("top_up_requests")
 }
