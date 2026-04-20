@@ -1,40 +1,43 @@
-# Marketing Agent
+﻿# Marketing Agent
 
-Automated system for RSS content curation → AI analysis → Vietnamese digests → Facebook publishing.
+Automated system for RSS content curation â†’ AI analysis â†’ Vietnamese digests â†’ Facebook publishing.
 
 ## Status
 
-- ✅ **Phase 1: Backend API** - Express + PostgreSQL + JWT + Source CRUD
-- ✅ **Phase 2: AI Pipeline** - RSS ingestion + Content extraction + AI processing (2-stage) + Digest generation
-- ✅ **Phase 3: Frontend Dashboard** - React admin UI for source management
-- 🚧 **Phase 4: Draft Review & Facebook Publishing** - Coming next
+- âœ… **Phase 1: Backend API** - Express + PostgreSQL + JWT + Source CRUD
+- âœ… **Phase 2: AI Pipeline** - RSS ingestion + Content extraction + AI processing (2-stage) + Digest generation
+- âœ… **Phase 3: Frontend Dashboard** - React admin UI for source management
+- ðŸš§ **Phase 4: Draft Review & Facebook Publishing** - Coming next
 
 ## Quick Start
 
-### 🚀 Production Deploy (VPS)
+### ðŸš€ Production Deploy (VPS)
 
-**Deploy lên VPS trong 15 phút:**
+**Deploy lÃªn VPS trong 15 phÃºt:**
 
 ```bash
-# 1. Push code lên GitHub
+# 1. Push code lÃªn GitHub
 git push origin main
 
-# 2. Setup trên VPS
+# 2. Setup trÃªn VPS
 ssh root@your-vps
 curl -fsSL https://get.docker.com | sh
 cd /opt && git clone https://github.com/your-username/MarketingAgent.git
 cd MarketingAgent && cp .env.production.example .env
 
-# 3. Chỉnh sửa .env (GitHub username, passwords, API keys)
+# 3. Chá»‰nh sá»­a .env (GitHub username, passwords, API keys)
 nano .env
 
 # 4. Deploy
 chmod +x infra/prod/compute/deploy/deploy.sh && ./infra/prod/compute/deploy/deploy.sh latest
+
+# or run directly
+docker compose -f docker-compose.prod.yml up -d --remove-orphans
 ```
 
-Xem [QUICKSTART.md](QUICKSTART.md) để biết chi tiết.
+Xem [QUICKSTART.md](QUICKSTART.md) Ä‘á»ƒ biáº¿t chi tiáº¿t.
 
-### 💻 Local Development
+### ðŸ’» Local Development
 
 ```bash
 # Backend
@@ -44,21 +47,21 @@ cd server && npm install && npm run prisma:migrate && npm run dev
 cd web && npm install && npm run dev
 ```
 
-Xem [DEV_GUIDE.md](DEV_GUIDE.md) để biết chi tiết.
+Xem [DEV_GUIDE.md](DEV_GUIDE.md) Ä‘á»ƒ biáº¿t chi tiáº¿t.
 
 ## Documentation
 
-### 🎯 Deployment Guides
-- **[QUICKSTART.md](QUICKSTART.md)** - ⚡ Deploy VPS trong 15 phút (Recommended)
-- **[DEPLOYMENT.md](DEPLOYMENT.md)** - 📖 Hướng dẫn CI/CD chi tiết cho người mới
-- **[README.Docker.md](README.Docker.md)** - 🐳 Docker local development
+### ðŸŽ¯ Deployment Guides
+- **[QUICKSTART.md](QUICKSTART.md)** - âš¡ Deploy VPS trong 15 phÃºt (Recommended)
+- **[DEPLOYMENT.md](DEPLOYMENT.md)** - ðŸ“– HÆ°á»›ng dáº«n CI/CD chi tiáº¿t cho ngÆ°á»i má»›i
+- **[README.Docker.md](README.Docker.md)** - ðŸ³ Docker local development
 
-### 👨‍💻 Developer Docs
+### ðŸ‘¨â€ðŸ’» Developer Docs
 - **[DEV_GUIDE.md](DEV_GUIDE.md)** - Setup local, API docs, testing
 - **[AI_CONTEXT.md](AI_CONTEXT.md)** - Project context for AI agents
 - **[srs.md](srs.md)** - Software Requirements Specification
 
-### 📚 Additional Docs
+### ðŸ“š Additional Docs
 - **[DIGEST.md](DIGEST.md)** - Digest generation service
 - **[AI_SETUP.md](AI_SETUP.md)** - OpenAI configuration
 - **[TESTING.md](TESTING.md)** - Pipeline testing
@@ -73,14 +76,14 @@ Xem [DEV_GUIDE.md](DEV_GUIDE.md) để biết chi tiết.
 
 ```
 RSS Sources (enabled)
-  → [15min] Ingest → NEW
-  → [5min] Extract → EXTRACTED
-  → [3min] Filter → READY_FOR_AI (ban trading content)
-  → [10min] AI Stage A (gpt-4o-mini) → AI_STAGE_A_DONE (isAllowed, topicTags, score)
-  → [15min] AI Stage B (gpt-4o) → AI_STAGE_B_DONE (Vietnamese summaries)
-  → [daily 00:30] Digest → DRAFT (5 posts/day)
-  → [human review] Approve/Reject
-  → [scheduled] Facebook publish → POSTED
+  â†’ [15min] Ingest â†’ NEW
+  â†’ [5min] Extract â†’ EXTRACTED
+  â†’ [3min] Filter â†’ READY_FOR_AI (ban trading content)
+  â†’ [10min] AI Stage A (gpt-4o-mini) â†’ AI_STAGE_A_DONE (isAllowed, topicTags, score)
+  â†’ [15min] AI Stage B (gpt-4o) â†’ AI_STAGE_B_DONE (Vietnamese summaries)
+  â†’ [daily 00:30] Digest â†’ DRAFT (5 posts/day)
+  â†’ [human review] Approve/Reject
+  â†’ [scheduled] Facebook publish â†’ POSTED
 ```
 
 ## Project Goals
@@ -94,3 +97,4 @@ RSS Sources (enabled)
 ## License
 
 MIT
+
