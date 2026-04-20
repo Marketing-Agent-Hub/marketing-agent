@@ -18,3 +18,10 @@ export interface RequestUser {
   email: string;
 }
 
+// Extend Express Request to include monitoring flags
+declare module 'express-serve-static-core' {
+  interface Request {
+    errorLogged?: boolean;
+  }
+}
+

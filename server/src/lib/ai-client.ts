@@ -18,7 +18,7 @@ export interface EmbedResult {
 export class OpenRouterCreditError extends Error {
     readonly statusCode = 402;
     constructor() {
-        super('OpenRouter credit exhausted or payment required (HTTP 402). Please top up your OpenRouter account.');
+        super('Insufficient balance. Please recharge your account!');
         this.name = 'OpenRouterCreditError';
     }
 }
@@ -26,7 +26,7 @@ export class OpenRouterCreditError extends Error {
 export class OpenRouterOverloadedError extends Error {
     readonly statusCode = 529;
     constructor() {
-        super('OpenRouter service is overloaded (HTTP 529). Please retry with exponential backoff.');
+        super('The server is experiencing high traffic. Please try again in a few minutes!');
         this.name = 'OpenRouterOverloadedError';
     }
 }

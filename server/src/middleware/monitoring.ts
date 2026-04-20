@@ -38,16 +38,29 @@ export function requestMonitoring(req: Request, res: Response, next: NextFunctio
         const duration = Date.now() - startTime;
         const statusCode = res.statusCode;
 
-        // Log response
-        logService.log({
-            level: statusCode >= 500 ? 'ERROR' : statusCode >= 400 ? 'WARN' : 'INFO',
-            message: `${req.method} ${req.path} ${statusCode} ${duration}ms`,
-            service: 'http',
-            method: req.method,
-            path: req.path,
-            statusCode,
-            duration,
-        });
+        // Log response only if not already logged as error by errorMonitoring
+        if (!req.errorLogged && statusCode >= 500) {
+            logService.log({
+                level: 'ERROR',
+                message: `${req.method} ${req.path} ${statusCode} ${duration}ms`,
+                service: 'http',
+                method: req.method,
+                path: req.path,
+                statusCode,
+                duration,
+            });
+        } else if (statusCode < 500) {
+            // Log successful responses
+            logService.log({
+                level: 'INFO',
+                message: `${req.method} ${req.path} ${statusCode} ${duration}ms`,
+                service: 'http',
+                method: req.method,
+                path: req.path,
+                statusCode,
+                duration,
+            });
+        }
 
         // Record metrics
         metricService.recordHistogram('http_request_duration_ms', duration, 'ms', {
@@ -98,6 +111,9 @@ export function errorMonitoring(
     next: NextFunction
 ) {
     const { traceId, spanId } = getCurrentTraceContext();
+
+    // Mark that error has been logged to prevent duplicate logging in requestMonitoring
+    req.errorLogged = true;
 
     // Log error
     logService.log({
