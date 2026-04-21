@@ -1,0 +1,12 @@
+environment = "dev"
+use_local_build = true
+github_username = "your-username"
+image_tag = "latest"
+postgres_db_name = ""
+postgres_user = "postgres"
+database_password = "m1505"
+server_node_env = "development"
+docker_registry = ""
+minio_root_user = "minioadmin"
+minio_root_password = "minioadmin"
+minio_bucket = "my-bucket"
