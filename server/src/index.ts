@@ -9,9 +9,11 @@ import { startMonitoringCleanupJob, stopMonitoringCleanupJob } from './jobs/moni
 import { startBackgroundJobs, stopBackgroundJobs } from './jobs/bootstrap.js';
 import { initTelemetry, shutdownTelemetry } from './lib/telemetry.js';
 import { logger } from './lib/logger.js';
+import { traceContextMiddleware } from './middleware/trace-context.js';
 import { healthService } from './domains/monitoring/health.service.js';
 
 initTelemetry();
+
 
 const app = express();
 
@@ -29,6 +31,7 @@ if (env.STRIPE_ENABLED) {
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(traceContextMiddleware);
 app.use(requestMonitoring);
 app.use('/api', routes);
 app.use(errorMonitoring);

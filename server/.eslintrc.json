@@ -24,8 +24,117 @@
         "@typescript-eslint/no-explicit-any": "error",
         "@typescript-eslint/explicit-function-return-type": "off",
         "@typescript-eslint/no-floating-promises": "error",
-        "@typescript-eslint/no-misused-promises": "error"
+        "@typescript-eslint/no-misused-promises": "error",
+        "no-restricted-imports": [
+            "error",
+            {
+                "patterns": [
+                    {
+                        "group": [
+                            "**/domains/auth/!(index)*",
+                            "**/domains/auth/!(index)"
+                        ],
+                        "message": "Import from the auth domain must go through its barrel file (index.ts)"
+                    },
+                    {
+                        "group": [
+                            "**/domains/brand/!(index)*",
+                            "**/domains/brand/!(index)"
+                        ],
+                        "message": "Import from the brand domain must go through its barrel file (index.ts)"
+                    },
+                    {
+                        "group": [
+                            "**/domains/content/!(index)*",
+                            "**/domains/content/!(index)"
+                        ],
+                        "message": "Import from the content domain must go through its barrel file (index.ts)"
+                    },
+                    {
+                        "group": [
+                            "**/domains/wallet/!(index)*",
+                            "**/domains/wallet/!(index)"
+                        ],
+                        "message": "Import from the wallet domain must go through its barrel file (index.ts)"
+                    },
+                    {
+                        "group": [
+                            "**/domains/monitoring/!(index)*",
+                            "**/domains/monitoring/!(index)"
+                        ],
+                        "message": "Import from the monitoring domain must go through its barrel file (index.ts)"
+                    },
+                    {
+                        "group": [
+                            "**/domains/strategy/!(index)*",
+                            "**/domains/strategy/!(index)"
+                        ],
+                        "message": "Import from the strategy domain must go through its barrel file (index.ts)"
+                    },
+                    {
+                        "group": [
+                            "**/domains/publishing/!(index)*",
+                            "**/domains/publishing/!(index)"
+                        ],
+                        "message": "Import from the publishing domain must go through its barrel file (index.ts)"
+                    },
+                    {
+                        "group": [
+                            "**/domains/workspace/!(index)*",
+                            "**/domains/workspace/!(index)"
+                        ],
+                        "message": "Import from the workspace domain must go through its barrel file (index.ts)"
+                    }
+                ]
+            }
+        ]
     },
+    "overrides": [
+        {
+            "files": [
+                "**/*.controller.ts",
+                "**/*.routes.ts"
+            ],
+            "rules": {
+                "no-restricted-imports": [
+                    "error",
+                    {
+                        "patterns": [
+                            {
+                                "group": [
+                                    "@prisma/client"
+                                ],
+                                "message": "Controllers and routes must not import Prisma directly — use Application Services instead"
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "files": [
+                "**/*.service.ts"
+            ],
+            "excludedFiles": [
+                "**/*.routes.ts"
+            ],
+            "rules": {
+                "no-restricted-imports": [
+                    "warn",
+                    {
+                        "patterns": [
+                            {
+                                "group": [
+                                    "express"
+                                ],
+                                "message": "Application/Domain Services should not import express directly"
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    ],
     "env": {
         "node": true,
         "es2022": true

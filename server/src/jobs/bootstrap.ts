@@ -2,7 +2,7 @@ import { tenantJobScheduler } from './tenant-job-scheduler.js';
 import { logger } from '../lib/logger.js';
 
 export async function startBackgroundJobs(): Promise<void> {
-    logger.info('Starting background jobs via TenantJobScheduler...');
+    logger.info('Starting background jobs via CronScheduler...');
     await tenantJobScheduler.initialize();
 }
 
